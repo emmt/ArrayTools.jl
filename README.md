@@ -1,8 +1,8 @@
 # Utilities for coding with Julia arrays
 
-| **License**                     | **Build Status**                                                |
-|:--------------------------------|:----------------------------------------------------------------|
-| [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| **License**                     | **Build Status**                                                | **Code Coverage**                                                   |
+|:--------------------------------|:----------------------------------------------------------------|:--------------------------------------------------------------------|
+| [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
 
 This package provides a number of methods and types to deal with the variety of
 array types (sub-types of `AbstractArray`) that exist in Julia.
@@ -13,20 +13,19 @@ These are useful to implement methods to process arrays in a generic way.
 
 ### Array indexing
 
-The `eachindex` method is very useful When writing loops over array elements so
+The `eachindex` method is very useful when writing loops over array elements so
 as to be agnostic to which specfic indexing rule is the most suitable.  Some
 algorithms are however more efficient or easier to write if all involved arrays
-are indexed by a single 1-based index.  In that case,
+are indexed by a single 1-based index.  In that case, `using ArrayTools` provides:
 
 ```julia
 fastarray(A)
 ```
 
-checks whether array `A` is suitable for fast indexing (by a single integer
-starting at 1); if it does, `A` is returned to the caller; otherwise, the
-contents of `A` is converted to a suitable array type implementing fast
+which checks whether array `A` is suitable for fast indexing (by a single
+integer starting at 1); if it does, `A` is returned to the caller; otherwise,
+the contents of `A` is converted to a suitable array type implementing fast
 indexing and is returned to the caller.
-
 
 To just check whether array `A` is suitable for fast indexing, call:
 
@@ -72,7 +71,7 @@ array form.
 ## FAQ
 
 * What is the difference between `IndexStyle` (defined in base Julia) and
-  `IndexingTrait` (defined in this package)?
+  `IndexingTrait` (defined in `ArrayTools`)?
 
   If `IndexStyle(A) === IndexLinear()`, then array `A` can be efficiently
   indexed by one integer (even if `A` is multidimensional) and column-major
@@ -84,7 +83,7 @@ array form.
   indices.
 
 * What is the difference between `Base.has_offset_axes` (provided by Julia) and
-  `has_standard_indexing` (provided by this package)?
+  `has_standard_indexing` (provided by  `ArrayTools`)?
 
   For the caller, `has_standard_indexing(args...)` yields the opposite result
   as `Base.has_offset_axes(args...)`.  Furthermore, `has_standard_indexing` is

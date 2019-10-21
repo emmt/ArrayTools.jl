@@ -18,3 +18,7 @@ matrix:
 
 notifications:
   email: false
+
+codecov: true
+
+coveralls: true
