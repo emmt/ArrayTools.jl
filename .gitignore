@@ -1,0 +1,10 @@
+*~
+*.jl.cov
+*.jl.mem
+build/
+devel/
+work/
+temp/
+devel.jl
+work.jl
+temp.jl
