@@ -429,6 +429,131 @@ indices(dims::Tuple{Vararg{Integer}}) =
 indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
     CartesianIndices(rngs)
 
+#------------------------------------------------------------------------------
+# BROADCASTING OF ARRAYS WITH OPTIONAL ELEMENT TYPE CONVERSION.
+
+"""
+
+```julia
+bcastcopy([T=eltype(A),] A, dims...)
+```
+
+yields a new array of type `T` and dimensions `dims` filled with the elements
+of `A` according to type conversion and broadcasting rules (see
+[`broadcast`](@ref)).  Compared to [`bcastlazy`](@ref), it is guaranteed that
+the returned array does not share its contents with `A`.
+
+Arguments `A` and `T` can be exchanged, that is `bcastcopy(A,T,dims)` is the
+same as `bcastcopy(T,A,dims)`.
+
+See also: [`bcastlazy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
+
+"""
+bcastcopy(A::AbstractArray{T}, dims::Integer...) where {T} =
+    bcastcopy(T, A, dims)
+bcastcopy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, A, dims)
+bcastcopy(A::AbstractArray, ::Type{T}, dims::Integer...) where {T} =
+    bcastcopy(T, A, dims)
+bcastcopy(A::AbstractArray, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, A, dims)
+bcastcopy(::Type{T}, A::AbstractArray, dims::Integer...) where {T} =
+    bcastcopy(T, A, dims)
+bcastcopy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, A, map(Int, dims))
+
+function bcastcopy(::Type{T}, A::AbstractArray,
+                   dims::Tuple{Vararg{Int}}) where {T}
+    C = Array{T}(undef, dims)
+    @. C = A # This exprssion will clash if dimensions are not compatible.
+    return C
+end
+
+"""
+
+```julia
+bcastlazy([T=eltype(A),] A, dims...)
+```
+
+yields a *flat* array of type `T` and dimensions `dims` filled with the
+elements of `A` according to type conversion and broadcasting rules (see
+[`broadcast`](@ref)).  Compared to [`bcastcopy`](@ref), making a copy of `A` is
+avoided if it already has the correct type and dimensions or can be reshaped
+(see [`reshape`](@ref)) to the correct type and dimensions.  This means that
+the result may share the same contents as `A`.  Array `A` must have 1-based
+indices.  The result has 1-based indices and contiguous elements which is
+suitable for fast linear indexing.
+
+Arguments `A` and `T` can be exchanged, that is `bcastlazy(A,T,dims)` is the
+same as `bcastlazy(T,A,dims)`.
+
+See also: [`bcastcopy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
+
+"""
+bcastlazy(A::AbstractArray{T}, dims::Integer...) where {T} =
+    bcastlazy(T, A, dims)
+bcastlazy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, A, dims)
+bcastlazy(A::AbstractArray, ::Type{T}, dims::Integer...) where {T} =
+    bcastlazy(T, A, dims)
+bcastlazy(A::AbstractArray, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, A, dims)
+bcastlazy(::Type{T}, A::AbstractArray, dims::Integer...) where {T} =
+    bcastlazy(T, A, dims)
+bcastlazy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, A, map(Int, dims))
+
+function bcastlazy(::Type{T}, A::AbstractArray{T},
+                   dims::Tuple{Vararg{Int}}) where {T}
+    has_standard_indexing(A) || throw_non_standard_indexing()
+    Adims = size(A)
+    Adims == dims && return A
+    bcastdims(Adims, dims) == dims ||
+        throw(DimensionMismatch("array has incompatible dimensions"))
+    return (isa(A, DenseArray) && length(A) == prod(dims) ? reshape(A, dims) :
+            bcastcopy(T, A, dims))
+end
+
+bcastlazy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Int}}) where {T} =
+    bcastcopy(T, A, dims)
+
+"""
+
+```julia
+bcastdims(size(A), size(B), ...)
+```
+
+yields the dimensions of the array that would result from applying broadcasting
+rules (see [`broadcast`](@ref)) to arguments `A`, `B`, etc.  The result is a
+tuple of dimensions of type `Int`.  Call [`checkdimensions`](@ref) if you want
+to also make sure that the result is a list of valid dimensions.
+
+See also: [`dimensions`](@ref), [`checkdimensions`](@ref), [`bcastcopy`](@ref),
+[`bcastlazy`](@ref).
+
+"""
+bcastdims(::Tuple{}) = ()
+bcastdims(a::Tuple{Vararg{Integer}}) = dimensions(a)
+bcastdims(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}, args...) =
+    bcastdims(bcastdims(a, b), args...)
+
+# Use a recursion to build the dimension list from two lists, if code is
+# inlined (for a few number of dimensions), it should be very fast.
+bcastdims(::Tuple{}, ::Tuple{}) = ()
+bcastdims(::Tuple{}, b::Tuple{Vararg{Integer}}) = bcastdims(b)
+bcastdims(a::Tuple{Vararg{Integer}}, ::Tuple{}) = bcastdims(a)
+bcastdims(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}) =
+    (bcastdim(a[1], b[1]), bcastdims(Base.tail(a), Base.tail(b))...)
+
+# Apply broadcasting rules for a single dimension (same as
+# Base.Broadcasting._bcs1 but takes care of converting to `Int`).
+bcastdim(a::Integer, b::Integer) = bcastdim(Int(a), Int(b))
+bcastdim(a::Int, b::Int) =
+    (a == b || b == 1 ? a : a == 1 ? b :
+    throw(DimensionMismatch("arrays could not be broadcast to a common size")))
+
+#------------------------------------------------------------------------------
+
 """
 ```julia
 allof(p, args...) -> Bool
