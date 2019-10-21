@@ -1,5 +1,9 @@
 # Utilities for coding with Julia arrays
 
+| **License**                     | **Build Status**                                                |
+|:--------------------------------|:----------------------------------------------------------------|
+| [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+
 This package provides a number of methods and types to deal with the variety of
 array types (sub-types of `AbstractArray`) that exist in Julia.
 
@@ -85,3 +89,21 @@ array form.
   For the caller, `has_standard_indexing(args...)` yields the opposite result
   as `Base.has_offset_axes(args...)`.  Furthermore, `has_standard_indexing` is
   a bit faster.
+
+[doc-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[doc-dev-url]: https://emmt.github.io/ArrayTools.jl/dev
+
+[license-url]: ./LICENSE.md
+[license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
+
+[travis-img]: https://travis-ci.org/emmt/ArrayTools.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/emmt/ArrayTools.jl
+
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/emmt/ArrayTools.jl?branch=master
+[appveyor-url]: https://ci.appveyor.com/project/emmt/ArrayTools-jl/branch/master
+
+[coveralls-img]: https://coveralls.io/repos/emmt/ArrayTools.jl/badge.svg?branch=master&service=github
+[coveralls-url]: https://coveralls.io/github/emmt/ArrayTools.jl?branch=master
+
+[codecov-img]: http://codecov.io/github/emmt/ArrayTools.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/emmt/ArrayTools.jl?branch=master
