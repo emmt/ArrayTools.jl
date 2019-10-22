@@ -3,6 +3,10 @@ module ArrayTools
 export
     allof,
     anyof,
+    bcastcopy,
+    bcastdim,
+    bcastdims,
+    bcastlazy,
     checkdimensions,
     colons,
     dimensions,
@@ -412,15 +416,8 @@ array of dimensions `(n1,n2,...)`, a multi-dimensional region whose first and
 last indices are `(i1,i2,...)` and `(j1,j2,...)` or a Cartesian region defined
 by `R`, an instance of `CartesianIndices`.
 
-If a single argument is provided that is an integer or a range (not a tuple),
-an `AbstractUnitRange` is returned.
-
 """
 indices(A::AbstractArray) = indices(axes(A))
-indices(dim::Int) = Base.OneTo(dim)
-indices(dim::Integer) = Base.OneTo(Int(dim))
-indices(rng::AbstractUnitRange{Int}) = rng
-indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 indices(R::CartesianIndices) = R
 indices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
     CartesianIndices(map((i,j) -> i:j, start.I, stop.I))
@@ -428,6 +425,19 @@ indices(dims::Tuple{Vararg{Integer}}) =
     CartesianIndices(map(indices, dims))
 indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
     CartesianIndices(rngs)
+
+# The following, would yield an `AbstractUnitRange` if a single argument is
+# provided that is an integer or a range (not a tuple).  This lead to
+# ambibuities so it is has been disabled.  The rule is that an array argument
+# (including a range) yields the indices for this array, a tuple of dimensions,
+# a tuple of unit ranges or a pair of `CartesianIndices` yields the indices of
+# the Cartesian region defined by these arguments.
+#
+#indices(dim::Int) = Base.OneTo(dim)
+#indices(dim::Integer) = Base.OneTo(Int(dim))
+#indices(rng::AbstractUnitRange{Int}) = rng
+#indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
+
 
 #------------------------------------------------------------------------------
 # BROADCASTING OF ARRAYS WITH OPTIONAL ELEMENT TYPE CONVERSION.
