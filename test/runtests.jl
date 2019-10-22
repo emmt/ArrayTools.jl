@@ -1,5 +1,5 @@
 module ArrayToolsTests
-using Test, ArrayTools
+using Test, Random, ArrayTools
 
 function same(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
@@ -46,7 +46,9 @@ atol = 1e-6
     @test checkdimensions((1,0,2)) === true
     @test_throws ErrorException checkdimensions((1,0,-1))
     @test_throws ErrorException checkdimensions(-1)
-    # Colons.
+    #
+    # Tests for `colons`.
+    #
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
         @test colons(d) === tup
@@ -55,12 +57,54 @@ atol = 1e-6
     for k ∈ 1:dims[end]
         @test same(slice(A, k), A[:,:,k])
     end
-    # Other stuff.
-    @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))
+    #
+    # Tests for `allof`, `anyof` and `noneof`.
+    #
+    W = (true, true, true)
+    X = [true, false]
+    Y = (false, false)
+    for i in randperm(length(X)) # prevent compilation-time optimization
+        @test anyof(X[i]) == X[i]
+    end
+    @test allof(true) == true
+    @test anyof(true) == true
+    @test noneof(true) == false
+    @test allof(false) == false
+    @test anyof(false) == false
+    @test noneof(false) == true
+    @test allof(W) == true
+    @test anyof(W) == true
+    @test noneof(W) == false
+    @test allof(collect(W)) == allof(W)
+    @test anyof(collect(W)) == anyof(W)
+    @test noneof(collect(W)) == noneof(W)
+    @test allof(X) == false
+    @test anyof(X) == true
+    @test noneof(X) == false
+    @test allof(Y) == false
+    @test anyof(Y) == false
+    @test noneof(Y) == true
+    for (x, y) in ((W,W),(X,X),(Y,Y),(W,X),(X,Y),(Y,W))
+        @test anyof(x, y) == (anyof(x) || anyof(y))
+        @test allof(x, y) == (allof(x) && allof(y))
+        @test noneof(x, y) == (noneof(x) && noneof(y))
+    end
+    for x in (W, X, Y)
+        @test allof(x) == (allof(minimum, x, x) && allof(maximum, x))
+        @test noneof(x) == (noneof(minimum, x, x) && noneof(maximum, x))
+        @test anyof(x) == (anyof(minimum, x, x) || anyof(maximum, x))
+    end
+    #
+    # Tests for `indices`.
+    #
     @test indices(A) === CartesianIndices(axes(A))
     @test indices(A) === indices(size(A))
     @test indices(A) === indices(axes(A))
     @test indices(A) === indices(indices(A))
+    #
+    # Other stuff.
+    #
+    @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))
 end
 
 @testset "Storage" begin
@@ -88,6 +132,23 @@ end
         @test StorageType(K) == FlatStorage()
         @test StorageType(L) == (n == 1 ? FlatStorage() : AnyStorage())
     end
+    L = ((nothing,             false),
+         ("a",                 false),
+         ((),                  false),
+         (1,                   false),
+         (A,                   true ),
+         (view(A, :, :, 2:3),  true ),
+         (view(A, :, 2:2, :),  false),
+         (view(A, :, 2, :),    false),
+         (view(A, :, 2:2, 3),  true ),
+         (view(A, :, 2, 3),    true ),
+         (view(A, :, 2, 3:3),  false))
+    for i in randperm(length(L)) # prevent compilation-time optimization
+        x, b = L[i]
+        @test isflatarray(x) == b
+    end
+    @test isflatarray(A, view(A, :, 2, 3), view(A, :, 2:2, 3)) == true
+    @test isflatarray(A, view(A, :, 2:2, :), view(A, :, 2:2, 3)) == false
 end
 
 @testset "Indexing" begin
