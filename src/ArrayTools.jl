@@ -9,6 +9,7 @@ export
     bcastlazy,
     checkdimensions,
     colons,
+    Dimensions,
     dimensions,
     has_standard_indexing,
     indices,
