@@ -419,19 +419,19 @@ by `R`, an instance of `CartesianIndices`.
 """
 indices(A::AbstractArray) = indices(axes(A))
 indices(R::CartesianIndices) = R
-indices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
-    CartesianIndices(map((i,j) -> i:j, start.I, stop.I))
+@inline indices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
+    CartesianIndices(map((i,j) -> (i == 1 ? Base.OneTo(j) : i:j), start.I, stop.I))
 indices(dims::Tuple{Vararg{Integer}}) =
-    CartesianIndices(map(indices, dims))
+    CartesianIndices(map(dim -> Base.OneTo(dim), dims))
 indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
     CartesianIndices(rngs)
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
 # provided that is an integer or a range (not a tuple).  This lead to
-# ambibuities so it is has been disabled.  The rule is that an array argument
-# (including a range) yields the indices for this array, a tuple of dimensions,
-# a tuple of unit ranges or a pair of `CartesianIndices` yields the indices of
-# the Cartesian region defined by these arguments.
+# ambiguities so it is has been disabled.  The rules are that (i) an array
+# argument (including a range) yields the indices for this array, (ii) a tuple
+# of dimensions, a tuple of unit ranges or a pair of `CartesianIndices` yields
+# the indices of the Cartesian region defined by these arguments.
 #
 #indices(dim::Int) = Base.OneTo(dim)
 #indices(dim::Integer) = Base.OneTo(Int(dim))
