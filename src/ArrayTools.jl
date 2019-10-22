@@ -120,7 +120,7 @@ See also [`StorageType`](@ref), [`flatarray`](@ref),
 """
 isflatarray() = false
 isflatarray(args...) = allof(isflatarray, args...)
-isflatarray(A::AbstractArray) = _isflatarray(StorageType(A))
+isflatarray(arg) = _isflatarray(StorageType(arg))
 _isflatarray(::FlatStorage) = true
 _isflatarray(::StorageType) = false
 #
@@ -232,7 +232,7 @@ See also: [`IndexingType`](@ref), [`fastarray`](@ref).
 """
 isfastarray() = false
 isfastarray(args...) = allof(isfastarray, args...)
-isfastarray(A::AbstractArray) = _isfastarray(IndexingTrait(A))
+isfastarray(arg) = _isfastarray(IndexingTrait(arg))
 _isfastarray(::FastIndexing) = true
 _isfastarray(::AnyIndexing) = false
 
