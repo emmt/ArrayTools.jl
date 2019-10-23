@@ -5,7 +5,8 @@
 | [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
 
 This package provides a number of methods and types to deal with the variety of
-array types (sub-types of `AbstractArray`) that exist in Julia.
+array types (sub-types of `AbstractArray`) that exist in Julia and to help
+building custom array-like types.
 
 These are useful to implement methods to process arrays in a generic way.
 
@@ -16,10 +17,19 @@ These are useful to implement methods to process arrays in a generic way.
 Julia array interface is very powerful and flexible, it is therefore tempting
 to define custom array-like types, that is Julia types that behave like arrays,
 without sacrificing efficiency.  The `ArrayTools` package provides simple means
-to define such array-like types if the values to be accessed like arrays are
-stored in an (abstract) array embedded in the object instance.
+to define such array-like types if the values to be accessed as if in an array
+are stored in an array (of any concrete type) embedded in the object instance.
 
-This can be as simple as writing (of course replacing the ellipsis `...`):
+This is as simple as:
+
+1. Make your type inherit from `LinearArray{T,N}` or `CartesianArray{T,N}`
+   depending whether the index style of the embedded array is `IndexLinear()`
+   or `IndexCartesian()`.
+
+2. Extend the `Base.parent` method for your custom type so that it returns the
+   embedded array.
+
+For instance (of course replacing the ellipsis `...`):
 
 ```julia
 struct CustomArray{T,N,...} <: LinearArray{T,N}
@@ -32,15 +42,15 @@ end
 @inline Base.parent(A::CustomArray) = A.arr
 ```
 
-As a result, instances of `CustomArray{T,N}` will be seen as instances of
-`AbstractArray{T,N}` and behave as if they implement linear indexing.  Apart
-from the needs to extend the `Base.parent` method, the interface to
+As a result, instances of `CustomArray{T,N}` will be also seen as instances of
+`AbstractArray{T,N}` and will behave as if they implement linear indexing.
+Apart from the needs to extend the `Base.parent` method, the interface to
 `LinearArray{T,N}` should provide any necessary methods for indexation, getting
 the dimensions, the element type, *etc.* for the derived custom type.  You may
 however override these definitions by more optimized or more suitable methods
 specialized for your custom array-like type.
 
-If your custom array-like type is base on an array whose index style is
+If your custom array-like type is based on an array whose index style is
 `IndexCartesian()` (instead of `IndexLinear()` in the above example), just make
 your custom type derived from `CartesianArray{T,N}` (instead of
 `LinearArray{T,N}`).  For such array-like object, index checking requires an
@@ -54,9 +64,12 @@ specialize.  The default implementation is:
 
 ### Array-like objects with attributes
 
-As a working example of custom array-like objects, the `ArrayTools` package provides
-`AttributeArray` objects which store values like arrays but also have attributes
-stored in a dictionary.  To build such an object, you can do:
+As a working example of custom array-like objects, the `ArrayTools` package
+provides `AttributeArray{T,N,K,V}` objects which store values like arrays but
+also have attributes stored in a dictionary.  Here the parameters are `T` the
+element type of the values in the array part, `N` the number of dimensions of
+the array part, `K` the type of the attribute keys and `V` the type of the
+attributes values.  To build such an object, you can do:
 
 ```julia
 using ArrayTools
@@ -93,7 +106,7 @@ from `Integer` nor `CartesianIndex`.
 
 Similar types are provided by
 [MetaArrays](https://github.com/haberdashPI/MetaArrays.jl),
-[MetadataArrays](https://github.com/piever/MetadataArrays.jl)
+[MetadataArrays](https://github.com/piever/MetadataArrays.jl) and
 [ImageMetadata](https://github.com/JuliaImages/ImageMetadata.jl).
 
 
