@@ -105,12 +105,17 @@ atol = 1e-6
     # Other stuff.
     #
     @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))
+    @test_throws ErrorException ArrayTools.throw_non_standard_indexing()
 end
 
 @testset "Storage" begin
     B = flatarray(Float32, A)
     C = flatarray(Float32, V)
+    @test StorageType() == AnyStorage()
+    @test StorageType("a") == AnyStorage()
+    @test StorageType(A) == FlatStorage()
     @test isflatarray() == false
+    @test isflatarray("a") == false
     @test isflatarray(S) == false
     @test isflatarray(A) == true
     @test isflatarray(V) == false
@@ -152,7 +157,7 @@ end
 end
 
 @testset "Indexing" begin
-    for Q in (A,V,S)
+    for Q in (A,V,S,101,Colon())
         @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
     end
     B = fastarray(Float32, A)
@@ -161,6 +166,8 @@ end
                                          has_standard_indexing(V))
     @test IndexingTrait(A) == FastIndexing()
     @test IndexingTrait(V) == AnyIndexing()
+    @test IndexingTrait("a") == AnyIndexing()
+    @test isfastarray() == false
     @test isfastarray(S) == true
     @test same(V, fastarray(V))
     @test same(A, fastarray(A))
