@@ -32,7 +32,11 @@ export
     # CopycatArrays:
     CartesianArray,
     CopycatArray,
-    LinearArray
+    LinearArray,
+    # AttributeArrays:
+    AttributeArray,
+    attributes,
+    nkeys
 
 """
 ```julia
@@ -710,5 +714,8 @@ reversemap(f::Function, args::NTuple{N,Any}) where {N} =
 
 include("CopycatArrays.jl")
 using .CopycatArrays
+
+include("AttributeArrays.jl")
+using .AttributeArrays
 
 end # module

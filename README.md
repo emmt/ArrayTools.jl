@@ -11,6 +11,8 @@ These are useful to implement methods to process arrays in a generic way.
 
 ## Array-like objects
 
+### Defining custom array-like objects
+
 Julia array interface is very powerful and flexible, it is therefore tempting
 to define custom array-like types, that is Julia types that behave like arrays,
 without sacrificing efficiency.  The `ArrayTools` package provides simple means
@@ -48,6 +50,51 @@ specialize.  The default implementation is:
 ```julia
 @inline Base.axes(A::CartesianArray) = axes(parent(A))
 ```
+
+
+### Array-like objects with attributes
+
+As a working example of custom array-like objects, the `ArrayTools` package provides
+`AttributeArray` objects which store values like arrays but also have attributes
+stored in a dictionary.  To build such an object, you can do:
+
+```julia
+using ArrayTools
+dims = (100, 50)
+T = Float32
+A = AttributeArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+```
+
+Then indexing `A` with integers of Cartesian indices is the same as accessing
+the array of values while indexing `A` with strings is the same as accessing
+the dictionary of attributes.  For example:
+
+```julia
+A["Δx"]          # yields 0.2
+A["units"]       # yields "photons"
+A[:,3] = 3.14    # set some values in the array part of A
+sum(A)           # yeilds the sum of the values of A
+A["gizmo"] = π   # set an attribute
+pop!(A, "gizmo") # yields attribute value and delete it
+```
+
+An `AttributeArray` can be build by providing an array and a dictionary, an
+array and key-value pairs (as in the above example), or more like other arrays:
+
+```julia
+dims = (100, 50)
+T = Float32
+A = AttributeArray{T}(undef, dims, "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+```
+
+Attribute key types are not limited to `String`, but, to avoid ambiguities,
+key types must be more specialized than `Any` and must not inherit
+from `Integer` nor `CartesianIndex`.
+
+Similar types are provided by
+[MetaArrays](https://github.com/haberdashPI/MetaArrays.jl),
+[MetadataArrays](https://github.com/piever/MetadataArrays.jl)
+[ImageMetadata](https://github.com/JuliaImages/ImageMetadata.jl).
 
 
 ## General tools
