@@ -9,7 +9,48 @@ array types (sub-types of `AbstractArray`) that exist in Julia.
 
 These are useful to implement methods to process arrays in a generic way.
 
-## Provided tools
+## Array-like objects
+
+Julia array interface is very powerful and flexible, it is therefore tempting
+to define custom array-like types, that is Julia types that behave like arrays,
+without sacrificing efficiency.  The `ArrayTools` package provides simple means
+to define such array-like types if the values to be accessed like arrays are
+stored in an (abstract) array embedded in the object instance.
+
+This can be as simple as writing (of course replacing the ellipsis `...`):
+
+```julia
+struct CustomArray{T,N,...} <: LinearArray{T,N}
+    arr::Array{T,N} # can be any array type with linear index style
+    ...             # another member
+    ...             # yet another member
+    ...             # etc.
+end
+
+@inline Base.parent(A::CustomArray) = A.arr
+```
+
+As a result, instances of `CustomArray{T,N}` will be seen as instances of
+`AbstractArray{T,N}` and behave as if they implement linear indexing.  Apart
+from the needs to extend the `Base.parent` method, the interface to
+`LinearArray{T,N}` should provide any necessary methods for indexation, getting
+the dimensions, the element type, *etc.* for the derived custom type.  You may
+however override these definitions by more optimized or more suitable methods
+specialized for your custom array-like type.
+
+If your custom array-like type is base on an array whose index style is
+`IndexCartesian()` (instead of `IndexLinear()` in the above example), just make
+your custom type derived from `CartesianArray{T,N}` (instead of
+`LinearArray{T,N}`).  For such array-like object, index checking requires an
+efficient implementation of the `Base.axes()` method which you may have to
+specialize.  The default implementation is:
+
+```julia
+@inline Base.axes(A::CartesianArray) = axes(parent(A))
+```
+
+
+## General tools
 
 ### Array indexing
 

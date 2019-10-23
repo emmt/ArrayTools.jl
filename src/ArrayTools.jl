@@ -28,7 +28,11 @@ export
     FastIndexing,
     AnyIndexing,
     fastarray,
-    isfastarray
+    isfastarray,
+    # CopycatArrays:
+    CartesianArray,
+    CopycatArray,
+    LinearArray
 
 """
 ```julia
@@ -398,6 +402,8 @@ older than 0.7.
 has_standard_indexing(arg) = allof(x -> first(x) == 1, axes(arg)...)
 has_standard_indexing(args...) = allof(has_standard_indexing, args...)
 has_standard_indexing(arg::Array) = true
+has_standard_indexing(::Colon) = true
+has_standard_indexing(::Number) = true
 
 """
 
@@ -464,14 +470,18 @@ bcastcopy(A::AbstractArray{T}, dims::Integer...) where {T} =
     bcastcopy(T, A, dims)
 bcastcopy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
     bcastcopy(T, A, dims)
-bcastcopy(A::AbstractArray, ::Type{T}, dims::Integer...) where {T} =
-    bcastcopy(T, A, dims)
-bcastcopy(A::AbstractArray, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, A, dims)
-bcastcopy(::Type{T}, A::AbstractArray, dims::Integer...) where {T} =
-    bcastcopy(T, A, dims)
-bcastcopy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, A, map(Int, dims))
+bcastcopy(x::T, dims::Integer...) where {T} =
+    bcastcopy(T, x, dims)
+bcastcopy(x::T, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, x, dims)
+bcastcopy(x, ::Type{T}, dims::Integer...) where {T} =
+    bcastcopy(T, x, dims)
+bcastcopy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, x, dims)
+bcastcopy(::Type{T}, x, dims::Integer...) where {T} =
+    bcastcopy(T, x, dims)
+bcastcopy(::Type{T}, x, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(T, x, map(Int, dims))
 
 function bcastcopy(::Type{T}, A::AbstractArray,
                    dims::Tuple{Vararg{Int}}) where {T}
@@ -479,6 +489,11 @@ function bcastcopy(::Type{T}, A::AbstractArray,
     @. C = A # This exprssion will clash if dimensions are not compatible.
     return C
 end
+
+bcastcopy(::Type{T}, x::T, dims::Tuple{}) where {T} = copy(x)
+bcastcopy(::Type{T}, x, dims::Tuple{}) where {T} = convert(T, x)
+bcastcopy(::Type{T}, x, dims::NTuple{N,Int}) where {N,T} =
+    fill!(Array{T,N}(undef, dims), x)
 
 """
 
@@ -505,14 +520,18 @@ bcastlazy(A::AbstractArray{T}, dims::Integer...) where {T} =
     bcastlazy(T, A, dims)
 bcastlazy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
     bcastlazy(T, A, dims)
-bcastlazy(A::AbstractArray, ::Type{T}, dims::Integer...) where {T} =
-    bcastlazy(T, A, dims)
-bcastlazy(A::AbstractArray, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, A, dims)
-bcastlazy(::Type{T}, A::AbstractArray, dims::Integer...) where {T} =
-    bcastlazy(T, A, dims)
-bcastlazy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, A, map(Int, dims))
+bcastlazy(x::T, dims::Integer...) where {T} =
+    bcastlazy(T, x, dims)
+bcastlazy(x::T, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, x, dims)
+bcastlazy(x, ::Type{T}, dims::Integer...) where {T} =
+    bcastlazy(T, x, dims)
+bcastlazy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, x, dims)
+bcastlazy(::Type{T}, x, dims::Integer...) where {T} =
+    bcastlazy(T, x, dims)
+bcastlazy(::Type{T}, x, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(T, x, map(Int, dims))
 
 function bcastlazy(::Type{T}, A::AbstractArray{T},
                    dims::Tuple{Vararg{Int}}) where {T}
@@ -527,6 +546,11 @@ end
 
 bcastlazy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Int}}) where {T} =
     bcastcopy(T, A, dims)
+
+bcastlazy(::Type{T}, x::T, dims::Tuple{}) where {T} = x
+bcastlazy(::Type{T}, x, dims::Tuple{}) where {T} = convert(T, x)
+bcastlazy(::Type{T}, x, dims::Tuple{Vararg{Int}}) where {T} =
+    bcastcopy(T, x, dims)
 
 """
 
@@ -683,5 +707,8 @@ Also see: [`map`](@ref), [`ntuple`](@ref).
 """
 reversemap(f::Function, args::NTuple{N,Any}) where {N} =
     ntuple(i -> f(args[(N + 1) - i]), Val(N))
+
+include("CopycatArrays.jl")
+using .CopycatArrays
 
 end # module
