@@ -212,25 +212,40 @@ end
     G = AttributeArray(zeros(T, dims), pairs(D1)...)
     F = AttributeArray{T}(parent(G), Dict{String,Any}())
     H = AttributeArray{T,N,Symbol,Float32}(undef, dims, Dict{Symbol,Float32}())
-    # Check all constructors
-    A11 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
-    A12 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
-    A13 = AttributeArray{T,N,Symbol,Any}(undef, dims, D2)
-    A14 = AttributeArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
-    A21 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
-    A22 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
-    A23 = AttributeArray{T,N,Symbol}(undef, dims, D2)
-    A24 = AttributeArray{T,N,Symbol}(undef, dims, pairs(D2)...)
-    A31 = AttributeArray{T,N}(Array{T,N}(undef, dims), D1)
-    A32 = AttributeArray{T,N}(Array{T,N}(undef, dims), pairs(D1)...)
-    A33 = AttributeArray{T,N}(undef, dims, D2)
-    A34 = AttributeArray{T,N}(undef, dims, pairs(D2)...)
-    A41 = AttributeArray{T}(Array{T,N}(undef, dims), D1)
-    A42 = AttributeArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
-    A43 = AttributeArray{T}(undef, dims, D2)
-    A44 = AttributeArray{T}(undef, dims, pairs(D2)...)
-    A51 = AttributeArray(Array{T,N}(undef, dims), D1)
-    A52 = AttributeArray(Array{T,N}(undef, dims), pairs(D2)...)
+
+    # Try all constructors
+    A11 = AttributeArray{T,N,Symbol,Int}(Array{T,N}(undef, dims))
+    A12 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
+    A13 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
+    A14 = AttributeArray{T,N,Symbol,Int}(undef, dims)
+    A15 = AttributeArray{T,N,Symbol,Any}(undef, dims, D2)
+    A16 = AttributeArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
+
+    A21 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims))
+    A22 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
+    A23 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
+    A24 = AttributeArray{T,N,Symbol}(undef, dims)
+    A25 = AttributeArray{T,N,Symbol}(undef, dims, D2)
+    A26 = AttributeArray{T,N,Symbol}(undef, dims, pairs(D2)...)
+
+    A31 = AttributeArray{T,N}(Array{T,N}(undef, dims))
+    A32 = AttributeArray{T,N}(Array{T,N}(undef, dims), D1)
+    A33 = AttributeArray{T,N}(Array{T,N}(undef, dims), pairs(D1)...)
+    A34 = AttributeArray{T,N}(undef, dims)
+    A35 = AttributeArray{T,N}(undef, dims, D2)
+    A36 = AttributeArray{T,N}(undef, dims, pairs(D2)...)
+
+    A41 = AttributeArray{T}(Array{T,N}(undef, dims))
+    A42 = AttributeArray{T}(Array{T,N}(undef, dims), D1)
+    A43 = AttributeArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
+    A44 = AttributeArray{T}(undef, dims)
+    A45 = AttributeArray{T}(undef, dims, D2)
+    A46 = AttributeArray{T}(undef, dims, pairs(D2)...)
+
+    A51 = AttributeArray(Array{T,N}(undef, dims))
+    A52 = AttributeArray(Array{T,N}(undef, dims), D1)
+    A53 = AttributeArray(Array{T,N}(undef, dims), pairs(D2)...)
+
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Any,Any}())
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Int32,Any}())
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{CartesianIndex,Any}())
@@ -256,10 +271,12 @@ end
     @test keytype(H) === Symbol
     @test valtype(F) === valtype(G) === Any
     @test valtype(H) === Float32
-    @test keytype(A11) === keytype(A12) === keytype(D2)
-    @test keytype(A41) === keytype(A42) === keytype(D1)
-    @test valtype(A11) === valtype(A12) === valtype(D2)
-    @test valtype(A41) === valtype(A42) === valtype(D1)
+    @test keytype(A11) === Symbol && valtype(A11) == Int
+    @test keytype(A21) === Symbol && valtype(A21) == Any
+    @test keytype(A12) === keytype(A13) === keytype(D2)
+    @test valtype(A12) === valtype(A13) === valtype(D2)
+    @test keytype(A42) === keytype(A43) === keytype(D1)
+    @test valtype(A42) === valtype(A43) === valtype(D1)
     @test nkeys(F) == nkeys(attributes(F)) == 0 && nkeys(G) == nkeys(attributes(G)) == 3
     @test keys(F) == keys(attributes(F))
     @test keys(G) == keys(attributes(G))

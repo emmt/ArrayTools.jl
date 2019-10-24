@@ -30,6 +30,9 @@ struct AttributeArray{T,N,K,V,A<:AbstractArray{T,N},S} <: CopycatArray{T,N,S}
     end
 end
 
+AttributeArray(vals::AbstractArray) =
+    AttributeArray(vals, defaultattributes())
+
 AttributeArray(vals::AbstractArray, pairs::Pair...) =
     AttributeArray(vals, Dict(pairs...))
 
@@ -41,42 +44,68 @@ function AttributeArray(vals::A, dict::Dict{K,V}) where {T,N,K,V,A<:AbstractArra
     return AttributeArray{T,N,K,V,A,S}(vals, dict)
 end
 
+AttributeArray{T}(init, dims::NTuple{N,Integer}) where {T,N} =
+    AttributeArray(Array{T,N}(init, dims), defaultattributes())
 AttributeArray{T}(init, dims::NTuple{N,Integer}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), Dict{K,V}(pairs...))
 AttributeArray{T}(init, dims::NTuple{N,Integer}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), dict)
+AttributeArray{T}(vals::AbstractArray{T,N}) where {T,N} =
+    AttributeArray(vals, defaultattributes())
 AttributeArray{T}(vals::AbstractArray{T,N}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(vals, Dict{K,V}(pairs...))
 AttributeArray{T}(vals::AbstractArray{T,N}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(vals, dict)
 
+AttributeArray{T,N}(init, dims::Tuple{Vararg{Integer}}) where {T,N} =
+    AttributeArray(Array{T,N}(init, dims), defaultattributes())
 AttributeArray{T,N}(init, dims::Tuple{Vararg{Integer}}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), Dict{K,V}(pairs...))
 AttributeArray{T,N}(init, dims::Tuple{Vararg{Integer}}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), dict)
+AttributeArray{T,N}(vals::AbstractArray{T,N}) where {T,N} =
+    AttributeArray(vals, defaultattributes())
 AttributeArray{T,N}(vals::AbstractArray{T,N}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(vals, Dict{K,V}(pairs...))
 AttributeArray{T,N}(vals::AbstractArray{T,N}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(vals, dict)
 
+AttributeArray{T,N,K}(init, dims::Tuple{Vararg{Integer}}) where {T,N,K} =
+    AttributeArray(Array{T,N}(init, dims), defaultattributes(K))
 AttributeArray{T,N,K}(init, dims::Tuple{Vararg{Integer}}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), Dict{K,V}(pairs...))
 AttributeArray{T,N,K}(init, dims::Tuple{Vararg{Integer}}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), dict)
+AttributeArray{T,N,K}(vals::AbstractArray{T,N}) where {T,N,K} =
+    AttributeArray(vals, defaultattributes(K))
 AttributeArray{T,N,K}(vals::AbstractArray{T,N}, pairs::Pair{K,V}...) where {T,N,K,V} =
     AttributeArray(vals, Dict{K,V}(pairs...))
 AttributeArray{T,N,K}(vals::AbstractArray{T,N}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(vals, dict)
 
+AttributeArray{T,N,K,V}(init, dims::Tuple{Vararg{Integer}}) where {T,N,K,V} =
+    AttributeArray(Array{T,N}(init, dims), defaultattributes(K, V))
 AttributeArray{T,N,K,V}(init, dims::Tuple{Vararg{Integer}}, pairs::Pair...) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), Dict{K,V}(pairs...))
 AttributeArray{T,N,K,V}(init, dims::Tuple{Vararg{Integer}}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(Array{T,N}(init, dims), dict)
+AttributeArray{T,N,K,V}(vals::AbstractArray{T,N}) where {T,N,K,V} =
+    AttributeArray(vals, defaultattributes(K, V))
 AttributeArray{T,N,K,V}(vals::AbstractArray{T,N}, pairs::Pair...) where {T,N,K,V} =
     AttributeArray(vals, Dict{K,V}(pairs...))
 AttributeArray{T,N,K,V}(vals::AbstractArray{T,N}, dict::Dict{K,V}) where {T,N,K,V} =
     AttributeArray(vals, dict)
 
+"""
+```julia
+defaultattributes(K = String, V = Any) -> Dict{K,V}()
+```
+
+yields an empty dictionary to store attributes in an `AttributeArray` when this
+argument is unspecified in the call to the constructor.
+
+"""
+defaultattributes(K=String, V=Any) = Dict{K,V}()
 
 # Extend parent() method for the CopycatArray interface to work.
 @inline Base.parent(A::AttributeArray) = A.vals

@@ -104,6 +104,20 @@ Attribute key types are not limited to `String`, but, to avoid ambiguities,
 key types must be more specialized than `Any` and must not inherit
 from `Integer` nor `CartesianIndex`.
 
+If the dictionary is unspecified, the default is an empty dictionary with
+string keys and value of any type, *i.e.* `Dict{String,Any}()`, unless key
+and/or value types are specified.  For instance:
+
+```julia
+dims = (100, 50)
+T = Float32
+N = length(dims)
+A = AttributeArray{T}(undef, dims)                  # Dict{String,Any}
+B = AttributeArray{T,N,Symbol}(undef, dims)         # Dict{Symbol,Any}
+C = AttributeArray{T,N,Symbol,Float32}(undef, dims) # Dict{Symbol,Float32}
+```
+
+
 Similar types are provided by
 [MetaArrays](https://github.com/haberdashPI/MetaArrays.jl),
 [MetadataArrays](https://github.com/piever/MetadataArrays.jl) and
