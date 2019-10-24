@@ -1,7 +1,7 @@
 module ArrayToolsTests
 using Test, Random, ArrayTools
 
-function same(A::AbstractArray, B::AbstractArray)
+function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
     @assert size(A) == size(B)
     for i ∈ eachindex(A, B)
@@ -55,7 +55,7 @@ atol = 1e-6
         @test colons(Val(d)) === tup
     end
     for k ∈ 1:dims[end]
-        @test same(slice(A, k), A[:,:,k])
+        @test samevalues(slice(A, k), A[:,:,k])
     end
     #
     # Tests for `allof`, `anyof` and `noneof`.
@@ -125,10 +125,10 @@ end
     @test pointer(A) == pointer(flatarray(A))
     @test pointer(A) == pointer(flatarray(eltype(A), A))
     @test pointer(A) != pointer(flatarray(V))
-    @test same(S, flatarray(S))
+    @test samevalues(S, flatarray(S))
     @test eltype(S) === eltype(flatarray(S))
-    @test same(V, flatarray(V))
-    @test same(A, flatarray(A))
+    @test samevalues(V, flatarray(V))
+    @test samevalues(A, flatarray(A))
     @test maxabsdif(A, B) ≤ atol
     @test maxabsdif(V, C) ≤ atol
     for n in 1:5
@@ -169,8 +169,8 @@ end
     @test IndexingTrait("a") == AnyIndexing()
     @test isfastarray() == false
     @test isfastarray(S) == true
-    @test same(V, fastarray(V))
-    @test same(A, fastarray(A))
+    @test samevalues(V, fastarray(V))
+    @test samevalues(A, fastarray(A))
     @test isfastarray(A) == true
     @test isfastarray(A,B,C) == true
     @test isfastarray(V) == false
@@ -178,8 +178,8 @@ end
     @test isfastarray(fastarray(V)) == true
     @test pointer(A) == pointer(fastarray(A))
     @test pointer(A) != pointer(fastarray(V))
-    @test same(V, fastarray(V))
-    @test same(A, fastarray(A))
+    @test samevalues(V, fastarray(V))
+    @test samevalues(A, fastarray(A))
     @test maxabsdif(A, B) ≤ atol
     @test maxabsdif(V, C) ≤ atol
 end
@@ -187,20 +187,98 @@ end
 @testset "Broadcasting" begin
     A1 = bcastlazy(A, size(A))
     A2 = bcastcopy(A, size(A))
-    @test pointer(A1) == pointer(A) && same(A, A1)
-    @test pointer(A2) != pointer(A) && same(A, A2)
+    @test pointer(A1) == pointer(A) && samevalues(A, A1)
+    @test pointer(A2) != pointer(A) && samevalues(A, A2)
     A3 = bcastlazy(A, eltype(A), size(A))
     A4 = bcastlazy(A, Float32, size(A))
-    @test pointer(A3) == pointer(A) && same(A, A1)
+    @test pointer(A3) == pointer(A) && samevalues(A, A1)
     @test size(A4) == size(A) && maxabsdif(A, A4) ≤ atol
     bdims = (dims[1], 1, dims[3])
     B = rand(Float64, bdims)
     B1 = bcastlazy(B, dims)
     B2 = bcastcopy(B, dims)
     for i in 1:dims[2]
-        @test same(B[:,1,:], B1[:,i,:])
-        @test same(B[:,1,:], B2[:,i,:])
+        @test samevalues(B[:,1,:], B1[:,i,:])
+        @test samevalues(B[:,1,:], B2[:,i,:])
     end
+end
+
+@testset "Custom arrays" begin
+    inds = map(n -> Base.OneTo(n), dims)
+    T = Float32
+    N = length(dims)
+    D1 = Dict("units" => "photons", "Δx" => 0.20, "Δy" => 0.15)
+    D2 = Dict(:x => true, :y => 1.8, :units => "µm")
+    G = AttributeArray(zeros(T, dims), pairs(D1)...)
+    F = AttributeArray{T}(parent(G), Dict{String,Any}())
+    H = AttributeArray{T,N,Symbol,Float32}(undef, dims, Dict{Symbol,Float32}())
+    # Check all constructors
+    A11 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
+    A12 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
+    A13 = AttributeArray{T,N,Symbol,Any}(undef, dims, D2)
+    A14 = AttributeArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
+    A21 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
+    A22 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
+    A23 = AttributeArray{T,N,Symbol}(undef, dims, D2)
+    A24 = AttributeArray{T,N,Symbol}(undef, dims, pairs(D2)...)
+    A31 = AttributeArray{T,N}(Array{T,N}(undef, dims), D1)
+    A32 = AttributeArray{T,N}(Array{T,N}(undef, dims), pairs(D1)...)
+    A33 = AttributeArray{T,N}(undef, dims, D2)
+    A34 = AttributeArray{T,N}(undef, dims, pairs(D2)...)
+    A41 = AttributeArray{T}(Array{T,N}(undef, dims), D1)
+    A42 = AttributeArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
+    A43 = AttributeArray{T}(undef, dims, D2)
+    A44 = AttributeArray{T}(undef, dims, pairs(D2)...)
+    A51 = AttributeArray(Array{T,N}(undef, dims), D1)
+    A52 = AttributeArray(Array{T,N}(undef, dims), pairs(D2)...)
+    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Any,Any}())
+    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Int32,Any}())
+    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{CartesianIndex,Any}())
+    copyto!(G, rand(dims...))
+    @test samevalues(F, G)
+    @test sum(F) == sum(G)
+    @test pointer(parent(F)) == pointer(parent(G))
+    @test length(F) == length(G) == prod(dims)
+    @test eltype(F) == eltype(G) == T
+    @test ndims(F) == ndims(G) == N
+    @test size(F) == size(G) == dims
+    @test ntuple(d -> size(F,d), N) == ntuple(d -> size(G,d), N) == dims
+    @test axes(F) == axes(G) == inds
+    @test ntuple(d -> axes(F,d), N) == ntuple(d -> axes(G,d), N) == inds
+    @test Base.axes1(F) == Base.axes1(G) == inds[1]
+    @test Base.elsize(F) == Base.elsize(G) == Base.elsize(parent(F))
+    @test sizeof(F) == sizeof(G) == sizeof(parent(F))
+    @test IndexStyle(F) == IndexStyle(G) == IndexStyle(parent(F))
+    @test pairs(IndexStyle(F), F) == pairs(IndexStyle(G), G) == pairs(IndexStyle(parent(F)), parent(F))
+    @test_throws ErrorException size(F,0)
+    @test_throws BoundsError F[0]
+    @test keytype(F) === keytype(G) === String
+    @test keytype(H) === Symbol
+    @test valtype(F) === valtype(G) === Any
+    @test valtype(H) === Float32
+    @test keytype(A11) === keytype(A12) === keytype(D2)
+    @test keytype(A41) === keytype(A42) === keytype(D1)
+    @test valtype(A11) === valtype(A12) === valtype(D2)
+    @test valtype(A41) === valtype(A42) === valtype(D1)
+    @test nkeys(F) == nkeys(attributes(F)) == 0 && nkeys(G) == nkeys(attributes(G)) == 3
+    @test keys(F) == keys(attributes(F))
+    @test keys(G) == keys(attributes(G))
+    @test values(G) == values(attributes(G))
+    @test pairs(G) == pairs(attributes(G))
+    @test_throws ArgumentError (H["ga"] = π)
+    @test (H[:ga] = π) ≈ π
+    @test keys(H) == keys(attributes(H))
+    merge!(F, G)
+    @test nkeys(F) == nkeys(G)
+    @test keys(F) == keys(G)
+    merge!(F, G, Dict("ga" => π))
+    @test nkeys(F) == nkeys(G) + 1
+    @test pop!(F, "ga") == π
+    @test_throws KeyError F["ga"]
+    @test_throws KeyError pop!(F, "ga")
+    @test pop!(F, "ga", 42) == 42
+    @test nkeys(delete!(F, "ga")) == nkeys(G)
+    @test nkeys(delete!(F, "units")) == nkeys(G) - 1
 end
 
 end # module
