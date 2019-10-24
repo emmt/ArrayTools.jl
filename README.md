@@ -6,7 +6,7 @@
 
 This package provides a number of methods and types to deal with the variety of
 array types (sub-types of `AbstractArray`) that exist in Julia and to help
-building custom array-like types.
+building custom array-like types without sacrificing performances.
 
 These are useful to implement methods to process arrays in a generic way.
 
@@ -26,8 +26,8 @@ This is as simple as:
    depending whether the index style of the embedded array is `IndexLinear()`
    or `IndexCartesian()`.
 
-2. Extend the `Base.parent` method for your custom type so that it returns the
-   embedded array.
+2. Extend the `Base.parent(A)` method for your custom type so that it returns
+   the embedded array of an instance `A`.
 
 For instance (of course replacing the ellipsis `...`):
 
@@ -42,13 +42,13 @@ end
 @inline Base.parent(A::CustomArray) = A.arr
 ```
 
-As a result, instances of `CustomArray{T,N}` will be also seen as instances of
-`AbstractArray{T,N}` and will behave as if they implement linear indexing.
-Apart from the needs to extend the `Base.parent` method, the interface to
-`LinearArray{T,N}` should provide any necessary methods for indexation, getting
-the dimensions, the element type, *etc.* for the derived custom type.  You may
-however override these definitions by more optimized or more suitable methods
-specialized for your custom array-like type.
+As a result, instances of your `CustomArray{T,N}` will be also seen as
+instances of `AbstractArray{T,N}` and will behave as if they implement linear
+indexing.  Apart from the needs to extend the `Base.parent` method, the
+interface to `LinearArray{T,N}` should provide any necessary methods for
+indexation, getting the dimensions, the element type, *etc.* for the derived
+custom type.  You may however override these definitions by more optimized or
+more suitable methods specialized for your custom array-like type.
 
 If your custom array-like type is based on an array whose index style is
 `IndexCartesian()` (instead of `IndexLinear()` in the above example), just make
