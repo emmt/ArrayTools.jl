@@ -98,11 +98,12 @@ yields the dictionary associated with `A`, an instance of `AttributeArray`.
 nkeys(A)
 ```
 
-yields the number of keys in the dictionary associated with `A`, an instance of
-`AttributeArray`.
+yields the number of keys in the dictionary `A` or in the dictionary associated
+with `A` if it is an instance of `AttributeArray`.
 
 """
-nkeys(A::AttributeArray) = length(attributes(A))
+nkeys(A::AttributeArray) = nkeys(attributes(A))
+nkeys(D::AbstractDict) = length(D)
 
 # Extend methods to access an instance of `AttributeArray` like a dictionary.
 Base.haskey(A::AttributeArray, key) = haskey(attributes(A), key)
@@ -115,7 +116,10 @@ Base.getindex(A::AttributeArray{T,N,K,V}, key::K) where {T,N,K,V} =
     getindex(attributes(A), key)
 Base.setindex!(A::AttributeArray{T,N,K,V}, val, key::K) where {T,N,K,V} =
     setindex!(attributes(A), val, key)
-Base.delete!(A::AttributeArray, key) = delete!(attributes(A), key)
+Base.delete!(A::AttributeArray, key) = begin
+    delete!(attributes(A), key)
+    return A
+end
 Base.pop!(A::AttributeArray{T,N,K,V}, key::K) where {T,N,K,V} =
     pop!(attributes(A), key)
 Base.pop!(A::AttributeArray{T,N,K,V}, key::K, def) where {T,N,K,V} =
@@ -131,12 +135,16 @@ Base.merge(combine::Function, A::AttributeArray, others...) =
 Base.merge(combine::Function, A::AbstractDict, B::AttributeArray, others...) =
     merge(combine, A, attributes(B), others...)
 
-Base.merge!(A::AttributeArray, others...) =
+Base.merge!(A::AttributeArray, others...) = begin
     merge!(attributes(A), others...)
+    return A
+end
 Base.merge!(A::AbstractDict, B::AttributeArray, others...) =
     merge!(A, attributes(B), others...)
-Base.merge!(combine::Function, A::AttributeArray, others...) =
+Base.merge!(combine::Function, A::AttributeArray, others...) = begin
     merge!(combine, attributes(A), others...)
+    return A
+end
 Base.merge!(combine::Function, A::AbstractDict, B::AttributeArray, others...) =
     merge!(combine, A, attributes(B), others...)
 
