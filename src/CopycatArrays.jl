@@ -18,7 +18,7 @@ export
     CopycatArray,
     LinearArray
 
-using Base: elsize, tail, OneTo, throw_boundserror, @propagate_inbounds
+using Base: axes1, elsize, tail, OneTo, throw_boundserror, @propagate_inbounds
 import Base: getindex, setindex!, checkbounds
 
 """
@@ -88,9 +88,10 @@ Base.axes(A::CopycatArray, d) = axes(parent(A), d)
 @inline Base.IndexStyle(::Type{<:CopycatArray{T,N,S}}) where {T,N,S} = S()
 Base.parent(A::T) where {T<:CopycatArray} =
     error(string("method parent() must be extended for instances of ", T))
-Base.elsize(::Type{<:CopycatArray{T,N}}) where {T,N} = sizeof(T) # FIXME:
+Base.elsize(::Type{<:CopycatArray{T,N}}) where {T,N} = elsize(Array{T,N})
 Base.sizeof(A::CopycatArray) = sizeof(parent(A))
-Base.pairs(S::IndexStyle, A::CopycatArray) = pairs(S, parent(A))
+Base.pairs(S::IndexCartesian, A::CopycatArray) = pairs(S, parent(A))
+Base.pairs(S::IndexLinear, A::CopycatArray) = pairs(S, parent(A))
 
 # Make LinearArray instances efficient iterators.
 @inline Base.iterate(A::LinearArray, i=1) =
