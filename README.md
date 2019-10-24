@@ -117,6 +117,19 @@ B = AttributeArray{T,N,Symbol}(undef, dims)         # Dict{Symbol,Any}
 C = AttributeArray{T,N,Symbol,Float32}(undef, dims) # Dict{Symbol,Float32}
 ```
 
+Iterating on an instance of `AttributeArray` is iterating on its array values.
+To iterate on its attributes, call the `attributes` method which returns the
+associated dictionary of attributes:
+
+```julia
+dims = (100, 50)
+T = Float32
+N = length(dims)
+A = AttributeArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+for (k,v) in attributes(A)
+    println(k, " => ", v)
+end
+```
 
 Similar types are provided by
 [MetaArrays](https://github.com/haberdashPI/MetaArrays.jl),
