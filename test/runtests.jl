@@ -203,6 +203,27 @@ end
     end
 end
 
+# UnfinishedArray does not extend Base.parent()
+struct UnfinishedArray{T,N,A<:AbstractArray{T,N},S} <: CopycatArray{T,N,S}
+    arr::A
+    cnt::Int
+end
+UnfinishedArray(arr::A, cnt::Integer=0) where {T,N,A<:AbstractArray{T,N}} = begin
+    S = typeof(IndexStyle(arr))
+    return UnfinishedArray{T,N,A,S}(arr,cnt)
+end
+
+# DummyArray does extend Base.parent()
+struct DummyArray{T,N,A<:AbstractArray{T,N},S} <: CopycatArray{T,N,S}
+    arr::A
+    cnt::Int
+end
+DummyArray(arr::A, cnt::Integer=0) where {T,N,A<:AbstractArray{T,N}} = begin
+    S = typeof(IndexStyle(arr))
+    return DummyArray{T,N,A,S}(arr,cnt)
+end
+Base.parent(A::DummyArray) = A.arr
+
 @testset "Custom arrays" begin
     inds = map(n -> Base.OneTo(n), dims)
     T = Float32
@@ -246,12 +267,26 @@ end
     A52 = AttributeArray(Array{T,N}(undef, dims), D1)
     A53 = AttributeArray(Array{T,N}(undef, dims), pairs(D2)...)
 
+    Q = UnfinishedArray(V)
+    R = DummyArray(V)
+
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Any,Any}())
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Int32,Any}())
     @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{CartesianIndex,Any}())
-    copyto!(G, rand(dims...))
+    copyto!(G, rand(dims...)) # exercise setindex! for linear indices
+    copyto!(R, rand(size(V)...)) # exercise setindex! for Cartesian indices
+    sum1 = 0.0
+    for val in G
+        sum1 += val
+    end
     @test samevalues(F, G)
-    @test sum(F) == sum(G)
+    @test sum(F) == sum(G) ≈ sum1
+    sum2 = 0.0
+    for val in R
+        sum2 += val
+    end
+    @test samevalues(R, V)
+    @test sum(R) == sum(V) ≈ sum2
     @test pointer(parent(F)) == pointer(parent(G))
     @test length(F) == length(G) == prod(dims)
     @test eltype(F) == eltype(G) == T
@@ -262,9 +297,13 @@ end
     @test ntuple(d -> axes(F,d), N) == ntuple(d -> axes(G,d), N) == inds
     @test Base.axes1(F) == Base.axes1(G) == inds[1]
     @test Base.elsize(F) == Base.elsize(G) == Base.elsize(parent(F))
+    @test Base.elsize(R) == Base.elsize(V)
     @test sizeof(F) == sizeof(G) == sizeof(parent(F))
     @test IndexStyle(F) == IndexStyle(G) == IndexStyle(parent(F))
+    @test_throws ErrorException parent(Q)
+    @test IndexStyle(R) == IndexStyle(parent(R)) == IndexCartesian()
     @test pairs(IndexStyle(F), F) == pairs(IndexStyle(G), G) == pairs(IndexStyle(parent(F)), parent(F))
+    @test pairs(IndexStyle(R), R) == pairs(IndexStyle(V), V)
     @test_throws ErrorException size(F,0)
     @test_throws BoundsError F[0]
     @test keytype(F) === keytype(G) === String
@@ -283,8 +322,19 @@ end
     @test values(G) == values(attributes(G))
     @test pairs(G) == pairs(attributes(G))
     @test_throws ArgumentError (H["ga"] = π)
+    @test haskey(H, "ga") == false
     @test (H[:ga] = π) ≈ π
+    @test haskey(H, :ga) == true
     @test keys(H) == keys(attributes(H))
+    @test getkey(H, :ga, nothing) === :ga
+    @test getkey(H, :bu, nothing) === nothing
+    @test getkey(H, "ga", nothing) === nothing
+    @test get(H, :ga, nothing) ≈ π
+    @test get(H, :bu, nothing) === nothing
+    @test get(H, "ga", nothing) === nothing
+    @test get!(H, :ga, nothing) ≈ π
+    @test get!(H, :bu, 55) == 55 && haskey(H, :bu) == true
+    @test_throws Exception get!(H, "ga", nothing)
     merge!(F, G)
     @test nkeys(F) == nkeys(G)
     @test keys(F) == keys(G)
@@ -296,6 +346,23 @@ end
     @test pop!(F, "ga", 42) == 42
     @test nkeys(delete!(F, "ga")) == nkeys(G)
     @test nkeys(delete!(F, "units")) == nkeys(G) - 1
+    @test merge(G, F) == merge(attributes(G), attributes(F))
+    @test merge(D2, F, D1) == merge(D2, attributes(F), D1)
+    Dat1 = Dict{String,Any}("a" => 1, "b" => sqrt(2), "c" => 4)
+    Dat2 = Dict{String,Any}("a" => -1.0, "b" => π, "c" => sqrt(3), "d" => 11)
+    for k in keys(F)
+        delete!(F, k)
+    end
+    for k in keys(G)
+        delete!(G, k)
+    end
+    merge!(F, Dat1)
+    merge!(G, Dat2)
+    @test merge(+, F, Dat2) == merge(+, Dat1, Dat2)
+    @test merge(-, Dat1, G) == merge(-, Dat1, Dat2)
+    @test merge(*, F, G) == merge(*, Dat1, Dat2)
+    @test attributes(merge!(+, F, Dat2)) == merge(+, Dat1, Dat2)
+    @test merge!(+, copy(Dat1), G) == attributes(F)
 end
 
 end # module
