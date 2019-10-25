@@ -1,5 +1,5 @@
 module ArrayToolsTests
-using Test, Random, ArrayTools
+using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays
 
 function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
@@ -235,20 +235,47 @@ Base.parent(A::DummyArray) = A.arr
     F = AnnotatedArray{T}(parent(G), Dict{String,Any}())
     H = AnnotatedArray{T,N}(undef, dims, Dict{Symbol,Float32}())
 
-    # Try all constructors
-    #A11 = AnnotatedArray{T,N,Symbol,Int}(Array{T,N}(undef, dims))
-    #A12 = AnnotatedArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
-    #A13 = AnnotatedArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
-    #A14 = AnnotatedArray{T,N,Symbol,Int}(undef, dims)
-    #A15 = AnnotatedArray{T,N,Symbol,Any}(undef, dims, D2)
-    #A16 = AnnotatedArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
-    #
-    #A21 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims))
-    #A22 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
-    #A23 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
-    #A24 = AnnotatedArray{T,N,Symbol}(undef, dims)
-    #A25 = AnnotatedArray{T,N,Symbol}(undef, dims, D2)
-    #A26 = AnnotatedArray{T,N,Symbol}(undef, dims, pairs(D2)...)
+    # Forbidden key types.
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Any,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Int32,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{CartesianIndex,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{UnitRange{Int},Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Colon,Any}())
+
+    # Common errors.
+    @test_throws ErrorException AnnotatedArray(undef, dims)
+    @test_throws ErrorException AnnotatedArray(undef, dims...)
+
+    # Annotated arrays with immutable properties.
+    A11 = AnnotatedArray(zeros(T, dims), (a = 1,))
+    A12 = AnnotatedArray{T}(zeros(T, dims), (a = "1", b = "2"))
+    A13 = AnnotatedArray{T}(undef, dims, (a = 1.0, b = 2.0, c = 3.0))
+    A14 = AnnotatedArray{T,N}(zeros(T, dims), (a = 1, b = 2, c = 3, d = 4))
+    A15 = AnnotatedArray{T,N}(undef, dims, (a = 1, b = 2, c = 3, d = 4, e = 5))
+    @test keytype(A11) === keytype(A12) === keytype(A13) === Symbol
+    @test valtype(A11) === Int
+    @test valtype(A12) === String
+    @test valtype(A13) === Float64
+    @test nkeys(A11) == 1 && nkeys(A12) == 2 && nkeys(A13) == 3
+    @test_throws ErrorException A11.x = 40
+    @test_throws ErrorException A11[:x] = 40
+    @test haskey(A11, :a) == true
+    @test haskey(A11, :b) == false
+    @test haskey(A11, "b") == false
+    @test getkey(A11, :a, :x) == :a
+    @test getkey(A11, :b, :x) == :x
+    @test getkey(A11, "b", :x) == :x
+    @test get(A11, :a, :x) == A11.a
+    @test get(A11, :b, :x) == :x
+    @test get(A11, "b", :x) == :x
+    @test A11[:a] == A11.a
+    @test_throws ErrorException A11.x
+    @test_throws ErrorException get!(A11, :a, 1)
+    @test_throws ErrorException pop!(A11, :a)
+    @test_throws ErrorException pop!(A11, :a, 1)
+    @test_throws ErrorException merge!(A11, A12)
+    @test_throws ErrorException merge!(+, A11, A12)
+
 
     A31 = AnnotatedArray{T,N}(Array{T,N}(undef, dims))
     A32 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), D3)
@@ -269,13 +296,9 @@ Base.parent(A::DummyArray) = A.arr
     A53 = AnnotatedArray(Array{T,N}(undef, dims), pairs(D2)...)
 
     Q = UnfinishedArray(V)
+    @test_throws ErrorException Q[1]
     R = DummyArray(V)
 
-    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Any,Any}())
-    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Int32,Any}())
-    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{CartesianIndex,Any}())
-    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{UnitRange{Int},Any}())
-    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Colon,Any}())
     copyto!(G, rand(dims...)) # exercise setindex! for linear indices
     copyto!(R, rand(size(V)...)) # exercise setindex! for Cartesian indices
     sum1 = 0.0
@@ -316,10 +339,7 @@ Base.parent(A::DummyArray) = A.arr
     @test keytype(A31) === Symbol && valtype(A31) == Any
     @test keytype(A32) === Symbol && valtype(A32) == Int
     @test keytype(A33) === Symbol && valtype(A33) == Any
-    #@test keytype(A12) === keytype(A13) === keytype(D2)
-    #@test valtype(A12) === valtype(A13) === valtype(D2)
-    #@test keytype(A42) === keytype(A43) === keytype(D1)
-    #@test valtype(A42) === valtype(A43) === valtype(D1)
+
     @test nkeys(F) == nkeys(properties(F)) == 0 && nkeys(G) == nkeys(properties(G)) == 3
     @test keys(F) == keys(properties(F))
     @test keys(G) == keys(properties(G))
