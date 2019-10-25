@@ -65,71 +65,113 @@ specialize.  The default implementation is:
 ### Array-like objects with properties
 
 As a working example of custom array-like objects, the `ArrayTools` package
-provides `AnnotatedArray{T,N,K,V}` objects which store values like arrays but
-also have properties stored in a dictionary or a named tuple.  Here the
-parameters are `T` the element type of the values in the array part, `N` the
-number of dimensions of the array part, `K` the type of the attribute keys and
-`V` the type of the properties values.  To build such an object, you can do:
+provides `AnnotatedArray{T,N,P}` objects which store values like arrays but
+also have properties stored in a dictionary or a named tuple (of type `P`).
+Here the parameters are the element type `T` of the values in the array part,
+the number `N` of dimensions of the array part, the type `P` of the object
+storing the properties.
+
+Building annotated arrays is easy:
 
 ```julia
-using ArrayTools
+using ArrayTools.AnnotatedArrays
 dims = (100, 50)
 T = Float32
-A = AnnotatedArray(zeros(T, dims), "units" => "photons", "Δx" => 0.20, "Δy" => 0.15)
-B = AnnotatedArray(zeros(T, dims), :units => "photons", :Δx=>0.20, :Δy => 0.15)
-C = AnnotatedArray(zeros(T, dims), units = "photons", Δx = 0.20, Δy = 0.15)
-D = AnnotatedArray(zeros(T, dims), (units = "photons", Δx = 0.20, Δy = 0.15))
+A = AnnotatedArray(zeros(T, dims), units = "photons", Δx = 0.20, Δy = 0.15)
+B = AnnotatedArray{T}(undef, dims, units = "µm", Δx = 0.10, Δy = 0.20)
 ```
 
-Then indexing `A` with integers of Cartesian indices is the same as accessing
-the array of values while indexing `A` with strings is the same as accessing
-the dictionary of properties.  For example:
+Here the initial properties of `A` and `B` are specified by the keywords in the
+call to the constructor; their properties will have symbolic names with any
+kind of value.  The array contents of `A` is an array of zeros, while the array
+contents of `B` is created by the constructor with undefined values.  Indexing
+`A` or `B` with integers of Cartesian indices is the same as accessing the
+values of their array contents while indexing `A` or `B` by symbols is the same
+as accessing their properties.  For example:
 
 ```julia
-A["Δx"]          # yields 0.2
-A["units"]       # yields "photons"
-A[:,3] = 3.14    # set some values in the array part of A
+A.Δx             # yields 0.2
+A[:Δx]           # idem
+A.units          # yields "photons"
+A[:units]        # idem
+A[:,3] .= 3.14   # set some values in the array contents of A
 sum(A)           # yeilds the sum of the values of A
-A["gizmo"] = π   # set an property
-A.gizmo          # get the value of a property
-pop!(A, "gizmo") # yields property value and delete it
+A[:gizmo] = π    # set a property
+A.gizmo = π      # idem
+pop!(A, :gizmo)  # yields property value and delete it
 ```
 
-An `AnnotatedArray` can be build by providing an array and a dictionary, an
-array and key-value pairs (as in the above example), or more like other arrays:
+Creating an annotated array is summarized by:
 
 ```julia
-dims = (100, 50)
-T = Float32
-A = AnnotatedArray{T}(undef, dims, "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+using ArrayTools.AnnotatedArrays
+A = AnnotatedArray(arr, prop)
+B = AnnotatedArray{T}(init, dims, prop)
 ```
 
-Annotated key types are not limited to `String`, but, to avoid ambiguities,
-key types must be more specialized than `Any` and must not inherit
-from `Integer` nor `CartesianIndex`.
+where `arr` is an existing array or an expression whose result is an array,
+`prop` specifies the initial properties (more on this below), `T` is the type
+of array element, `init` is usually `undef` and `dims` is a tuple of array
+dimensions.  If `arr` is an existing array, the object `A` created above will
+reference this array and hence share its contents with the caller (call
+`copy(arr)` to avoid that).  The same applies if the initial properties are
+specified by a dictionary.
 
-If the dictionary is unspecified, the default is an empty dictionary with
-string keys and value of any type, *i.e.* `Dict{String,Any}()`, unless key
-and/or value types are specified.  For instance:
+The properties `prop` can be specified by keywords, by key-value pairs, as a
+dictionary or as a named tuple.  To avoid ambiguities, these different styles
+cannot be mixed.  Below are a few examples:
+
+```julia
+using ArrayTools.AnnotatedArrays
+arr = zeros(3,4,5)
+A = AnnotatedArray(arr,  units  =  "µm",  Δx  =  0.1,  Δy  =  0.2)
+B = AnnotatedArray(arr, :units  => "µm", :Δx  => 0.1, :Δy  => 0.2)
+C = AnnotatedArray(arr, "units" => "µm", "Δx" => 0.1, "Δy" => 0.2)
+D = AnnotatedArray(arr, (units  =  "µm",  Δx  =  0.1,  Δy  =  0.2))
+```
+
+The two first examples (`A` and `B`) both yield an annotated array whose
+properties have symbolic keys and can have any type of value.  The third
+example (`C`) yields an annotated array whose properties have string keys and
+can have any type of value.  The properties of `A`, `B` and `C` are *dynamic*:
+they can be modified, deleted and new properties can be inserted.  The fourth
+example (`D`) yields an annotated array whose properties are stored by a named
+tuple, they are *immutable* and have symbolic keys.
+
+Accessing a property is possible via the syntax `obj[key]` or, for symbolic or
+textual keys, via the syntax `obj.key`.  Accessing *immutable* properties is
+the fastest while accessing textual properties as `obj.key` is the slowest
+(because it involves converting a symbol into a string).
+
+!!! note
+    When initial properties are specified as key-value pairs, the properties
+    will be stored in a dictionary whose key type is specialized if possible
+    (for efficiency) but with value type `Any` (for flexibility).  If one wants
+    specific properties key and value types, it is always possible to
+    explicitly specify a dictionary in the call to `AnnotatedArray`.
+    For instance:
+    ```julia
+    E = AnnotatedArray(arr, Dict{Symbol,Int}(:a => 1, :b => 2))
+    ```
+
+Annotated key types are not limited to `Symbol` or `String`, but, to avoid
+ambiguities, key types must be more specialized than `Any` and must not inherit
+from types like `Integer` or `CartesianIndex` which are reserved for indexing
+the array contents of annotated arrays.
+
+If the dictionary is unspecified, the initial properties are stored by an empty
+dictionary with symbolic keys and value of any type, *i.e.*
+`Dict{String,Any}()`.
+
+Iterating on an annotated array is iterating on its array values.  To iterate
+on its properties, call the `properties` method which returns the object
+storing the properties:
 
 ```julia
 dims = (100, 50)
 T = Float32
 N = length(dims)
-A = AnnotatedArray{T}(undef, dims)                  # Dict{String,Any}
-B = AnnotatedArray{T,N,Symbol}(undef, dims)         # Dict{Symbol,Any}
-C = AnnotatedArray{T,N,Symbol,Float32}(undef, dims) # Dict{Symbol,Float32}
-```
-
-Iterating on an instance of `AnnotatedArray` is iterating on its array values.
-To iterate on its properties, call the `properties` method which returns the
-associated dictionary of properties:
-
-```julia
-dims = (100, 50)
-T = Float32
-N = length(dims)
-A = AnnotatedArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+A = AnnotatedArray(zeros(T, dims), units = "µm", Δx = 0.2, Δy = 0.1)
 for (k,v) in properties(A)
     println(k, " => ", v)
 end
