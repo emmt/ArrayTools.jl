@@ -33,9 +33,9 @@ export
     CartesianArray,
     CopycatArray,
     LinearArray,
-    # AttributeArrays:
-    AttributeArray,
-    attributes,
+    # AnnotatedArrays:
+    AnnotatedArray,
+    properties,
     nkeys
 
 """
@@ -715,7 +715,7 @@ reversemap(f::Function, args::NTuple{N,Any}) where {N} =
 include("CopycatArrays.jl")
 using .CopycatArrays
 
-include("AttributeArrays.jl")
-using .AttributeArrays
+include("AnnotatedArrays.jl")
+using .AnnotatedArrays
 
 end # module

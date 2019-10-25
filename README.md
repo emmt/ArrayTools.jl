@@ -62,45 +62,49 @@ specialize.  The default implementation is:
 ```
 
 
-### Array-like objects with attributes
+### Array-like objects with properties
 
 As a working example of custom array-like objects, the `ArrayTools` package
-provides `AttributeArray{T,N,K,V}` objects which store values like arrays but
-also have attributes stored in a dictionary.  Here the parameters are `T` the
-element type of the values in the array part, `N` the number of dimensions of
-the array part, `K` the type of the attribute keys and `V` the type of the
-attributes values.  To build such an object, you can do:
+provides `AnnotatedArray{T,N,K,V}` objects which store values like arrays but
+also have properties stored in a dictionary or a named tuple.  Here the
+parameters are `T` the element type of the values in the array part, `N` the
+number of dimensions of the array part, `K` the type of the attribute keys and
+`V` the type of the properties values.  To build such an object, you can do:
 
 ```julia
 using ArrayTools
 dims = (100, 50)
 T = Float32
-A = AttributeArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+A = AnnotatedArray(zeros(T, dims), "units" => "photons", "Δx" => 0.20, "Δy" => 0.15)
+B = AnnotatedArray(zeros(T, dims), :units => "photons", :Δx=>0.20, :Δy => 0.15)
+C = AnnotatedArray(zeros(T, dims), units = "photons", Δx = 0.20, Δy = 0.15)
+D = AnnotatedArray(zeros(T, dims), (units = "photons", Δx = 0.20, Δy = 0.15))
 ```
 
 Then indexing `A` with integers of Cartesian indices is the same as accessing
 the array of values while indexing `A` with strings is the same as accessing
-the dictionary of attributes.  For example:
+the dictionary of properties.  For example:
 
 ```julia
 A["Δx"]          # yields 0.2
 A["units"]       # yields "photons"
 A[:,3] = 3.14    # set some values in the array part of A
 sum(A)           # yeilds the sum of the values of A
-A["gizmo"] = π   # set an attribute
-pop!(A, "gizmo") # yields attribute value and delete it
+A["gizmo"] = π   # set an property
+A.gizmo          # get the value of a property
+pop!(A, "gizmo") # yields property value and delete it
 ```
 
-An `AttributeArray` can be build by providing an array and a dictionary, an
+An `AnnotatedArray` can be build by providing an array and a dictionary, an
 array and key-value pairs (as in the above example), or more like other arrays:
 
 ```julia
 dims = (100, 50)
 T = Float32
-A = AttributeArray{T}(undef, dims, "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+A = AnnotatedArray{T}(undef, dims, "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
 ```
 
-Attribute key types are not limited to `String`, but, to avoid ambiguities,
+Annotated key types are not limited to `String`, but, to avoid ambiguities,
 key types must be more specialized than `Any` and must not inherit
 from `Integer` nor `CartesianIndex`.
 
@@ -112,21 +116,21 @@ and/or value types are specified.  For instance:
 dims = (100, 50)
 T = Float32
 N = length(dims)
-A = AttributeArray{T}(undef, dims)                  # Dict{String,Any}
-B = AttributeArray{T,N,Symbol}(undef, dims)         # Dict{Symbol,Any}
-C = AttributeArray{T,N,Symbol,Float32}(undef, dims) # Dict{Symbol,Float32}
+A = AnnotatedArray{T}(undef, dims)                  # Dict{String,Any}
+B = AnnotatedArray{T,N,Symbol}(undef, dims)         # Dict{Symbol,Any}
+C = AnnotatedArray{T,N,Symbol,Float32}(undef, dims) # Dict{Symbol,Float32}
 ```
 
-Iterating on an instance of `AttributeArray` is iterating on its array values.
-To iterate on its attributes, call the `attributes` method which returns the
-associated dictionary of attributes:
+Iterating on an instance of `AnnotatedArray` is iterating on its array values.
+To iterate on its properties, call the `properties` method which returns the
+associated dictionary of properties:
 
 ```julia
 dims = (100, 50)
 T = Float32
 N = length(dims)
-A = AttributeArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
-for (k,v) in attributes(A)
+A = AnnotatedArray(zeros(T, dims), "units"=>"photons", "Δx"=>0.20, "Δy"=>0.15)
+for (k,v) in properties(A)
     println(k, " => ", v)
 end
 ```

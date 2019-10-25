@@ -230,49 +230,52 @@ Base.parent(A::DummyArray) = A.arr
     N = length(dims)
     D1 = Dict("units" => "photons", "Δx" => 0.20, "Δy" => 0.15)
     D2 = Dict(:x => true, :y => 1.8, :units => "µm")
-    G = AttributeArray(zeros(T, dims), pairs(D1)...)
-    F = AttributeArray{T}(parent(G), Dict{String,Any}())
-    H = AttributeArray{T,N,Symbol,Float32}(undef, dims, Dict{Symbol,Float32}())
+    D3 = Dict(:x => 1, :y => 2, :z => 3)
+    G = AnnotatedArray(zeros(T, dims), pairs(D1)...)
+    F = AnnotatedArray{T}(parent(G), Dict{String,Any}())
+    H = AnnotatedArray{T,N}(undef, dims, Dict{Symbol,Float32}())
 
     # Try all constructors
-    A11 = AttributeArray{T,N,Symbol,Int}(Array{T,N}(undef, dims))
-    A12 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
-    A13 = AttributeArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
-    A14 = AttributeArray{T,N,Symbol,Int}(undef, dims)
-    A15 = AttributeArray{T,N,Symbol,Any}(undef, dims, D2)
-    A16 = AttributeArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
+    #A11 = AnnotatedArray{T,N,Symbol,Int}(Array{T,N}(undef, dims))
+    #A12 = AnnotatedArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), D2)
+    #A13 = AnnotatedArray{T,N,Symbol,Any}(Array{T,N}(undef, dims), pairs(D2)...)
+    #A14 = AnnotatedArray{T,N,Symbol,Int}(undef, dims)
+    #A15 = AnnotatedArray{T,N,Symbol,Any}(undef, dims, D2)
+    #A16 = AnnotatedArray{T,N,Symbol,Any}(undef, dims, pairs(D2)...)
+    #
+    #A21 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims))
+    #A22 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
+    #A23 = AnnotatedArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
+    #A24 = AnnotatedArray{T,N,Symbol}(undef, dims)
+    #A25 = AnnotatedArray{T,N,Symbol}(undef, dims, D2)
+    #A26 = AnnotatedArray{T,N,Symbol}(undef, dims, pairs(D2)...)
 
-    A21 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims))
-    A22 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), D2)
-    A23 = AttributeArray{T,N,Symbol}(Array{T,N}(undef, dims), pairs(D2)...)
-    A24 = AttributeArray{T,N,Symbol}(undef, dims)
-    A25 = AttributeArray{T,N,Symbol}(undef, dims, D2)
-    A26 = AttributeArray{T,N,Symbol}(undef, dims, pairs(D2)...)
+    A31 = AnnotatedArray{T,N}(Array{T,N}(undef, dims))
+    A32 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), D3)
+    A33 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), pairs(D3)...)
+    A34 = AnnotatedArray{T,N}(undef, dims)
+    A35 = AnnotatedArray{T,N}(undef, dims, D2)
+    A36 = AnnotatedArray{T,N}(undef, dims, pairs(D2)...)
 
-    A31 = AttributeArray{T,N}(Array{T,N}(undef, dims))
-    A32 = AttributeArray{T,N}(Array{T,N}(undef, dims), D1)
-    A33 = AttributeArray{T,N}(Array{T,N}(undef, dims), pairs(D1)...)
-    A34 = AttributeArray{T,N}(undef, dims)
-    A35 = AttributeArray{T,N}(undef, dims, D2)
-    A36 = AttributeArray{T,N}(undef, dims, pairs(D2)...)
+    A41 = AnnotatedArray{T}(Array{T,N}(undef, dims))
+    A42 = AnnotatedArray{T}(Array{T,N}(undef, dims), D1)
+    A43 = AnnotatedArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
+    A44 = AnnotatedArray{T}(undef, dims)
+    A45 = AnnotatedArray{T}(undef, dims, D2)
+    A46 = AnnotatedArray{T}(undef, dims, pairs(D2)...)
 
-    A41 = AttributeArray{T}(Array{T,N}(undef, dims))
-    A42 = AttributeArray{T}(Array{T,N}(undef, dims), D1)
-    A43 = AttributeArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
-    A44 = AttributeArray{T}(undef, dims)
-    A45 = AttributeArray{T}(undef, dims, D2)
-    A46 = AttributeArray{T}(undef, dims, pairs(D2)...)
-
-    A51 = AttributeArray(Array{T,N}(undef, dims))
-    A52 = AttributeArray(Array{T,N}(undef, dims), D1)
-    A53 = AttributeArray(Array{T,N}(undef, dims), pairs(D2)...)
+    A51 = AnnotatedArray(Array{T,N}(undef, dims))
+    A52 = AnnotatedArray(Array{T,N}(undef, dims), D1)
+    A53 = AnnotatedArray(Array{T,N}(undef, dims), pairs(D2)...)
 
     Q = UnfinishedArray(V)
     R = DummyArray(V)
 
-    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Any,Any}())
-    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{Int32,Any}())
-    @test_throws ErrorException AttributeArray{T}(undef, dims, Dict{CartesianIndex,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Any,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Int32,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{CartesianIndex,Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{UnitRange{Int},Any}())
+    @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Colon,Any}())
     copyto!(G, rand(dims...)) # exercise setindex! for linear indices
     copyto!(R, rand(size(V)...)) # exercise setindex! for Cartesian indices
     sum1 = 0.0
@@ -310,22 +313,23 @@ Base.parent(A::DummyArray) = A.arr
     @test keytype(H) === Symbol
     @test valtype(F) === valtype(G) === Any
     @test valtype(H) === Float32
-    @test keytype(A11) === Symbol && valtype(A11) == Int
-    @test keytype(A21) === Symbol && valtype(A21) == Any
-    @test keytype(A12) === keytype(A13) === keytype(D2)
-    @test valtype(A12) === valtype(A13) === valtype(D2)
-    @test keytype(A42) === keytype(A43) === keytype(D1)
-    @test valtype(A42) === valtype(A43) === valtype(D1)
-    @test nkeys(F) == nkeys(attributes(F)) == 0 && nkeys(G) == nkeys(attributes(G)) == 3
-    @test keys(F) == keys(attributes(F))
-    @test keys(G) == keys(attributes(G))
-    @test values(G) == values(attributes(G))
-    @test pairs(G) == pairs(attributes(G))
+    @test keytype(A31) === Symbol && valtype(A31) == Any
+    @test keytype(A32) === Symbol && valtype(A32) == Int
+    @test keytype(A33) === Symbol && valtype(A33) == Any
+    #@test keytype(A12) === keytype(A13) === keytype(D2)
+    #@test valtype(A12) === valtype(A13) === valtype(D2)
+    #@test keytype(A42) === keytype(A43) === keytype(D1)
+    #@test valtype(A42) === valtype(A43) === valtype(D1)
+    @test nkeys(F) == nkeys(properties(F)) == 0 && nkeys(G) == nkeys(properties(G)) == 3
+    @test keys(F) == keys(properties(F))
+    @test keys(G) == keys(properties(G))
+    @test values(G) == values(properties(G))
+    @test pairs(G) == pairs(properties(G))
     @test_throws ArgumentError (H["ga"] = π)
     @test haskey(H, "ga") == false
     @test (H[:ga] = π) ≈ π
     @test haskey(H, :ga) == true
-    @test keys(H) == keys(attributes(H))
+    @test keys(H) == keys(properties(H))
     @test getkey(H, :ga, nothing) === :ga
     @test getkey(H, :bu, nothing) === nothing
     @test getkey(H, "ga", nothing) === nothing
@@ -346,8 +350,8 @@ Base.parent(A::DummyArray) = A.arr
     @test pop!(F, "ga", 42) == 42
     @test nkeys(delete!(F, "ga")) == nkeys(G)
     @test nkeys(delete!(F, "units")) == nkeys(G) - 1
-    @test merge(G, F) == merge(attributes(G), attributes(F))
-    @test merge(D2, F, D1) == merge(D2, attributes(F), D1)
+    @test merge(G, F) == merge(properties(G), properties(F))
+    @test merge(D2, F, D1) == merge(D2, properties(F), D1)
     Dat1 = Dict{String,Any}("a" => 1, "b" => sqrt(2), "c" => 4)
     Dat2 = Dict{String,Any}("a" => -1.0, "b" => π, "c" => sqrt(3), "d" => 11)
     for k in keys(F)
@@ -361,8 +365,8 @@ Base.parent(A::DummyArray) = A.arr
     @test merge(+, F, Dat2) == merge(+, Dat1, Dat2)
     @test merge(-, Dat1, G) == merge(-, Dat1, Dat2)
     @test merge(*, F, G) == merge(*, Dat1, Dat2)
-    @test attributes(merge!(+, F, Dat2)) == merge(+, Dat1, Dat2)
-    @test merge!(+, copy(Dat1), G) == attributes(F)
+    @test properties(merge!(+, F, Dat2)) == merge(+, Dat1, Dat2)
+    @test merge!(+, copy(Dat1), G) == properties(F)
 end
 
 end # module
