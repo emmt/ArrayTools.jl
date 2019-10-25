@@ -165,6 +165,12 @@ AnnotatedArray{T,N}(init, dims::NTuple{N,Integer}, args...; kwds...) where {T,N}
 AnnotatedArray{T}(init, dims::Tuple{Vararg{Integer}}, args...; kwds...) where {T} =
     AnnotatedArray(Array{T}(init, dims), args...; kwds...)
 
+# The following ones are to avoid common errors.
+AnnotatedArray(::UndefInitializer, dims::Integer...; kwds...) =
+    throw_missing_type_parameter()
+AnnotatedArray(::UndefInitializer, dims::Tuple{Vararg{Integer}}, args...; kwds...) =
+    throw_missing_type_parameter()
+
 """
 
 ```julia
@@ -252,11 +258,9 @@ Base.keytype(::T) where {T<:AbstractAnnotatedArray} = keytype(T)
 Base.keytype(::Type{T}) where {T<:AbstractAnnotatedArray} = keytype(T)
 
 valtype(::T) where {T<:NamedTuple} = valtype(T)
-valtype(::Type{<:NamedTuple{<:Any,<:Tuple{Vararg{V}}}}) where {V} = V
-valtype(::Type{<:NamedTuple{<:Any,<:Tuple{Vararg{Integer}}}}) = Integer
-valtype(::Type{<:NamedTuple{<:Any,<:Tuple{Vararg{AbstractFloat}}}}) = AbstractFloat
-valtype(::Type{<:NamedTuple{<:Any,<:Tuple{Vararg{Real}}}}) = Real
-valtype(::Type{<:NamedTuple}) = Any
+valtype(::Type{<:NamedTuple{<:Any,T}}) where {T} = _valtype(T)
+_valtype(::Type{<:Tuple{Vararg{V}}}) where {V} = V
+_valtype(::Type{<:Tuple}) = Any
 
 valtype(::T) where {T<:AbstractDict} = valtype(T)
 valtype(::Type{<:AbstractDict{<:Any,V}}) where {V} = V
@@ -356,6 +360,7 @@ Base.merge!(combine::Function, A::AbstractDict, B::AbstractAnnotatedArray, other
 
 # Errors.
 
+throw_missing_type_parameter() = error("type parameter T must be specified")
 throw_immutable_properties() = error("properties are immutable")
 @noinline throw_key_error(key) = throw(KeyError(key))
 
