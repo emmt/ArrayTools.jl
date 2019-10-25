@@ -68,7 +68,7 @@ As a working example of custom array-like objects, the `ArrayTools` package
 provides `AnnotatedArray{T,N,P}` objects which store values like arrays but
 also have properties stored in a dictionary or a named tuple (of type `P`).
 Here the parameters are the element type `T` of the values in the array part,
-the number `N` of dimensions of the array part, the type `P` of the object
+the number `N` of dimensions of the array part and the type `P` of the object
 storing the properties.
 
 Building annotated arrays is easy:
@@ -135,32 +135,34 @@ properties have symbolic keys and can have any type of value.  The third
 example (`C`) yields an annotated array whose properties have string keys and
 can have any type of value.  The properties of `A`, `B` and `C` are *dynamic*:
 they can be modified, deleted and new properties can be inserted.  The fourth
-example (`D`) yields an annotated array whose properties are stored by a named
-tuple, they are *immutable* and have symbolic keys.
+example (`D`) yields an annotated array whose properties are stored by a *named
+tuple*, they are *immutable* and have symbolic keys.
 
-Accessing a property is possible via the syntax `obj[key]` or, for symbolic or
+Accessing a property is possible via the syntax `obj[key]` or, for symbolic and
 textual keys, via the syntax `obj.key`.  Accessing *immutable* properties is
 the fastest while accessing textual properties as `obj.key` is the slowest
 (because it involves converting a symbol into a string).
 
-!!! note
-    When initial properties are specified as key-value pairs, the properties
-    will be stored in a dictionary whose key type is specialized if possible
-    (for efficiency) but with value type `Any` (for flexibility).  If one wants
-    specific properties key and value types, it is always possible to
-    explicitly specify a dictionary in the call to `AnnotatedArray`.
-    For instance:
-    ```julia
-    E = AnnotatedArray(arr, Dict{Symbol,Int}(:a => 1, :b => 2))
-    ```
+When initially specified by keywords or as key-value pairs, the properties are
+stored in a dictionary whose key type is specialized if possible (for
+efficiency) but with value type `Any` (for flexibility).  If one wants specific
+properties key and value types, it is always possible to explicitly specify a
+dictionary in the call to `AnnotatedArray`.  For instance:
 
-Annotated key types are not limited to `Symbol` or `String`, but, to avoid
+```julia
+E = AnnotatedArray(arr, Dict{Symbol,Int32}(:a => 1, :b => 2))
+```
+
+yields an annotated array whose properties have symbolic keys and integer
+values of type `Int32`.
+
+Property key types are not limited to `Symbol` or `String`, but, to avoid
 ambiguities, key types must be more specialized than `Any` and must not inherit
 from types like `Integer` or `CartesianIndex` which are reserved for indexing
 the array contents of annotated arrays.
 
-If the dictionary is unspecified, the initial properties are stored by an empty
-dictionary with symbolic keys and value of any type, *i.e.*
+If the dictionary is unspecified, the properties are stored in a, initially
+empty, dictionary with symbolic keys and value of any type, *i.e.*
 `Dict{String,Any}()`.
 
 Iterating on an annotated array is iterating on its array values.  To iterate
