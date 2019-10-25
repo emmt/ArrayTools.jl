@@ -1,5 +1,5 @@
 module ArrayToolsTests
-using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays
+using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.CopycatArrays
 
 function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)

@@ -32,6 +32,7 @@ This is as simple as:
 For instance (of course replacing the ellipsis `...`):
 
 ```julia
+using ArrayTools.CopycatArrays
 struct CustomArray{T,N,...} <: LinearArray{T,N}
     arr::Array{T,N} # can be any array type with linear index style
     ...             # another member

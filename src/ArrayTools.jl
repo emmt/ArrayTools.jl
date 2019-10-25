@@ -28,15 +28,7 @@ export
     FastIndexing,
     AnyIndexing,
     fastarray,
-    isfastarray,
-    # CopycatArrays:
-    CartesianArray,
-    CopycatArray,
-    LinearArray,
-    # AnnotatedArrays:
-    AnnotatedArray,
-    properties,
-    nkeys
+    isfastarray
 
 """
 ```julia
