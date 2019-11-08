@@ -22,7 +22,7 @@ function maxabsdif(A::AbstractArray, B::AbstractArray)
 end
 
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
-    A[colons(Val(N-1))..., i]
+    A[rubberindex(Val(N-1))..., i]
 
 dims = (3, 4, 5)
 A = rand(Float64, dims)
@@ -47,12 +47,13 @@ atol = 1e-6
     @test_throws ErrorException checkdimensions((1,0,-1))
     @test_throws ErrorException checkdimensions(-1)
     #
-    # Tests for `colons`.
+    # Tests for `rubberindex`.
     #
+    @test colons(5) == rubberindex(5)
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
-        @test colons(d) === tup
-        @test colons(Val(d)) === tup
+        @test rubberindex(d) === tup
+        @test rubberindex(Val(d)) === tup
     end
     for k ∈ 1:dims[end]
         @test samevalues(slice(A, k), A[:,:,k])
@@ -133,7 +134,7 @@ end
     @test maxabsdif(V, C) ≤ atol
     for n in 1:5
         K = rand(Float64, ntuple(x -> 3, n))
-        L = view(K, 2:3, colons(n-1)...)
+        L = view(K, 2:3, rubberindex(n-1)...)
         @test StorageType(K) == FlatStorage()
         @test StorageType(L) == (n == 1 ? FlatStorage() : AnyStorage())
     end

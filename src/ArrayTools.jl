@@ -15,6 +15,7 @@ export
     indices,
     noneof,
     reversemap,
+    rubberindex,
     # storage trait
     StorageType,
     AnyStorage,
@@ -29,6 +30,8 @@ export
     AnyIndexing,
     fastarray,
     isfastarray
+
+@deprecate colons rubberindex
 
 """
 ```julia
@@ -321,26 +324,30 @@ checkdimensions(dim::Integer) =
 """
 
 ```julia
-colons(n)
-colons(Val(n))
+rubberindex(n)
 ```
 
-yields a tuple of `n` colons `:`.  The second call is faster when `n` is known
-at compile time.
+yields a rubber index of lenght `n`.  That is a `n`-tuple of colons `:`.
+
+When `n` is known at compile time, it is faster to call:
+
+```julia
+rubberindex(Val(n))
+```
 
 This method is suitable to extract sub-arrays of build views when some kind of
 rubber index is needed.  For instance:
 
 ```julia
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
-    A[colons(Val(N-1))..., i]
+    A[rubberindex(Val(N-1))..., i]
 ```
 
 defines a function that returns the `i`-th slice of `A` assuming index `i`
 refers the last index of `A`.
 
 """
-colons(n::Integer) =
+rubberindex(n::Integer) =
     (n ==  0 ? () :
      n ==  1 ? (:,) :
      n ==  2 ? (:,:,) :
@@ -352,25 +359,25 @@ colons(n::Integer) =
      n ==  8 ? (:,:,:,:,:,:,:,:,) :
      n ==  9 ? (:,:,:,:,:,:,:,:,:,) :
      n == 10 ? (:,:,:,:,:,:,:,:,:,:,) :
-     _colons(n))
+     _rubberindex(n))
 
-function _colons(n::Integer)
+function _rubberindex(n::Integer)
     n ≥ 0 || throw(ArgumentError(string("number of dimensions should be ≥ 0, got ", n)))
     return ([Colon() for i in 1:n]...,)
 end
 
-colons(::Val{ 0}) = ()
-colons(::Val{ 1}) = (:,)
-colons(::Val{ 2}) = (:,:,)
-colons(::Val{ 3}) = (:,:,:,)
-colons(::Val{ 4}) = (:,:,:,:,)
-colons(::Val{ 5}) = (:,:,:,:,:,)
-colons(::Val{ 6}) = (:,:,:,:,:,:,)
-colons(::Val{ 7}) = (:,:,:,:,:,:,:,)
-colons(::Val{ 8}) = (:,:,:,:,:,:,:,:,)
-colons(::Val{ 9}) = (:,:,:,:,:,:,:,:,:,)
-colons(::Val{10}) = (:,:,:,:,:,:,:,:,:,:,)
-colons(v::Val{N}) where {N} = ntuple(x -> :, v)
+rubberindex(::Val{ 0}) = ()
+rubberindex(::Val{ 1}) = (:,)
+rubberindex(::Val{ 2}) = (:,:,)
+rubberindex(::Val{ 3}) = (:,:,:,)
+rubberindex(::Val{ 4}) = (:,:,:,:,)
+rubberindex(::Val{ 5}) = (:,:,:,:,:,)
+rubberindex(::Val{ 6}) = (:,:,:,:,:,:,)
+rubberindex(::Val{ 7}) = (:,:,:,:,:,:,:,)
+rubberindex(::Val{ 8}) = (:,:,:,:,:,:,:,:,)
+rubberindex(::Val{ 9}) = (:,:,:,:,:,:,:,:,:,)
+rubberindex(::Val{10}) = (:,:,:,:,:,:,:,:,:,:,)
+rubberindex(v::Val{N}) where {N} = ntuple(x -> :, v)
 
 """
 
