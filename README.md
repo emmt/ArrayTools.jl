@@ -10,6 +10,36 @@ building custom array-like types without sacrificing performances.
 
 These are useful to implement methods to process arrays in a generic way.
 
+## Rubber indices
+
+The constant `…` (type `\ldots` and hit the `tab` key) can be used in array
+indexation to left or right justify the other indices.  For instance, assuming
+`A` is a `3×4×5×6` array, then all the following equalities hold:
+
+```julia
+A[…]           == A[:,:,:,:]
+A[…,3]         == A[:,:,:,3]
+A[2,…]         == A[2,:,:,:]
+A[…,2:4,5]     == A[:,:,2:4,5]
+A[2:3,…,1,2:4] == A[2:3,:,1,2:4]
+```
+
+As you can see the advantage of the *rubber index* `…` is that it automatically
+expands as the number of colons needed to have the correct number of indices.
+
+The rubber index `…` may also be used for setting values.
+
+Leading/trailing indices may be specified as Cartesian indices (of type
+`CartesianIndex`).
+
+Technically, the constant `…` is defined as `RubberIndex()` where `RubberIndex`
+is the singleron type that represents any number of indices.
+
+Call `rubberindex(n)` if you need a *rubber index* of length `n`, that is a
+`n`-tuple of colons. When `n` is known at compile time, it is faster to call
+`rubberindex(Val(n))`.
+
+
 ## Array-like objects
 
 ### Defining custom array-like objects

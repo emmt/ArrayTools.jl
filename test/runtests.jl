@@ -24,9 +24,9 @@ end
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
     A[rubberindex(Val(N-1))..., i]
 
-dims = (3, 4, 5)
+dims = (3, 4, 5, 6)
 A = rand(Float64, dims)
-V = view(A, :, 2:3, :)
+V = view(A, :, 2:3, :, :)
 S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
 atol = 1e-6
@@ -59,18 +59,6 @@ atol = 1e-6
     @test checkdimensions((1,0,2)) === true
     @test_throws ErrorException checkdimensions((1,0,-1))
     @test_throws ErrorException checkdimensions(-1)
-    #
-    # Tests for `rubberindex`.
-    #
-    @test colons(5) == rubberindex(5)
-    for d ∈ 0:12
-        tup = ntuple(x -> Colon(), d)
-        @test rubberindex(d) === tup
-        @test rubberindex(Val(d)) === tup
-    end
-    for k ∈ 1:dims[end]
-        @test samevalues(slice(A, k), A[:,:,k])
-    end
     #
     # Tests for `allof`, `anyof` and `noneof`.
     #
@@ -122,6 +110,36 @@ atol = 1e-6
     @test_throws ErrorException ArrayTools.throw_non_standard_indexing()
 end
 
+#
+# Tests for rubber indices.
+#
+@testset "Rubber Indices" begin
+    I1 = CartesianIndex(2)
+    I2 = CartesianIndex(3,4)
+    I3 = CartesianIndex(3,4,5)
+    @test colons(5) == rubberindex(5)
+    for d ∈ 0:12
+        tup = ntuple(x -> Colon(), d)
+        @test rubberindex(d) === tup
+        @test rubberindex(Val(d)) === tup
+    end
+    for k ∈ 1:dims[end]
+        @test samevalues(slice(A, k), A[:,:,:,k])
+    end
+    @test A[…]           == A[:,:,:,:]
+    @test A[…,3]         == A[:,:,:,3]
+    @test A[2,…]         == A[2,:,:,:]
+    @test A[…,2:4,5]     == A[:,:,2:4,5]
+    @test A[2:3,…,1,2:4] == A[2:3,:,1,2:4]
+    @test A[I1,…]        == A[I1,:,:,:]
+    @test A[I2,…]        == A[I2,:,:]
+    @test A[…,I1]        == A[:,:,:,I1]
+    @test A[…,I2]        == A[:,:,I2]
+    @test A[I1,…,I2]     == A[I1,:,I2]
+    @test A[I2,…,I1]     == A[I2,:,I1]
+    @test A[I1,…,I3]     == A[I1,I3]
+end
+
 @testset "Storage" begin
     B = flatarray(Float32, A)
     C = flatarray(Float32, V)
@@ -151,23 +169,23 @@ end
         @test StorageType(K) == FlatStorage()
         @test StorageType(L) == (n == 1 ? FlatStorage() : AnyStorage())
     end
-    L = ((nothing,             false),
-         ("a",                 false),
-         ((),                  false),
-         (1,                   false),
-         (A,                   true ),
-         (view(A, :, :, 2:3),  true ),
-         (view(A, :, 2:2, :),  false),
-         (view(A, :, 2, :),    false),
-         (view(A, :, 2:2, 3),  true ),
-         (view(A, :, 2, 3),    true ),
-         (view(A, :, 2, 3:3),  false))
+    L = ((nothing,               false),
+         ("a",                   false),
+         ((),                    false),
+         (1,                     false),
+         (A,                     true ),
+         (view(A, :, :, :, 2:3), true ),
+         (view(A, :, :, 2:2, :), false),
+         (view(A, :, :, 2, :),   false),
+         (view(A, :, :, 2:2, 3), true ),
+         (view(A, :, :, 2, 3),   true ),
+         (view(A, :, :, 2, 3:3), false))
     for i in randperm(length(L)) # prevent compilation-time optimization
         x, b = L[i]
         @test isflatarray(x) == b
     end
-    @test isflatarray(A, view(A, :, 2, 3), view(A, :, 2:2, 3)) == true
-    @test isflatarray(A, view(A, :, 2:2, :), view(A, :, 2:2, 3)) == false
+    @test isflatarray(A, view(A, :, :, 2, 3), view(A, :, :, 2:2, 3)) == true
+    @test isflatarray(A, view(A, :, :, 2:2, :), view(A, :, :, 2:2, 3)) == false
 end
 
 @testset "Indexing" begin
@@ -207,13 +225,13 @@ end
     A4 = bcastlazy(A, Float32, size(A))
     @test pointer(A3) == pointer(A) && samevalues(A, A1)
     @test size(A4) == size(A) && maxabsdif(A, A4) ≤ atol
-    bdims = (dims[1], 1, dims[3])
+    bdims = (dims[1], 1, dims[3:end]...)
     B = rand(Float64, bdims)
     B1 = bcastlazy(B, dims)
     B2 = bcastcopy(B, dims)
     for i in 1:dims[2]
-        @test samevalues(B[:,1,:], B1[:,i,:])
-        @test samevalues(B[:,1,:], B2[:,i,:])
+        @test samevalues(B[:,1,:,:], B1[:,i,:,:])
+        @test samevalues(B[:,1,:,:], B2[:,i,:,:])
     end
 end
 
