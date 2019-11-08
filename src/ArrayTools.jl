@@ -14,6 +14,7 @@ export
     has_standard_indexing,
     indices,
     noneof,
+    promote_eltype,
     reversemap,
     rubberindex,
     # storage trait
@@ -259,6 +260,19 @@ fastarray(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
 _fastarray(::FastIndexing, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
 _fastarray(::IndexingTrait, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)
+
+"""
+
+```julia
+promote_eltype(A, B, ...) -> T
+```
+
+yields an element type `T` resulting from calling `promote_type` onto the
+element types of all the arguments which must be arrays or array types.
+
+"""
+promote_eltype(args::Union{AbstractArray,Type{<:AbstractArray}}...) =
+    promote_type(map(eltype, args)...)
 
 """
 

@@ -32,6 +32,19 @@ U = 3:50    # UnitRange
 atol = 1e-6
 
 @testset "Miscellaneous" begin
+    # Promotion of element types.
+    for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
+        @test promote_eltype(zeros(T1,1)) == promote_type(T1)
+        @test promote_eltype(AbstractVector{T2}) == promote_type(T2)
+        @test promote_eltype(zeros(T2,4), zeros(T3,2,3)) == promote_type(T2,T3)
+        @test promote_eltype(zeros(T2,2), Array{T3}) == promote_type(T2,T3)
+        @test promote_eltype(zeros(T1,3), zeros(T2,5), AbstractVector{T3}) ==
+            promote_type(T1,T2,T3)
+        @test promote_eltype(zeros(T1,3), zeros(T2,5), ones(T3,2)) ==
+            promote_type(T1,T2,T3)
+        @test promote_eltype(DenseMatrix{T1}, zeros(T2,5), AbstractVector{T3}) ==
+            promote_type(T1,T2,T3)
+    end
     # Dimensions.
     @test dimensions(()) == ()
     @test dimensions(5) == (5,)
