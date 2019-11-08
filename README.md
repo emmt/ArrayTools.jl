@@ -21,13 +21,24 @@ A[…]           == A[:,:,:,:]
 A[…,3]         == A[:,:,:,3]
 A[2,…]         == A[2,:,:,:]
 A[…,2:4,5]     == A[:,:,2:4,5]
+A[:,2:3,…]     == A[:,2:3,:,:]
 A[2:3,…,1,2:4] == A[2:3,:,1,2:4]
 ```
 
-As you can see the advantage of the *rubber index* `…` is that it automatically
-expands as the number of colons needed to have the correct number of indices.
+As you can see, the advantage of the *rubber index* `…` is that it
+automatically expands as the number of colons needed to have the correct number
+of indices.  The expressions are also more readable.  The idea comes from the
+[`Yorick`](http://yorick.github.com/) language by Dave Munro.
 
-The rubber index `…` may also be used for setting values.
+The rubber index may also be used for setting values.  For instance:
+
+```julia
+A[…] .= 1        # to fill A with ones
+A[…,3] = A[…,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
+A[…,3] .= A[…,2] # idem but faster
+A[2,…] = A[3,…]  # to copy A[3,:,:,:] in A[2,:,:,:]
+A[…,2:4,5] .= 7  # to set all elements in A[:,:,2:4,5] to 7
+```
 
 Leading/trailing indices may be specified as Cartesian indices (of type
 `CartesianIndex`).
