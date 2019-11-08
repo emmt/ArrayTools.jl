@@ -138,6 +138,10 @@ end
     @test A[I1,…,I2]     == A[I1,:,I2]
     @test A[I2,…,I1]     == A[I2,:,I1]
     @test A[I1,…,I3]     == A[I1,I3]
+    A[1,…] .= 3
+    @test all(isequal(3), A[1,:,:,:])
+    A[1,…] = A[2,…]
+    @test A[1,:,:,:] == A[2,:,:,:]
 end
 
 @testset "Storage" begin

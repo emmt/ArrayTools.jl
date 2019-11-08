@@ -34,7 +34,7 @@ export
     fastarray,
     isfastarray
 
-import Base: getindex, setindex!
+import Base: dotview, getindex, setindex!
 
 @deprecate colons rubberindex
 
