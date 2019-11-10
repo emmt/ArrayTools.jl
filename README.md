@@ -4,9 +4,10 @@
 |:--------------------------------|:----------------------------------------------------------------|:--------------------------------------------------------------------|
 | [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
 
-This package provides a number of methods and types to deal with the variety of
-array types (sub-types of `AbstractArray`) that exist in Julia and to help
-building custom array-like types without sacrificing performances.
+This [Julia][julia-url] package provides a number of methods and types to deal
+with the variety of array types (sub-types of `AbstractArray`) that exist in
+Julia and to help building custom array-like types without sacrificing
+performances.
 
 These are useful to implement methods to process arrays in a generic way.
 
@@ -307,6 +308,17 @@ array form.
   as `Base.has_offset_axes(args...)`.  Furthermore, `has_standard_indexing` is
   a bit faster.
 
+## Installation
+
+`ArrayTools` is not yet an [official Julia package][julia-pkgs-url] so you have
+to clone the repository.  In Julia, hit the `]` key to switch to the package
+manager REPL (you should get a `... pkg>` prompt) and type:
+
+```julia
+pkg> add https://github.com/emmt/ArrayTools.jl
+```
+
+
 [doc-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [doc-dev-url]: https://emmt.github.io/ArrayTools.jl/dev
 
@@ -324,3 +336,6 @@ array form.
 
 [codecov-img]: http://codecov.io/github/emmt/ArrayTools.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/emmt/ArrayTools.jl?branch=master
+
+[julia-url]: https://julialang.org/
+[julia-pkgs-url]: https://pkg.julialang.org/

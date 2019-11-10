@@ -297,7 +297,7 @@ dimensions(A) -> size(A)
 yields the list of dimensions of `A`, that is `size(A)`, after having checked
 that `A` has standard 1-based indices.
 
-See also: [`has_standard_indexing`].
+See also: [`has_standard_indexing`](@ref).
 
 """
 dimensions(dims::Tuple{}) = dims
