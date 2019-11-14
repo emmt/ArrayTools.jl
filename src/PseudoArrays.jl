@@ -1,5 +1,5 @@
 #
-# CopycatArrays.jl -
+# PseudoArrays.jl -
 #
 # Types and methods to facilitate the definition of custom array-like types.
 #
@@ -11,11 +11,11 @@
 # Copyright (C) 2019, Éric Thiébaut.
 #
 
-module CopycatArrays
+module PseudoArrays
 
 export
     CartesianArray,
-    CopycatArray,
+    PseudoArray,
     LinearArray
 
 using Base: axes1, elsize, tail, OneTo, throw_boundserror, @propagate_inbounds
@@ -23,7 +23,7 @@ import Base: getindex, setindex!, checkbounds
 
 """
 
-Abstract type `CopycatArray{T,N,S}` is to be derived by types that want to
+Abstract type `PseudoArray{T,N,S}` is to be derived by types that want to
 provide an array-like interface.  Parameter `T` is the element type, parameter
 `N` is the number of dimensions and parameter `S` is the index style:
 `IndexCartesian` or `IndexLinear`.
@@ -65,33 +65,33 @@ checking requires an efficient implementation of the `Base.axes()` method which
 you may have to specialize.  The default implementation is:
 
 ```julia
-@inline Base.axes(A::CopycatArray) = axes(parent(A))
+@inline Base.axes(A::PseudoArray) = axes(parent(A))
 ```
 
 """
-abstract type CopycatArray{T,N,S<:IndexStyle} <: AbstractArray{T,N} end
-const CartesianArray{T,N} = CopycatArray{T,N,IndexCartesian}
-const LinearArray{T,N} = CopycatArray{T,N,IndexLinear}
+abstract type PseudoArray{T,N,S<:IndexStyle} <: AbstractArray{T,N} end
+const CartesianArray{T,N} = PseudoArray{T,N,IndexCartesian}
+const LinearArray{T,N} = PseudoArray{T,N,IndexLinear}
 
-@doc @doc(CopycatArray) CartesianArray
-@doc @doc(CopycatArray) LinearArray
+@doc @doc(PseudoArray) CartesianArray
+@doc @doc(PseudoArray) LinearArray
 
-# Make CopycatArray instances behave like arrays (indexing is considered later).
-#Base.eltype(::CopycatArray{T,N}) where {T,N} = T # FIXME: not needed
-#Base.ndims(::CopycatArray{T,N}) where {T,N} = N # FIXME: not needed
-@inline Base.length(A::CopycatArray) = length(parent(A))
-@inline Base.size(A::CopycatArray) = size(parent(A))
-Base.size(A::CopycatArray, d) = size(parent(A), d)
-@inline Base.axes(A::CopycatArray) = axes(parent(A))
-Base.axes(A::CopycatArray, d) = axes(parent(A), d)
-@inline Base.axes1(A::CopycatArray) = axes1(parent(A))
-@inline Base.IndexStyle(::Type{<:CopycatArray{T,N,S}}) where {T,N,S} = S()
-Base.parent(A::T) where {T<:CopycatArray} =
+# Make PseudoArray instances behave like arrays (indexing is considered later).
+#Base.eltype(::PseudoArray{T,N}) where {T,N} = T # FIXME: not needed
+#Base.ndims(::PseudoArray{T,N}) where {T,N} = N # FIXME: not needed
+@inline Base.length(A::PseudoArray) = length(parent(A))
+@inline Base.size(A::PseudoArray) = size(parent(A))
+Base.size(A::PseudoArray, d) = size(parent(A), d)
+@inline Base.axes(A::PseudoArray) = axes(parent(A))
+Base.axes(A::PseudoArray, d) = axes(parent(A), d)
+@inline Base.axes1(A::PseudoArray) = axes1(parent(A))
+@inline Base.IndexStyle(::Type{<:PseudoArray{T,N,S}}) where {T,N,S} = S()
+Base.parent(A::T) where {T<:PseudoArray} =
     error(string("method parent() must be extended for instances of ", T))
-Base.elsize(::Type{<:CopycatArray{T,N}}) where {T,N} = elsize(Array{T,N})
-Base.sizeof(A::CopycatArray) = sizeof(parent(A))
-Base.pairs(S::IndexCartesian, A::CopycatArray) = pairs(S, parent(A))
-Base.pairs(S::IndexLinear, A::CopycatArray) = pairs(S, parent(A))
+Base.elsize(::Type{<:PseudoArray{T,N}}) where {T,N} = elsize(Array{T,N})
+Base.sizeof(A::PseudoArray) = sizeof(parent(A))
+Base.pairs(S::IndexCartesian, A::PseudoArray) = pairs(S, parent(A))
+Base.pairs(S::IndexLinear, A::PseudoArray) = pairs(S, parent(A))
 
 # Make LinearArray instances efficient iterators.
 @inline Base.iterate(A::LinearArray, i=1) =

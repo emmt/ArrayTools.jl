@@ -74,7 +74,7 @@ This is as simple as:
 For instance (of course replacing the ellipsis `...`):
 
 ```julia
-using ArrayTools.CopycatArrays
+using ArrayTools.PseudoArrays
 struct CustomArray{T,N,...} <: LinearArray{T,N}
     arr::Array{T,N} # can be any array type with linear index style
     ...             # another member
@@ -138,7 +138,7 @@ A[:Δx]           # idem
 A.units          # yields "photons"
 A[:units]        # idem
 A[:,3] .= 3.14   # set some values in the array contents of A
-sum(A)           # yeilds the sum of the values of A
+sum(A)           # yields the sum of the values of A
 A[:gizmo] = π    # set a property
 A.gizmo = π      # idem
 pop!(A, :gizmo)  # yields property value and delete it
@@ -206,7 +206,7 @@ the array contents of annotated arrays.
 
 If the dictionary is unspecified, the properties are stored in a, initially
 empty, dictionary with symbolic keys and value of any type, *i.e.*
-`Dict{String,Any}()`.
+`Dict{Symbol,Any}()`.
 
 Iterating on an annotated array is iterating on its array values.  To iterate
 on its properties, call the `properties` method which returns the object
@@ -308,10 +308,11 @@ array form.
   as `Base.has_offset_axes(args...)`.  Furthermore, `has_standard_indexing` is
   a bit faster.
 
+
 ## Installation
 
 `ArrayTools` is not yet an [official Julia package][julia-pkgs-url] so you have
-to clone the repository.  In Julia, hit the `]` key to switch to the package
+to clone its repository.  In Julia, hit the `]` key to switch to the package
 manager REPL (you should get a `... pkg>` prompt) and type:
 
 ```julia

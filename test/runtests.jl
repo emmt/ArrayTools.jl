@@ -1,5 +1,5 @@
 module ArrayToolsTests
-using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.CopycatArrays
+using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.PseudoArrays
 
 function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
@@ -248,7 +248,7 @@ end
 end
 
 # UnfinishedArray does not extend Base.parent()
-struct UnfinishedArray{T,N,A<:AbstractArray{T,N},S} <: CopycatArray{T,N,S}
+struct UnfinishedArray{T,N,A<:AbstractArray{T,N},S} <: PseudoArray{T,N,S}
     arr::A
     cnt::Int
 end
@@ -258,7 +258,7 @@ UnfinishedArray(arr::A, cnt::Integer=0) where {T,N,A<:AbstractArray{T,N}} = begi
 end
 
 # DummyArray does extend Base.parent()
-struct DummyArray{T,N,A<:AbstractArray{T,N},S} <: CopycatArray{T,N,S}
+struct DummyArray{T,N,A<:AbstractArray{T,N},S} <: PseudoArray{T,N,S}
     arr::A
     cnt::Int
 end

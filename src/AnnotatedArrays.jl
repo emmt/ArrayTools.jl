@@ -19,7 +19,7 @@ export
     nkeys,
     properties
 
-using ..ArrayTools.CopycatArrays
+using ..ArrayTools.PseudoArrays
 
 if isdefined(Base, :hasproperty)
     import Base: hasproperty
@@ -80,7 +80,7 @@ AnnotatedArrays.properties(obj::CustomType) -> the object storing the properties
 ```
 
 """
-abstract type AbstractAnnotatedArray{T,N,P<:Properties,S} <: CopycatArray{T,N,S} end
+abstract type AbstractAnnotatedArray{T,N,P<:Properties,S} <: PseudoArray{T,N,S} end
 
 const DynamicallyAnnotatedArray{T,N,K,V,S} = AbstractAnnotatedArray{T,N,<:AbstractDict{K,V},S}
 @doc @doc(AbstractAnnotatedArray) DynamicallyAnnotatedArray
@@ -112,7 +112,7 @@ struct AnnotatedArray{T,N,P<:Properties,
     end
 end
 
-# As expected by the CopycatArray interface, extend Base.parent() to return the
+# As expected by the PseudoArray interface, extend Base.parent() to return the
 # array backing the storage of values.
 @inline Base.parent(A::AnnotatedArray) = Base.getfield(A, :data)
 

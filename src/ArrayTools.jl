@@ -672,8 +672,8 @@ reversemap(f::Function, args::NTuple{N,Any}) where {N} =
 
 include("rubberindex.jl")
 
-include("CopycatArrays.jl")
-using .CopycatArrays
+include("PseudoArrays.jl")
+using .PseudoArrays
 
 include("AnnotatedArrays.jl")
 using .AnnotatedArrays
