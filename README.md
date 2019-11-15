@@ -316,7 +316,7 @@ to clone its repository.  In Julia, hit the `]` key to switch to the package
 manager REPL (you should get a `... pkg>` prompt) and type:
 
 ```julia
-pkg> add https://github.com/emmt/ArrayTools.jl
+... pkg> add https://github.com/emmt/ArrayTools.jl
 ```
 
 

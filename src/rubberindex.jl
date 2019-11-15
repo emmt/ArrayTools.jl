@@ -104,16 +104,26 @@ const … = RubberIndex()
 
 """
 
-`Indices` is the union of types that are eligible as a single index, that is
+`Index` is the union of types that are eligible as a single index, that is
 integers and integer valued ranges.
 
 """
-const Indices = Union{Integer,AbstractRange{<:Integer},Colon}
+const Index = Union{Integer,AbstractRange{<:Integer},Colon,CartesianIndex}
 
-#numberofindices(::Integer) = 1
-#numberofindices(::CartesianIndex{N}) where {N} = N
-#numberofindices(::AbstractRange{<:Integer}) = 1
-#numberofindices(inds::Indices...) = length(args)
+numberofindices() = 0
+numberofindices(::Colon) = 1
+numberofindices(::Integer) = 1
+numberofindices(::CartesianIndex{N}) where {N} = N
+numberofindices(::AbstractRange{<:Integer}) = 1
+numberofindices(i::Index, inds::Index...) = numberofindices(i) + numberofindices(inds...)
+
+# Generate a tuple with as many colons as the number of dimensions `N` minus
+# the number of indices specified by `inds...`.
+_colons(N::Int, inds::Index...) = begin
+    (n = N - numberofindices(inds...)) ≥ 0 ||
+         throw(DimensionMismatch("the number of specified indices exceed the number of dimensions"))
+    rubberindex(n)
+end
 
 # A[…]
 getindex(A::AbstractArray, ::RubberIndex) = copy(A)
@@ -122,205 +132,156 @@ setindex!(A::AbstractArray{T,N}, val, ::RubberIndex) where {T,N} =
 dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
     dotview(A, rubberindex(Val(N))...)
 
-# A[…, i]
-function getindex(A::AbstractArray{T,N},
-                  ::RubberIndex,
-                  i::Indices) where {T,N}
-    A[rubberindex(N - 1)..., i]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   ::RubberIndex,
-                   i::Indices) where {T,N}
-    A[rubberindex(N - 1)..., i] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 ::RubberIndex,
-                 i::Indices) where {T,N}
-    dotview(A, rubberindex(N - 1)..., i)
-end
-
 # A[…, inds...]
 function getindex(A::AbstractArray{T,N},
                   ::RubberIndex,
-                  inds::Indices...) where {T,N}
-    A[rubberindex(N - length(inds))..., inds...]
+                  inds::Index...) where {T,N}
+    A[_colons(N, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
                    ::RubberIndex,
-                   inds::Indices...) where {T,N}
-    A[rubberindex(N - length(inds))..., inds...] = val
+                   inds::Index...) where {T,N}
+    A[_colons(N, inds...)..., i] = val
 end
 function dotview(A::AbstractArray{T,N},
                  ::RubberIndex,
-                 inds::Indices...) where {T,N}
-    dotview(A, rubberindex(N - length(inds))..., inds...)
+                 inds::Index...) where {T,N}
+    dotview(A, _colons(N, inds...)..., inds...)
 end
 
 # A[i, …]
 function getindex(A::AbstractArray{T,N},
-                  i::Indices,
+                  i::Index,
                   ::RubberIndex) where {T,N}
-    A[i, rubberindex(N - 1)...]
+    A[i, _colons(N, i)...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   i::Indices,
+                   i::Index,
                    ::RubberIndex) where {T,N}
-    A[i, rubberindex(N - 1)...] = val
+    A[i, _colons(N, i)...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 i::Indices,
+                 i::Index,
                  ::RubberIndex) where {T,N}
-    dotview(A, i, rubberindex(N - 1)...)
+    dotview(A, i, _colons(N, i)...)
 end
 
 # A[i, …, inds...]
 function getindex(A::AbstractArray{T,N},
-                  i::Indices,
+                  i::Index,
                   ::RubberIndex,
-                  inds::Indices...) where {T,N}
-    A[i, rubberindex(N - 1 - length(inds))..., inds...]
+                  inds::Index...) where {T,N}
+    A[i, _colons(N, i, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   i::Indices,
+                   i::Index,
                    ::RubberIndex,
-                   inds::Indices...) where {T,N}
-    A[i, rubberindex(N - 1 - length(inds))..., inds...] = val
+                   inds::Index...) where {T,N}
+    A[i, _colons(N, i, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 i::Indices,
+                 i::Index,
                  ::RubberIndex,
-                 inds::Indices...) where {T,N}
-    dotview(A, i, rubberindex(N - 1 - length(inds))..., inds...)
+                 inds::Index...) where {T,N}
+    dotview(A, i, _colons(N, i, inds...)..., inds...)
 end
 
 # A[i1, i2, …, inds...]
 function getindex(A::AbstractArray{T,N},
-                  i1::Indices,
-                  i2::Indices,
+                  i1::Index, i2::Index,
                   ::RubberIndex,
-                  inds::Indices...) where {T,N}
-    A[i1, i2, rubberindex(N - 2 - length(inds))..., inds...]
+                  inds::Index...) where {T,N}
+    A[i1, i2, _colons(N, i1, i2, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Indices,
-                   i2::Indices,
+                   i1::Index, i2::Index,
                    ::RubberIndex,
-                   inds::Indices...) where {T,N}
-    A[i1, i2, rubberindex(N - 2 - length(inds))..., inds...] = val
+                   inds::Index...) where {T,N}
+    A[i1, i2, _colons(N, i1, i2, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 i1::Indices,
-                 i2::Indices,
+                 i1::Index, i2::Index,
                  ::RubberIndex,
-                 inds::Indices...) where {T,N}
-    dotview(A, i1, i2, rubberindex(N - 2 - length(inds))..., inds...)
+                 inds::Index...) where {T,N}
+    dotview(A, i1, i2, _colons(N, i1, i2, inds...)..., inds...)
 end
 
 # A[i1, i2, i3, …, inds...]
 function getindex(A::AbstractArray{T,N},
-                  i1::Indices,
-                  i2::Indices,
-                  i3::Indices,
+                  i1::Index, i2::Index, i3::Index,
                   ::RubberIndex,
-                  inds::Indices...) where {T,N}
-    A[i1, i2, i3, rubberindex(N - 3 - length(inds))..., inds...]
+                  inds::Index...) where {T,N}
+    A[i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Indices,
-                   i2::Indices,
-                   i3::Indices,
+                   i1::Index, i2::Index, i3::Index,
                    ::RubberIndex,
-                   inds::Indices...) where {T,N}
-    A[i1, i2, i3, rubberindex(N - 3 - length(inds))..., inds...] = val
+                   inds::Index...) where {T,N}
+    A[i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 i1::Indices,
-                 i2::Indices,
-                 i3::Indices,
+                 i1::Index, i2::Index, i3::Index,
                  ::RubberIndex,
-                 inds::Indices...) where {T,N}
-    dotview(A, i1, i2, i3, rubberindex(N - 3 - length(inds))..., inds...)
+                 inds::Index...) where {T,N}
+    dotview(A, i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...)
 end
 
 # A[i1, i2, i3, i4, …, inds...]
 function getindex(A::AbstractArray{T,N},
-                  i1::Indices,
-                  i2::Indices,
-                  i3::Indices,
-                  i4::Indices,
+                  i1::Index, i2::Index, i3::Index, i4::Index,
                   ::RubberIndex,
-                  inds::Indices...) where {T,N}
-    A[i1, i2, i3, i4, rubberindex(N - 4 - length(inds))..., inds...]
+                  inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Indices,
-                   i2::Indices,
-                   i3::Indices,
-                   i4::Indices,
+                   i1::Index, i2::Index, i3::Index, i4::Index,
                    ::RubberIndex,
-                   inds::Indices...) where {T,N}
-    A[i1, i2, i3, i4, rubberindex(N - 4 - length(inds))..., inds...] = val
+                   inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 i1::Indices,
-                 i2::Indices,
-                 i3::Indices,
-                 i4::Indices,
+                 i1::Index, i2::Index, i3::Index, i4::Index,
                  ::RubberIndex,
-                 inds::Indices...) where {T,N}
-    dotview(A, i1, i2, i3, i4, rubberindex(N - 4 - length(inds))..., inds...)
+                 inds::Index...) where {T,N}
+    dotview(A, i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...)
 end
 
-# A[…, I]
+# A[i1, i2, i3, i4, i5, …, inds...]
 function getindex(A::AbstractArray{T,N},
+                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   ::RubberIndex,
-                  I::CartesianIndex{L}) where {T,N,L}
-    A[rubberindex(N - L)..., I]
+                  inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, i5, _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
+                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                    ::RubberIndex,
-                   I::CartesianIndex{L}) where {T,N,L}
-    A[rubberindex(N - L)..., I] = val
+                   inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, i5, _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
+                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                  ::RubberIndex,
-                 I::CartesianIndex{L}) where {T,N,L}
-    dotview(A, rubberindex(N - L)..., I)
+                 inds::Index...) where {T,N}
+    dotview(A, i1, i2, i3, i4, i5, _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...)
 end
 
-# A[I, …]
+# A[i1, i2, i3, i4, i5, i6, …, inds...]
 function getindex(A::AbstractArray{T,N},
-                  I::CartesianIndex{L},
-                  ::RubberIndex) where {T,N,L}
-    A[I, rubberindex(N - L)...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   I::CartesianIndex{L},
-                   ::RubberIndex) where {T,N,L}
-    A[I, rubberindex(N - L)...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 I::CartesianIndex{L},
-                 ::RubberIndex) where {T,N,L}
-    dotview(A, I, rubberindex(N - L)...)
-end
-
-# A[I1, …, I2]
-function getindex(A::AbstractArray{T,N},
-                  I1::CartesianIndex{L1},
+                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index, i6::Index,
                   ::RubberIndex,
-                  I2::CartesianIndex{L2}) where {T,N,L1,L2}
-    A[I1, rubberindex(N - L1 - L2)..., I2]
+                  inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, i5, i6, _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...]
 end
 function setindex!(A::AbstractArray{T,N}, val,
-                   I1::CartesianIndex{L1},
+                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index, i6::Index,
                    ::RubberIndex,
-                   I2::CartesianIndex{L2}) where {T,N,L1,L2}
-    A[I1, rubberindex(N - L1 - L2)..., I2] = val
+                   inds::Index...) where {T,N}
+    A[i1, i2, i3, i4, i5, i6, _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...] = val
 end
 function dotview(A::AbstractArray{T,N},
-                 I1::CartesianIndex{L1},
+                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index, i6::Index,
                  ::RubberIndex,
-                 I2::CartesianIndex{L2}) where {T,N,L1,L2}
-    dotview(A, I1, rubberindex(N - L1 - L2)..., I2)
+                 inds::Index...) where {T,N}
+    dotview(A, i1, i2, i3, i4, i5, i6, _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...)
 end
