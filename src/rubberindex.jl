@@ -110,6 +110,17 @@ integers and integer valued ranges.
 """
 const Index = Union{Integer,AbstractRange{<:Integer},Colon,CartesianIndex}
 
+"""
+
+```julia
+numberofindices(inds...)
+```
+
+yields the total number of indices specified by `inds...`.  Integers, colons
+and integer valued ranges count as one each, Cartesian indices count as their
+dimensionality.
+
+"""
 numberofindices() = 0
 numberofindices(::Colon) = 1
 numberofindices(::Integer) = 1
