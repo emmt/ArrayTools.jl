@@ -1,5 +1,7 @@
 module ArrayToolsTests
-using Test, Random, ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.PseudoArrays
+
+using Test, Random
+using ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.PseudoArrays
 
 function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
@@ -24,8 +26,9 @@ end
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
     A[rubberindex(Val(N-1))..., i]
 
+T = Float32
 dims = (3, 4, 5, 6)
-A = rand(Float64, dims)
+A = rand(T, dims)
 V = view(A, :, 2:3, :, :)
 S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
@@ -107,9 +110,9 @@ atol = 1e-6
     #
     # Tests for `safeindices`.
     #
-    B = rand(dims[1:2])
-    C = rand(dims[1:end-2]..., dims[end], dims[end-1])
-    X = rand(6)
+    B = rand(T, dims[1:2])
+    C = rand(T, dims[1:end-2]..., dims[end], dims[end-1])
+    X = rand(T, 6)
     @test safeindices(X) === eachindex(X)
     @test safeindices(A) === eachindex(A)
     @test safeindices(V) === eachindex(V)
