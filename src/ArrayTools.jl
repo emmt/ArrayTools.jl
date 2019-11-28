@@ -9,6 +9,7 @@ export
     bcastdim,
     bcastdims,
     bcastlazy,
+    cartesianindices,
     checkdimensions,
     colons,
     Dimensions,
@@ -39,6 +40,7 @@ using Base: OneTo, axes1, @_inline_meta
 import Base: dotview, getindex, setindex!
 
 @deprecate colons rubberindex
+@deprecate indices cartesianindices
 
 """
 ```julia
@@ -374,11 +376,11 @@ has_standard_indexing(::Number) = true
 The calls:
 
 ```julia
-indices(A)
-indices((n1, n2, ...))
-indices((i1:j1, i2:j2, ...))
-indices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
-indices(R)
+cartesianindices(A)
+cartesianindices((n1, n2, ...))
+cartesianindices((i1:j1, i2:j2, ...))
+cartesianindices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
+cartesianindices(R)
 ```
 
 all yield an instance of `CartesianIndices` suitable for multi-dimensional
@@ -388,13 +390,13 @@ last indices are `(i1,i2,...)` and `(j1,j2,...)` or a Cartesian region defined
 by `R`, an instance of `CartesianIndices`.
 
 """
-indices(A::AbstractArray) = indices(axes(A))
-indices(R::CartesianIndices) = R
-@inline indices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
+cartesianindices(A::AbstractArray) = cartesianindices(axes(A))
+cartesianindices(R::CartesianIndices) = R
+@inline cartesianindices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
     CartesianIndices(map((i,j) -> (i == 1 ? Base.OneTo(j) : i:j), start.I, stop.I))
-indices(dims::Tuple{Vararg{Integer}}) =
+cartesianindices(dims::Tuple{Vararg{Integer}}) =
     CartesianIndices(map(dim -> Base.OneTo(dim), dims))
-indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
+cartesianindices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
     CartesianIndices(rngs)
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
@@ -404,10 +406,10 @@ indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
 # of dimensions, a tuple of unit ranges or a pair of `CartesianIndices` yields
 # the indices of the Cartesian region defined by these arguments.
 #
-#indices(dim::Int) = Base.OneTo(dim)
-#indices(dim::Integer) = Base.OneTo(Int(dim))
-#indices(rng::AbstractUnitRange{Int}) = rng
-#indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
+#cartesianindices(dim::Int) = Base.OneTo(dim)
+#cartesianindices(dim::Integer) = Base.OneTo(Int(dim))
+#cartesianindices(rng::AbstractUnitRange{Int}) = rng
+#cartesianindices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
 
 #------------------------------------------------------------------------------

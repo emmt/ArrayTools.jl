@@ -97,12 +97,13 @@ atol = 1e-6
         @test anyof(x) == (anyof(minimum, x, x) || anyof(maximum, x))
     end
     #
-    # Tests for `indices`.
+    # Tests for `cartesianindices`.
     #
-    @test indices(A) === CartesianIndices(axes(A))
-    @test indices(A) === indices(size(A))
-    @test indices(A) === indices(axes(A))
-    @test indices(A) === indices(indices(A))
+    @test_deprecated indices(A) === CartesianIndices(axes(A))
+    @test cartesianindices(A) === CartesianIndices(axes(A))
+    @test cartesianindices(A) === cartesianindices(size(A))
+    @test cartesianindices(A) === cartesianindices(axes(A))
+    @test cartesianindices(A) === cartesianindices(cartesianindices(A))
     #
     # Tests for `safeindices`.
     #
@@ -129,7 +130,7 @@ end
     I1 = CartesianIndex(2)
     I2 = CartesianIndex(3,4)
     I3 = CartesianIndex(3,4,5)
-    @test colons(5) == rubberindex(5)
+    @test_deprecated colons(5) == rubberindex(5)
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
         @test rubberindex(d) === tup
