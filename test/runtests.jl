@@ -104,6 +104,18 @@ atol = 1e-6
     @test indices(A) === indices(axes(A))
     @test indices(A) === indices(indices(A))
     #
+    # Tests for `safeindices`.
+    #
+    B = rand(dims[1:2])
+    C = rand(dims[1:end-2]..., dims[end], dims[end-1])
+    X = rand(6)
+    @test safeindices(X) === eachindex(X)
+    @test safeindices(A) === eachindex(A)
+    @test safeindices(V) === eachindex(V)
+    @test_throws DimensionMismatch safeindices(A,V)
+    @test eachindex(A,C) === eachindex(A)
+    @test_throws DimensionMismatch safeindices(A,C)
+    #
     # Other stuff.
     #
     @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))

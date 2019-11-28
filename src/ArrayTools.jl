@@ -19,6 +19,7 @@ export
     promote_eltype,
     reversemap,
     rubberindex,
+    safeindices,
     # storage trait
     StorageType,
     AnyStorage,
@@ -34,6 +35,7 @@ export
     fastarray,
     isfastarray
 
+using Base: OneTo, axes1, @_inline_meta
 import Base: dotview, getindex, setindex!
 
 @deprecate colons rubberindex
@@ -407,6 +409,122 @@ indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
 #indices(rng::AbstractUnitRange{Int}) = rng
 #indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
+
+#------------------------------------------------------------------------------
+#
+# I find the documentation of `eachindex` a bit confusing when is says that:
+#
+# > If the arrays have different sizes and/or dimensionalities, `eachindex`
+# > will return an iterable that spans the largest range along each dimension.
+#
+# But my undestanding of the implementation of `eachindex` in
+# `abstractarray.jl` and `multidimensional.jl` is that all array arguments must
+# have the same length (for linear indexing) or the same axes (for Cartesian
+# indexing) otherwise `eachindex` throws a `DimensionMismatch` exception.  The
+# implemented behavior is perfect for my usage but this is not what I
+# understand from the documentation.
+#
+
+"""
+
+```julia
+safeindices(A...)
+```
+
+yields an iterable object for visiting each index of array(s) `A` in an
+efficient manner. For array types that have opted into fast linear indexing
+(like `Array`), this is simply the range `1:length(A)`. For other array types,
+return a specialized Cartesian range to efficiently index into the array with
+indices specified for every dimension.
+
+If more than one `AbstractArray` argument are supplied, `safeindices` will
+create an iterable object that is fast for all arguments (a `UnitRange` if all
+inputs have fast linear indexing, a `CartesianIndices` otherwise).  A
+`DimensionMismatch` exception is thrown if the arrays have different axes so
+that it is always safe to use `@inbounds` in front of a loop like:
+
+```julia
+for i in safeindices(A, B, C, D)
+   A[i] = B[i]*C[i] + D[i]
+end
+```
+
+when `A`, `B` etc. are all (abstract) arrays.
+
+This method is similar to [`eachindex`](@ref) except that a `DimensionMismatch`
+exception is thrown if linearly indexed arrays have different dimensions
+whereas `eachindex` only checks that they have the same linear index range.
+
+"""
+safeindices(A::AbstractArray) =
+    (@_inline_meta; _safeindices(IndexStyle(A), A))
+safeindices(A::AbstractArray, B::AbstractArray) =
+    (@_inline_meta; _safeindices(IndexStyle(A, B), A, B))
+safeindices(A::AbstractArray, B::AbstractArray...) =
+    (@_inline_meta; _safeindices(IndexStyle(A, B...), A, B...))
+
+_safeindices(::IndexLinear, A::AbstractVector) =
+    (@_inline_meta; axes1(A))
+_safeindices(::IndexLinear, A::AbstractArray) =
+    (@_inline_meta; OneTo(length(A)))
+_safeindices(::IndexLinear, A::AbstractArray, B::AbstractArray...) = begin
+    @_inline_meta
+    all_match_first(axes, axes(A), B...) ||
+        throw_safeindices_mismatch(IndexLinear(), A, B...)
+    return _safeindices(IndexLinear(), A)
+end
+
+_safeindices(::IndexCartesian, A::AbstractArray) =
+    (@_inline_meta; CartesianIndices(axes(A)))
+_safeindices(::IndexCartesian, A::AbstractArray, B::AbstractArray...) = begin
+    @_inline_meta
+    inds = axes(A)
+    all_match_first(axes, inds, B...) ||
+        throw_safeindices_mismatch(IndexCartesian(), A, B...)
+    return CartesianIndices(inds)
+end
+
+all_match_first(f::Function, val, arg, args...) = begin
+    @_inline_meta
+    (val == f(arg)) & all_match_first(f, val, args...)
+end
+all_match_first(f::Function, val) = true
+
+@noinline function throw_safeindices_mismatch(::IndexLinear,
+                                              A::AbstractArray...)
+    io = IOBuffer()
+    write(io, "all arguments of `safeindices` must have the same shape, got ")
+    m = length(A)
+    for i in 1:m
+        write(io, (i == 1 ? "(" : i == m ? " and (" : ", )"))
+        dims = size(A[i])
+        n = length(dims)
+        for j in 1:n
+            j > 1 && write(io, ",")
+            print(io, dims[j])
+        end
+        write(io, (n == 1 ? ",)" : ")"))
+    end
+    throw(DimensionMismatch(String(take!(io))))
+end
+
+@noinline function throw_safeindices_mismatch(::IndexCartesian,
+                                              A::AbstractArray...)
+    io = IOBuffer()
+    write(io, "all arguments of `safeindices` must have the same axes, got ")
+    m = length(A)
+    for i in 1:m
+        write(io, (i == 1 ? "(" : i == m ? " and (" : ", )"))
+        inds = axes(A[i])
+        n = length(inds)
+        for j in 1:n
+            j > 1 && write(io, ",")
+            print(io, first(inds[j]), ":", last(inds[j]))
+        end
+        write(io, (n == 1 ? ",)" : ")"))
+    end
+    throw(DimensionMismatch(String(take!(io))))
+end
 
 #------------------------------------------------------------------------------
 # BROADCASTING OF ARRAYS WITH OPTIONAL ELEMENT TYPE CONVERSION.
