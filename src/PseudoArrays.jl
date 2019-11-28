@@ -125,8 +125,4 @@ end
     return r
 end
 
-# FIXME: not needed?
-@inline checkbounds(A::LinearArray{T,N}, i::Int) where {T,N} =
-    1 ≤ i ≤ length(A) || throw_boundserror(A, i)
-
 end # module
