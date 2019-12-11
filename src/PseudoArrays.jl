@@ -100,29 +100,25 @@ Base.pairs(S::IndexLinear, A::PseudoArray) = pairs(S, parent(A))
 @inline @propagate_inbounds function getindex(A::LinearArray{T,N},
                                               i::Int) where {T,N}
     @boundscheck checkbounds(A, i)
-    @inbounds r = getindex(parent(A), i)
-    return r
+    @inbounds getindex(parent(A), i)
 end
 
 @inline @propagate_inbounds function getindex(A::CartesianArray{T,N},
                                               I::Vararg{Int,N}) where {T,N}
     @boundscheck checkbounds(A, I...)
-    @inbounds r = getindex(parent(A), I...)
-    return r
+    @inbounds getindex(parent(A), I...)
 end
 
 @inline @propagate_inbounds function setindex!(A::LinearArray{T,N}, x,
                                                i::Int) where {T,N}
     @boundscheck checkbounds(A, i)
-    @inbounds r = setindex!(parent(A), x, i)
-    return r
+    @inbounds setindex!(parent(A), x, i)
 end
 
 @inline @propagate_inbounds function setindex!(A::CartesianArray{T,N}, x,
                                                I::Vararg{Int,N}) where {T,N}
     @boundscheck checkbounds(A, I...)
-    @inbounds r = setindex!(parent(A), x, I...)
-    return r
+    @inbounds setindex!(parent(A), x, I...)
 end
 
 end # module
