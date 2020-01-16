@@ -323,8 +323,13 @@ Base.parent(A::DummyArray) = A.arr
     T = Float32
     N = length(dims)
     D1 = Dict("units" => "photons", "Δx" => 0.20, "Δy" => 0.15)
-    D2 = Dict(:x => true, :y => 1.8, :units => "µm")
+    @test isa(D1, Dict{String,Any})
+    K2 = (x=true, y=1.8, units="µm")
+    D2 = Dict(pairs(K2)...)
+    @test isa(D2, Dict{Symbol,Any})
     D3 = Dict(:x => 1, :y => 2, :z => 3)
+    @test isa(D3, Dict{Symbol,Int})
+    D4 = Dict(:x => 1, Float64 => 3.1, "string" => "hello")
     G = AnnotatedArray(zeros(T, dims), pairs(D1)...)
     F = AnnotatedArray{T}(parent(G), Dict{String,Any}())
     H = AnnotatedArray{T,N}(undef, dims, Dict{Symbol,Float32}())
@@ -374,9 +379,18 @@ Base.parent(A::DummyArray) = A.arr
     A31 = AnnotatedArray{T,N}(Array{T,N}(undef, dims))
     A32 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), D3)
     A33 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), pairs(D3)...)
+    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
+                                                    D4)
+    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
+                                                    pairs(D4))
+    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
+                                                    pairs(D4)...)
     A34 = AnnotatedArray{T,N}(undef, dims)
     A35 = AnnotatedArray{T,N}(undef, dims, D2)
     A36 = AnnotatedArray{T,N}(undef, dims, pairs(D2)...)
+    A37 = AnnotatedArray{T,N}(Array{T,N}(undef, dims); K2...)
+    A38 = AnnotatedArray{T,N}(undef, dims; K2...)
+
 
     A41 = AnnotatedArray{T}(Array{T,N}(undef, dims))
     A42 = AnnotatedArray{T}(Array{T,N}(undef, dims), D1)
@@ -384,10 +398,12 @@ Base.parent(A::DummyArray) = A.arr
     A44 = AnnotatedArray{T}(undef, dims)
     A45 = AnnotatedArray{T}(undef, dims, D2)
     A46 = AnnotatedArray{T}(undef, dims, pairs(D2)...)
+    A47 = AnnotatedArray{T}(undef, dims; K2...)
 
     A51 = AnnotatedArray(Array{T,N}(undef, dims))
     A52 = AnnotatedArray(Array{T,N}(undef, dims), D1)
     A53 = AnnotatedArray(Array{T,N}(undef, dims), pairs(D2)...)
+    A54 = AnnotatedArray(Array{T,N}(undef, dims); K2...)
 
     Q = UnfinishedArray(V)
     @test_throws ErrorException Q[1]
