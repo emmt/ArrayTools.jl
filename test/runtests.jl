@@ -26,9 +26,21 @@ end
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
     A[rubberindex(Val(N-1))..., i]
 
+generate(::Type{T}, dims::Integer...) where {T} = generate(T, dims)
+generate(::Type{T}, dims::NTuple{N,Integer}) where {T,N} =
+    generate!(Array{T,N}(undef, dims))
+generate!(A::AbstractArray{T,N}) where {T,N} = begin
+    k = 0
+    @inbounds for i in eachindex(A)
+        k += 1
+        A[i] = k
+    end
+    return A
+end
+
 T = Float32
 dims = (3, 4, 5, 6)
-A = rand(T, dims)
+A = generate(T, dims)
 V = view(A, :, 2:3, :, :)
 S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
@@ -131,8 +143,10 @@ end
 #
 @testset "Rubber Indices" begin
     I1 = CartesianIndex(2)
-    I2 = CartesianIndex(3,4)
-    I3 = CartesianIndex(3,4,5)
+    I2 = CartesianIndex(2,3)
+    I3 = CartesianIndex(2,3,4)
+    I4 = CartesianIndex(1,2,3,2)
+    I5 = CartesianIndex(1,2,3,2,4)
     @test_deprecated colons(5) == rubberindex(5)
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
@@ -159,6 +173,7 @@ end
     @test A[I1,…,I3]     == A[I1,I3]
     @test A[1,2:end,…]   == A[1,2:end,:,:]
     @test A[1,2:end-1,…] == A[1,2:end-1,:,:]
+    # The `end` keyword can only appear **before** the rubber index.
     @test_broken A[2,…,3:end] == A[2,:,:,3:end]
     A[1,…] .= 3
     @test all(isequal(3), A[1,:,:,:])
@@ -166,6 +181,25 @@ end
     @test A[1,:,:,:] == A[2,:,:,:]
     A[1,…,2:3] .= A[2,…,3:2:5]
     @test A[1,:,:,2:3] == A[2,:,:,3:2:5]
+    # Tests with a 9 dimensional array.
+    siz = (3, 4, 2, 3, 4, 2, 3, 4, 2)
+    n = length(siz)
+    B = generate(Int, siz)
+    C = copy(B)
+    inds = (2:3, 4, Colon(), CartesianIndex(2),
+            CartesianIndex(3), 1:2, 3, 2:3, CartesianIndex(1))
+    for k in 0:n, l in 0:n-k
+        J1 = inds[1:k]         # leading indices
+        J2 = inds[n-l+1:n]     # trailing indices
+        J = (J1..., …, J2...,) # with a rubber index
+        K = (J1..., rubberindex(n - length(J1) - length(J2))..., J2...,)
+        R = B[K...]            # extract region before change
+        @test R == B[J...]     # extract values with `getindex`
+        B[J...] .*= -1         # change values with `dotview`
+        @test R == -B[J...]    # extract values with `getindex`
+        B[J...] = R            # restore values with `setindex!`
+        @test B == C
+    end
 end
 
 @testset "Storage" begin
@@ -383,7 +417,7 @@ Base.parent(A::DummyArray) = A.arr
     @test ntuple(d -> axes(F,d), N) == ntuple(d -> axes(G,d), N) == inds
     @test Base.axes1(F) == Base.axes1(G) == inds[1]
     @test Base.elsize(F) == Base.elsize(G) == Base.elsize(parent(F))
-    @test Base.elsize(R) == Base.elsize(V)
+    @test Base.elsize(R) == Base.elsize(typeof(R)) == Base.elsize(V)
     @test sizeof(F) == sizeof(G) == sizeof(parent(F))
     @test IndexStyle(F) == IndexStyle(G) == IndexStyle(parent(F))
     @test_throws ErrorException parent(Q)
