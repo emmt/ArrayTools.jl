@@ -26,14 +26,16 @@ export
     AnyStorage,
     FlatStorage,
     flatarray,
-    flatvector,
     flatmatrix,
+    flatvector,
     isflatarray,
     # Fast arrays and indexing trait:
     IndexingTrait,
     FastIndexing,
     AnyIndexing,
     fastarray,
+    fastmatrix,
+    fastvector,
     isfastarray
 
 using Base: OneTo, axes1, @_inline_meta
@@ -69,23 +71,22 @@ struct  AnyStorage <: StorageType end
 StorageType(::Array) = FlatStorage()
 StorageType(::Any) = AnyStorage()
 StorageType() = AnyStorage()
-function StorageType(A::StridedVector)::StorageType
+StorageType(A::StridedVector) =
     (first(axes(A,1)) == 1 && stride(A,1) == 1) ? FlatStorage() : AnyStorage()
-end
-function StorageType(A::StridedMatrix)::StorageType
+StorageType(A::StridedMatrix) = begin
     inds, dims, stds = axes(A), size(A), strides(A)
     (first(inds[1]) == 1 && stds[1] == 1 &&
      first(inds[2]) == 1 && stds[2] == dims[1]) ?
      FlatStorage() : AnyStorage()
 end
-function StorageType(A::StridedArray{T,3})::StorageType where {T}
+StorageType(A::StridedArray{T,3}) where {T} = begin
     inds, dims, stds = axes(A), size(A), strides(A)
     (first(inds[1]) == 1 && stds[1] == 1 &&
      first(inds[2]) == 1 && stds[2] == dims[1] &&
      first(inds[3]) == 1 && stds[3] == dims[1]*dims[2]) ?
      FlatStorage() : AnyStorage()
 end
-function StorageType(A::StridedArray{T,4})::StorageType where {T}
+StorageType(A::StridedArray{T,4}) where {T} = begin
     inds, dims, stds = axes(A), size(A), strides(A)
     (first(inds[1]) == 1 && stds[1] == 1 &&
      first(inds[2]) == 1 && stds[2] == dims[1] &&
@@ -93,7 +94,7 @@ function StorageType(A::StridedArray{T,4})::StorageType where {T}
      first(inds[4]) == 1 && stds[4] == dims[1]*dims[2]*dims[3]) ?
      FlatStorage() : AnyStorage()
 end
-function StorageType(A::StridedArray{T,N})::StorageType where {T,N}
+StorageType(A::StridedArray{T,N}) where {T,N} = begin
     inds, dims, stds = axes(A), size(A), strides(A)
     n = 1
     @inbounds for d in 1:N
@@ -104,7 +105,6 @@ function StorageType(A::StridedArray{T,N})::StorageType where {T,N}
     end
     return FlatStorage()
 end
-
 
 """
 ```julia
@@ -127,7 +127,7 @@ is the same as:
 isflatarray(A) && isflatarray(B) && isflatarray(C) && ...
 ```
 
-See also [`StorageType`](@ref), [`flatarray`](@ref),
+See also [`StorageType`](@ref), [`flatarray`](@ref), [`isfastarray`](@ref),
 [`has_standard_indexing`](@ref).
 
 """
@@ -167,7 +167,7 @@ flatmatrix([T=eltype(M),] M)
 
 respectively yield a *flat* vector from `V` and a *flat* matrix from `M`.
 
-See also [`isflatarray`](@ref), [`convert`](@ref).
+See also [`isflatarray`](@ref), [`fastarray`](@ref), [`convert`](@ref).
 """
 flatarray(A::Array) = A
 flatarray(::Type{T}, A::Array{T,N}) where {T,N} = A
@@ -202,7 +202,7 @@ ordering is used to access the elements of `A`.
 This method can be extended for custom array types to quickly return the
 correct answer.
 
-See also: [`isfastarray`](@ref), [`fastarray`](@ref).
+See also [`isfastarray`](@ref), [`fastarray`](@ref).
 
 """
 abstract type IndexingTrait end
@@ -240,7 +240,7 @@ is the same as:
 isfastarray(A) && isfastarray(B) && isfastarray(C) && ...
 ```
 
-See also: [`IndexingType`](@ref), [`fastarray`](@ref).
+See also [`IndexingType`](@ref), [`fastarray`](@ref), [`isflatarray`](@ref).
 
 """
 isfastarray() = false
@@ -255,11 +255,21 @@ _isfastarray(::AnyIndexing) = false
 fastarray([T=eltype(A),] A)
 ```
 
-yields a fast array equivalent to `A` with element type `T`.  If `A` is already
-a fast array with element type `T`, A is returned; otherwise, `A` is converted
-into an `Array` which is returned.
+lazily yields a *fast array* equivalent to `A` with element type `T`.  A *fast
+array* has standard 1-based indices and is efficiently indexed by linear
+indices.  If `A` is already a *fast array* with element type `T`, `A` is
+returned; otherwise, `A` is converted into an `Array` which is returned.
 
-See also: [`isfastarray`](@ref), [`IndexingTrait`](@ref).
+Similarly:
+
+```julia
+fastvector([T=eltype(V),] V)
+fastmatrix([T=eltype(M),] M)
+```
+
+respectively yield a *fast* vector from `V` and a *fast* matrix from `M`.
+
+See also [`isfastarray`](@ref), [`IndexingTrait`](@ref), [`flatarray`](@ref).
 
 """
 fastarray(A::AbstractArray{T,N}) where {T,N} = fastarray(T, A)
@@ -268,6 +278,14 @@ fastarray(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
 _fastarray(::FastIndexing, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
 _fastarray(::IndexingTrait, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)
+
+fastvector(V::AbstractVector{T}) where {T} = fastarray(T, V)
+fastvector(::Type{T}, V::AbstractVector) where {T} = fastarray(T, V)
+@doc @doc(fastarray) fastvector
+
+fastmatrix(M::AbstractMatrix{T}) where {T} = fastarray(T, M)
+fastmatrix(::Type{T}, M::AbstractMatrix) where {T} = fastarray(T, M)
+@doc @doc(fastarray) fastmatrix
 
 """
 
@@ -301,7 +319,7 @@ dimensions(A) -> size(A)
 yields the list of dimensions of `A`, that is `size(A)`, after having checked
 that `A` has standard 1-based indices.
 
-See also: [`has_standard_indexing`](@ref).
+See also [`has_standard_indexing`](@ref).
 
 """
 dimensions(dims::Tuple{}) = dims
@@ -333,7 +351,7 @@ checkdimensions(dims)
 checks whether `dims` is a list of valid dimensions.  An error is thrown if not
 all dimensions are nonnegative.
 
-See also: [`dimensions`](@ref).
+See also [`dimensions`](@ref).
 
 """
 checkdimensions(::Tuple{}) = true
@@ -545,7 +563,7 @@ the returned array does not share its contents with `A`.
 Arguments `A` and `T` can be exchanged, that is `bcastcopy(A,T,dims)` is the
 same as `bcastcopy(T,A,dims)`.
 
-See also: [`bcastlazy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
+See also [`bcastlazy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
 
 """
 bcastcopy(A::AbstractArray{T}, dims::Integer...) where {T} =
@@ -595,7 +613,7 @@ suitable for fast linear indexing.
 Arguments `A` and `T` can be exchanged, that is `bcastlazy(A,T,dims)` is the
 same as `bcastlazy(T,A,dims)`.
 
-See also: [`bcastcopy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
+See also [`bcastcopy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
 
 """
 bcastlazy(A::AbstractArray{T}, dims::Integer...) where {T} =
@@ -645,7 +663,7 @@ rules (see [`broadcast`](@ref)) to arguments `A`, `B`, etc.  The result is a
 tuple of dimensions of type `Int`.  Call [`checkdimensions`](@ref) if you want
 to also make sure that the result is a list of valid dimensions.
 
-See also: [`dimensions`](@ref), [`checkdimensions`](@ref), [`bcastcopy`](@ref),
+See also [`dimensions`](@ref), [`checkdimensions`](@ref), [`bcastcopy`](@ref),
 [`bcastlazy`](@ref).
 
 """
@@ -694,7 +712,7 @@ This method can be much faster than `all(p, args)` or `all(args)` because its
 result may be determined at compile time.  However, `missing` values are not
 considered as special.
 
-See also: [`all`](@ref), [`anyof`](@ref), [`noneof`](@ref).
+See also [`all`](@ref), [`anyof`](@ref), [`noneof`](@ref).
 
 """
 allof(p::Function, a) = p(a)::Bool
@@ -752,7 +770,7 @@ noneof(args...) -> Bool
 
 which are the same as `!anyof(p, args...)` and `!anyof(args...)`.
 
-See also: [`any`](@ref), [`allof`](@ref).
+See also [`any`](@ref), [`allof`](@ref).
 
 """
 anyof(p::Function, a) = p(a)::Bool
