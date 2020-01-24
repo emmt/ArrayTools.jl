@@ -9,18 +9,17 @@ export
     bcastdim,
     bcastdims,
     bcastlazy,
-    cartesianindices,
+    cartesian_indices,
     checkdimensions,
     colons,
     Dimensions,
     dimensions,
     has_standard_indexing,
-    indices,
     noneof,
     promote_eltype,
     reversemap,
     rubberindex,
-    safeindices,
+    safe_indices,
     # storage trait
     StorageType,
     AnyStorage,
@@ -42,7 +41,9 @@ using Base: OneTo, axes1, @_inline_meta
 import Base: dotview, getindex, setindex!
 
 @deprecate colons rubberindex
-@deprecate indices cartesianindices
+@deprecate indices cartesian_indices
+@deprecate cartesianindices cartesian_indices
+@deprecate safeindices safe_indices
 
 """
 ```julia
@@ -394,11 +395,11 @@ has_standard_indexing(::Number) = true
 The calls:
 
 ```julia
-cartesianindices(A)
-cartesianindices((n1, n2, ...))
-cartesianindices((i1:j1, i2:j2, ...))
-cartesianindices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
-cartesianindices(R)
+cartesian_indices(A)
+cartesian_indices((n1, n2, ...))
+cartesian_indices((i1:j1, i2:j2, ...))
+cartesian_indices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
+cartesian_indices(R)
 ```
 
 all yield an instance of `CartesianIndices` suitable for multi-dimensional
@@ -408,13 +409,16 @@ last indices are `(i1,i2,...)` and `(j1,j2,...)` or a Cartesian region defined
 by `R`, an instance of `CartesianIndices`.
 
 """
-cartesianindices(A::AbstractArray) = cartesianindices(axes(A))
-cartesianindices(R::CartesianIndices) = R
-@inline cartesianindices(start::CartesianIndex{N}, stop::CartesianIndex{N}) where {N} =
-    CartesianIndices(map((i,j) -> (i == 1 ? Base.OneTo(j) : i:j), start.I, stop.I))
-cartesianindices(dims::Tuple{Vararg{Integer}}) =
+cartesian_indices(A::AbstractArray) = cartesian_indices(axes(A))
+cartesian_indices(R::CartesianIndices) = R
+@inline function cartesian_indices(start::CartesianIndex{N},
+                                   stop::CartesianIndex{N}) where {N}
+    CartesianIndices(map((i,j) -> (i == 1 ? Base.OneTo(j) : i:j),
+                         start.I, stop.I))
+end
+cartesian_indices(dims::Tuple{Vararg{Integer}}) =
     CartesianIndices(map(dim -> Base.OneTo(dim), dims))
-cartesianindices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
+cartesian_indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
     CartesianIndices(rngs)
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
@@ -424,31 +428,18 @@ cartesianindices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
 # of dimensions, a tuple of unit ranges or a pair of `CartesianIndices` yields
 # the indices of the Cartesian region defined by these arguments.
 #
-#cartesianindices(dim::Int) = Base.OneTo(dim)
-#cartesianindices(dim::Integer) = Base.OneTo(Int(dim))
-#cartesianindices(rng::AbstractUnitRange{Int}) = rng
-#cartesianindices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
+#cartesian_indices(dim::Int) = Base.OneTo(dim)
+#cartesian_indices(dim::Integer) = Base.OneTo(Int(dim))
+#cartesian_indices(rng::AbstractUnitRange{Int}) = rng
+#cartesian_indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
 
 #------------------------------------------------------------------------------
-#
-# I find the documentation of `eachindex` a bit confusing when is says that:
-#
-# > If the arrays have different sizes and/or dimensionalities, `eachindex`
-# > will return an iterable that spans the largest range along each dimension.
-#
-# But my undestanding of the implementation of `eachindex` in
-# `abstractarray.jl` and `multidimensional.jl` is that all array arguments must
-# have the same length (for linear indexing) or the same axes (for Cartesian
-# indexing) otherwise `eachindex` throws a `DimensionMismatch` exception.  The
-# implemented behavior is perfect for my usage but this is not what I
-# understand from the documentation.
-#
 
 """
 
 ```julia
-safeindices(A...)
+safe_indices(A...)
 ```
 
 yields an iterable object for visiting each index of array(s) `A` in an
@@ -457,50 +448,48 @@ efficient manner. For array types that have opted into fast linear indexing
 return a specialized Cartesian range to efficiently index into the array with
 indices specified for every dimension.
 
-If more than one `AbstractArray` argument are supplied, `safeindices` will
+If more than one `AbstractArray` argument are supplied, `safe_indices` will
 create an iterable object that is fast for all arguments (a `UnitRange` if all
 inputs have fast linear indexing, a `CartesianIndices` otherwise).  A
 `DimensionMismatch` exception is thrown if the arrays have different axes so
 that it is always safe to use `@inbounds` in front of a loop like:
 
 ```julia
-for i in safeindices(A, B, C, D)
+for i in safe_indices(A, B, C, D)
    A[i] = B[i]*C[i] + D[i]
 end
 ```
 
 when `A`, `B` etc. are all (abstract) arrays.
 
-This method is similar to [`eachindex`](@ref) except that a `DimensionMismatch`
-exception is thrown if linearly indexed arrays have different dimensions
-whereas `eachindex` only checks that they have the same linear index range.
+This method is similar to `eachindex` except that a `DimensionMismatch`
+exception is thrown if arrays have different axes.  For linearly indexed
+arrays, `eachindex` only checks that they have the same linear index range
+(that is the same number of elements, not the same shape).
 
-"""
-safeindices(A::AbstractArray) =
-    (@_inline_meta; _safeindices(IndexStyle(A), A))
-safeindices(A::AbstractArray, B::AbstractArray) =
-    (@_inline_meta; _safeindices(IndexStyle(A, B), A, B))
-safeindices(A::AbstractArray, B::AbstractArray...) =
-    (@_inline_meta; _safeindices(IndexStyle(A, B...), A, B...))
+""" safe_indices
 
-_safeindices(::IndexLinear, A::AbstractVector) =
-    (@_inline_meta; axes1(A))
-_safeindices(::IndexLinear, A::AbstractArray) =
-    (@_inline_meta; OneTo(length(A)))
-_safeindices(::IndexLinear, A::AbstractArray, B::AbstractArray...) = begin
-    @_inline_meta
+@inline safe_indices(A::AbstractArray) =
+    eachindex(IndexStyle(A), A)
+@inline safe_indices(A::AbstractArray, B::AbstractArray) =
+    safe_indices(IndexStyle(A, B), A, B)
+@inline safe_indices(A::AbstractArray, B::AbstractArray...) =
+    safe_indices(IndexStyle(A, B...), A, B...)
+
+@inline function safe_indices(::IndexLinear, A::AbstractArray,
+                              B::AbstractArray...)
     all_match_first(axes, axes(A), B...) ||
-        throw_safeindices_mismatch(IndexLinear(), A, B...)
-    return _safeindices(IndexLinear(), A)
+        throw_indices_mismatch(IndexLinear(), A, B...)
+    return eachindex(IndexLinear(), A)
 end
 
-_safeindices(::IndexCartesian, A::AbstractArray) =
-    (@_inline_meta; CartesianIndices(axes(A)))
-_safeindices(::IndexCartesian, A::AbstractArray, B::AbstractArray...) = begin
-    @_inline_meta
+@inline function safe_indices(::IndexCartesian, A::AbstractArray,
+                              B::AbstractArray...)
     inds = axes(A)
     all_match_first(axes, inds, B...) ||
-        throw_safeindices_mismatch(IndexCartesian(), A, B...)
+        throw_indices_mismatch(IndexCartesian(), A, B...)
+    # The following is the same as `eachindex(IndexCartesian(),A)` which yields
+    # `CartesianIndices(axes(A))`.
     return CartesianIndices(inds)
 end
 
@@ -510,10 +499,10 @@ all_match_first(f::Function, val, arg, args...) = begin
 end
 all_match_first(f::Function, val) = true
 
-@noinline function throw_safeindices_mismatch(::IndexLinear,
-                                              A::AbstractArray...)
+@noinline function throw_indices_mismatch(::IndexLinear,
+                                          A::AbstractArray...)
     io = IOBuffer()
-    write(io, "all arguments of `safeindices` must have the same shape, got ")
+    write(io, "all arguments of `safe_indices` must have the same shape, got ")
     m = length(A)
     for i in 1:m
         write(io, (i == 1 ? "(" : i == m ? " and (" : ", )"))
@@ -528,10 +517,10 @@ all_match_first(f::Function, val) = true
     throw(DimensionMismatch(String(take!(io))))
 end
 
-@noinline function throw_safeindices_mismatch(::IndexCartesian,
-                                              A::AbstractArray...)
+@noinline function throw_indices_mismatch(::IndexCartesian,
+                                          A::AbstractArray...)
     io = IOBuffer()
-    write(io, "all arguments of `safeindices` must have the same axes, got ")
+    write(io, "all arguments of `safe_indices` must have the same axes, got ")
     m = length(A)
     for i in 1:m
         write(io, (i == 1 ? "(" : i == m ? " and (" : ", )"))

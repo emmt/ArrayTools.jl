@@ -112,25 +112,25 @@ atol = 1e-6
         @test anyof(x) == (anyof(minimum, x, x) || anyof(maximum, x))
     end
     #
-    # Tests for `cartesianindices`.
+    # Tests for `cartesian_indices`.
     #
     @test_deprecated indices(A) === CartesianIndices(axes(A))
-    @test cartesianindices(A) === CartesianIndices(axes(A))
-    @test cartesianindices(A) === cartesianindices(size(A))
-    @test cartesianindices(A) === cartesianindices(axes(A))
-    @test cartesianindices(A) === cartesianindices(cartesianindices(A))
+    @test cartesian_indices(A) === CartesianIndices(axes(A))
+    @test cartesian_indices(A) === cartesian_indices(size(A))
+    @test cartesian_indices(A) === cartesian_indices(axes(A))
+    @test cartesian_indices(A) === cartesian_indices(cartesian_indices(A))
     #
-    # Tests for `safeindices`.
+    # Tests for `safe_indices`.
     #
     B = rand(T, dims[1:2])
     C = rand(T, dims[1:end-2]..., dims[end], dims[end-1])
     X = rand(T, 6)
-    @test safeindices(X) === eachindex(X)
-    @test safeindices(A) === eachindex(A)
-    @test safeindices(V) === eachindex(V)
-    @test_throws DimensionMismatch safeindices(A,V)
+    @test safe_indices(X) === eachindex(X)
+    @test safe_indices(A) === eachindex(A)
+    @test safe_indices(V) === eachindex(V)
+    @test_throws DimensionMismatch safe_indices(A,V)
     @test eachindex(A,C) === eachindex(A)
-    @test_throws DimensionMismatch safeindices(A,C)
+    @test_throws DimensionMismatch safe_indices(A,C)
     #
     # Other stuff.
     #
@@ -188,6 +188,9 @@ end
     C = copy(B)
     inds = (2:3, 4, Colon(), CartesianIndex(2),
             CartesianIndex(3), 1:2, 3, 2:3, CartesianIndex(1))
+    for k ∈ 0:n
+        @test ArrayTools.numberofindices(inds[1:k]...) == k
+    end
     for k in 0:n, l in 0:n-k
         J1 = inds[1:k]         # leading indices
         J2 = inds[n-l+1:n]     # trailing indices
@@ -330,6 +333,9 @@ Base.parent(A::DummyArray) = A.arr
     D3 = Dict(:x => 1, :y => 2, :z => 3)
     @test isa(D3, Dict{Symbol,Int})
     D4 = Dict(:x => 1, Float64 => 3.1, "string" => "hello")
+    @test isa(D4, Dict{Any,Any})
+    D5 = Dict(1.0 => 1, 2.0 => :2, 3.0 => "3")
+    @test isa(D5, Dict{Float64,Any})
     G = AnnotatedArray(zeros(T, dims), pairs(D1)...)
     F = AnnotatedArray{T}(parent(G), Dict{String,Any}())
     H = AnnotatedArray{T,N}(undef, dims, Dict{Symbol,Float32}())
@@ -369,12 +375,12 @@ Base.parent(A::DummyArray) = A.arr
     @test get(A11, "b", :x) == :x
     @test A11[:a] == A11.a
     @test_throws ErrorException A11.x
+    @test_throws ErrorException delete!(A11, :a)
     @test_throws ErrorException get!(A11, :a, 1)
     @test_throws ErrorException pop!(A11, :a)
     @test_throws ErrorException pop!(A11, :a, 1)
     @test_throws ErrorException merge!(A11, A12)
     @test_throws ErrorException merge!(+, A11, A12)
-
 
     A31 = AnnotatedArray{T,N}(Array{T,N}(undef, dims))
     A32 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), D3)
@@ -390,7 +396,6 @@ Base.parent(A::DummyArray) = A.arr
     A36 = AnnotatedArray{T,N}(undef, dims, pairs(D2)...)
     A37 = AnnotatedArray{T,N}(Array{T,N}(undef, dims); K2...)
     A38 = AnnotatedArray{T,N}(undef, dims; K2...)
-
 
     A41 = AnnotatedArray{T}(Array{T,N}(undef, dims))
     A42 = AnnotatedArray{T}(Array{T,N}(undef, dims), D1)

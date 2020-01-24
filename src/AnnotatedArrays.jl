@@ -151,7 +151,7 @@ AnnotatedArray(data::AbstractArray, args::Pair{<:AbstractString,<:Any}...) =
 AnnotatedArray(data::AbstractArray, args::Pair...) =
     AnnotatedArray(data, _initialproperties(Dict(args...)))
 
-_initialproperties(prop::Dict{<:Any,Any}) = prop
+_initialproperties(prop::Dict{K,Any}) where {K} = prop
 _initialproperties(prop::Dict{K}) where {K} = convert(Dict{K,Any}, prop)
 
 # Constructors that allocate the initial array.  If only keywords are
@@ -357,11 +357,8 @@ Base.merge!(combine::Function, A::StaticallyAnnotatedArray, others...) =
 Base.merge!(combine::Function, A::AbstractDict, B::AbstractAnnotatedArray, others...) =
     merge!(combine, A, properties(B), others...)
 
-
 # Errors.
-
 throw_missing_type_parameter() = error("type parameter T must be specified")
 throw_immutable_properties() = error("properties are immutable")
-@noinline throw_key_error(key) = throw(KeyError(key))
 
 end # module
