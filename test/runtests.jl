@@ -24,7 +24,7 @@ function maxabsdif(A::AbstractArray, B::AbstractArray)
 end
 
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
-    A[rubberindex(Val(N-1))..., i]
+    A[colons(Val(N-1))..., i]
 
 generate(::Type{T}, dims::Integer...) where {T} = generate(T, dims)
 generate(::Type{T}, dims::NTuple{N,Integer}) where {T,N} =
@@ -147,11 +147,12 @@ end
     I3 = CartesianIndex(2,3,4)
     I4 = CartesianIndex(1,2,3,2)
     I5 = CartesianIndex(1,2,3,2,4)
-    @test_deprecated colons(5) == rubberindex(5)
+    @test_throws ArgumentError colons(-1)
+    @test_deprecated colons(5) === rubberindex(5)
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
-        @test rubberindex(d) === tup
-        @test rubberindex(Val(d)) === tup
+        @test colons(d) === tup
+        @test colons(Val(d)) === tup
     end
     for k ∈ 1:dims[end]
         @test samevalues(slice(A, k), A[:,:,:,k])
@@ -195,7 +196,7 @@ end
         J1 = inds[1:k]         # leading indices
         J2 = inds[n-l+1:n]     # trailing indices
         J = (J1..., …, J2...,) # with a rubber index
-        K = (J1..., rubberindex(n - length(J1) - length(J2))..., J2...,)
+        K = (J1..., colons(n - length(J1) - length(J2))..., J2...,)
         R = B[K...]            # extract region before change
         @test R == B[J...]     # extract values with `getindex`
         B[J...] .*= -1         # change values with `dotview`
@@ -230,7 +231,7 @@ end
     @test maxabsdif(V, C) ≤ atol
     for n in 1:5
         K = rand(Float64, ntuple(x -> 3, n))
-        L = view(K, 2:3, rubberindex(n-1)...)
+        L = view(K, 2:3, colons(n-1)...)
         @test StorageType(K) == FlatStorage()
         @test StorageType(L) == (n == 1 ? FlatStorage() : AnyStorage())
     end

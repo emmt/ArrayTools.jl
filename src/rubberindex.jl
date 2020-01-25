@@ -1,15 +1,15 @@
 """
 
 ```julia
-rubberindex(n)
+colons(n)
 ```
 
-yields a rubber index of lenght `n`.  That is a `n`-tuple of colons `:`.
+yields a `n`-tuple of colons `:` (a.k.a. `Colon()`).
 
 When `n` is known at compile time, it is faster to call:
 
 ```julia
-rubberindex(Val(n))
+colons(Val(n))
 ```
 
 This method is suitable to extract sub-arrays of build views when some kind of
@@ -17,16 +17,24 @@ rubber index is needed.  For instance:
 
 ```julia
 slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
-    A[rubberindex(Val(N-1))..., i]
+    A[colons(Val(N-1))..., i]
 ```
 
 defines a function that returns the `i`-th slice of `A` assuming index `i`
-refers the last index of `A`.
+refers the last index of `A`.  Using the rubber-index `…`, a shorter
+definition is:
+
+```julia
+slice(A::AbstractArray, i) = A[…, i]
+```
+
+which is also able to deal with multiple trailing indices if `i` is a
+`CartesianIndex`.
 
 See also: [`…`](@ref), [`RubberIndex`](@ref).
 
 """
-rubberindex(n::Integer) =
+colons(n::Integer) =
     (n ==  0 ? () :
      n ==  1 ? (:,) :
      n ==  2 ? (:,:,) :
@@ -38,25 +46,29 @@ rubberindex(n::Integer) =
      n ==  8 ? (:,:,:,:,:,:,:,:,) :
      n ==  9 ? (:,:,:,:,:,:,:,:,:,) :
      n == 10 ? (:,:,:,:,:,:,:,:,:,:,) :
-     _rubberindex(n))
+     _generatecolons(n))
 
-function _rubberindex(n::Integer)
-    n ≥ 0 || throw(ArgumentError(string("number of dimensions should be ≥ 0, got ", n)))
+_generatecolons(n::Integer) = begin
+    n ≥ 0 || bad_ndims(n)
+    # The following is a bit faster than `ntuple(x->Colon(),n)`.
     return ([Colon() for i in 1:n]...,)
 end
 
-rubberindex(::Val{ 0}) = ()
-rubberindex(::Val{ 1}) = (:,)
-rubberindex(::Val{ 2}) = (:,:,)
-rubberindex(::Val{ 3}) = (:,:,:,)
-rubberindex(::Val{ 4}) = (:,:,:,:,)
-rubberindex(::Val{ 5}) = (:,:,:,:,:,)
-rubberindex(::Val{ 6}) = (:,:,:,:,:,:,)
-rubberindex(::Val{ 7}) = (:,:,:,:,:,:,:,)
-rubberindex(::Val{ 8}) = (:,:,:,:,:,:,:,:,)
-rubberindex(::Val{ 9}) = (:,:,:,:,:,:,:,:,:,)
-rubberindex(::Val{10}) = (:,:,:,:,:,:,:,:,:,:,)
-rubberindex(v::Val{N}) where {N} = ntuple(x -> :, v)
+@noinline bad_ndims(n::Integer) =
+    throw(ArgumentError(string("number of dimensions should be ≥ 0, got ", n)))
+
+colons(::Val{ 0}) = ()
+colons(::Val{ 1}) = (:,)
+colons(::Val{ 2}) = (:,:,)
+colons(::Val{ 3}) = (:,:,:,)
+colons(::Val{ 4}) = (:,:,:,:,)
+colons(::Val{ 5}) = (:,:,:,:,:,)
+colons(::Val{ 6}) = (:,:,:,:,:,:,)
+colons(::Val{ 7}) = (:,:,:,:,:,:,:,)
+colons(::Val{ 8}) = (:,:,:,:,:,:,:,:,)
+colons(::Val{ 9}) = (:,:,:,:,:,:,:,:,:,)
+colons(::Val{10}) = (:,:,:,:,:,:,:,:,:,:,)
+colons(v::Val{N}) where {N} = ntuple(x -> :, v)
 
 struct RubberIndex; end
 
@@ -100,7 +112,7 @@ Leading/trailing indices may be specified as Cartesian indices (of type
     2. At most 9 indices can be specified before the rubber index.  This
        can be extended by editing the source code.
 
-See also: [`rubberindex`](@ref).
+See also: [`colons`](@ref).
 
 """
 const … = RubberIndex()
@@ -137,15 +149,15 @@ numberofindices(i::Index, inds::Index...) = numberofindices(i) + numberofindices
 _colons(N::Int, inds::Index...) = begin
     (n = N - numberofindices(inds...)) ≥ 0 ||
          throw(DimensionMismatch("the number of specified indices exceed the number of dimensions"))
-    rubberindex(n)
+    colons(n)
 end
 
 # A[…]
 getindex(A::AbstractArray, ::RubberIndex) = copy(A)
 setindex!(A::AbstractArray{T,N}, val, ::RubberIndex) where {T,N} =
-    A[rubberindex(Val(N))...] = val
+    A[colons(Val(N))...] = val
 dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
-    dotview(A, rubberindex(Val(N))...)
+    dotview(A, colons(Val(N))...)
 
 # A[…, inds...]
 function getindex(A::AbstractArray{T,N},

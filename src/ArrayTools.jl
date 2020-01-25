@@ -18,7 +18,6 @@ export
     noneof,
     promote_eltype,
     reversemap,
-    rubberindex,
     safe_indices,
     # storage trait
     StorageType,
@@ -40,7 +39,7 @@ export
 using Base: OneTo, axes1, @_inline_meta
 import Base: dotview, getindex, setindex!
 
-@deprecate colons rubberindex
+@deprecate rubberindex colons
 @deprecate indices cartesian_indices
 @deprecate cartesianindices cartesian_indices
 @deprecate safeindices safe_indices
