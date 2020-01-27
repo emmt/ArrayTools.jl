@@ -121,6 +121,10 @@ atol = 1e-6
     @test cartesian_indices(A) === cartesian_indices(size(A))
     @test cartesian_indices(A) === cartesian_indices(axes(A))
     @test cartesian_indices(A) === cartesian_indices(cartesian_indices(A))
+    I1 = CartesianIndex(1,2,3)
+    I2 = CartesianIndex(5,7,9)
+    @test cartesian_indices(I1,I2) ===
+        CartesianIndices(([I1[k]:I2[k] for k in 1:length(I1)]...,))
     #
     # Tests for `safe_indices`.
     #
@@ -133,6 +137,11 @@ atol = 1e-6
     @test_throws DimensionMismatch safe_indices(A,Va)
     @test eachindex(A,C) === eachindex(A)
     @test_throws DimensionMismatch safe_indices(A,C)
+    @test safe_indices(A, rand(T, dims), rand(T, dims)) === eachindex(A)
+    Y = rand(T, dims[1], dims[2]+2, dims[3:end]...)
+    Z = view(Y, :, 2:dims[2]+1, colons(length(dims)-2)...)
+    @test IndexStyle(Z) === IndexCartesian()
+    @test safe_indices(A, rand(T, dims), Z) === eachindex(IndexCartesian(), A)
     #
     # Other stuff.
     #
@@ -294,6 +303,7 @@ end
 end
 
 @testset "Broadcasting" begin
+    # Check broadcasting of dimensions.
     @test_throws DimensionMismatch bcastdim(3, 4)
     for (a,b) in (((), ()),
                   ((Int16(5), Int32(6), Int64(7)), (5,6,7)),)
@@ -301,25 +311,54 @@ end
         @test bcastdims((), a) === b
         @test bcastdims(a, ()) === b
         @test bcastdims(a, (a..., 3,)) === (b..., 3,)
+        @test bcastdims(a, (a..., 3,), (a..., 1, 2)) === (b..., 3, 2)
         @test bcastdims((a..., 3,), a) === (b..., 3,)
         @test bcastdims((a..., 1,), (a..., 3,)) === (b..., 3,)
         @test bcastdims((a..., 3,), (a..., 1,)) === (b..., 3,)
     end
-    A1 = bcastlazy(A, size(A))
-    A2 = bcastcopy(A, size(A))
-    @test pointer(A1) == pointer(A) && samevalues(A, A1)
-    @test pointer(A2) != pointer(A) && samevalues(A, A2)
-    A3 = bcastlazy(A, eltype(A), size(A))
-    A4 = bcastlazy(A, Float32, size(A))
-    @test pointer(A3) == pointer(A) && samevalues(A, A1)
-    @test size(A4) == size(A) && maxabsdif(A, A4) ≤ atol
-    bdims = (dims[1], 1, dims[3:end]...)
-    B = rand(Float64, bdims)
-    B1 = bcastlazy(B, dims)
-    B2 = bcastcopy(B, dims)
+    # Check `bcastcopy`.
+    T = Int32
+    dims1 = (1,2,3)
+    dims2 = (3,2,1,4)
+    dims3 = bcastdims(dims1, dims2)
+    A1 = generate(T, dims1)
+    A2 = generate(T, dims2)
+    @test A1 .+ zeros(T, dims2) == bcastcopy(A1, dims3...)
+    @test A2 .+ zeros(T, dims1) == bcastcopy(A2, map(Int16, dims3))
+    C1 = bcastcopy(A, eltype(A), size(A))
+    @test C1 !== A && C1 == A
+    C2 = bcastcopy(A, eltype(A), map(Int16, size(A))...)
+    @test C2 !== A && C2 == A
+    C4 = bcastcopy(A, size(A))
+    @test C4 !== A && C4 == A
+    C5 = bcastcopy(A, map(Int16, size(A))...)
+    @test C5 !== A && C5 == A
+    # Check that `bcastlazy attempt` to yield the same object.
+    @test bcastlazy(A, eltype(A), size(A)) === A
+    @test bcastlazy(A, eltype(A), map(Int16, size(A))...) === A
+    @test bcastlazy(A, size(A)) === A
+    @test bcastlazy(A, map(Int16, size(A))...) === A
+    B1 = bcastlazy(A, Int32, size(A))
+    @test B1 !== A && B1 == A
+    B2 = bcastlazy(Float32(1), dims)
+    @test eltype(B2) === Float32
+    @test size(B2) === dims
+    @test B2 == ones(Float32, dims)
+    B3 = bcastlazy(1, Float16, dims...)
+    @test eltype(B3) === Float16
+    @test size(B3) === dims
+    @test B3 == ones(Float16, dims)
+    B4 = bcastlazy(Float64, 1, dims...)
+    @test eltype(B4) === Float64
+    @test size(B4) === dims
+    @test B4 == ones(Float64, dims)
+    # Check slices of arrays given by `bcastcopy`/`bcastlazy`
+    X = generate(Float64, (dims[1], 1, dims[3:end]...))
+    X1 = bcastlazy(X, dims)
+    X2 = bcastcopy(X, dims)
     for i in 1:dims[2]
-        @test samevalues(B[:,1,:,:], B1[:,i,:,:])
-        @test samevalues(B[:,1,:,:], B2[:,i,:,:])
+        @test X[:,1,:,:] == X1[:,i,:,:]
+        @test X[:,1,:,:] == X2[:,i,:,:]
     end
 end
 

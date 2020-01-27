@@ -505,105 +505,81 @@ end
 """
 
 ```julia
-bcastcopy([T=eltype(A),] A, dims...)
+bcastcopy(x, [T=eltype(x),] dims...)
 ```
 
-yields a new array of type `T` and dimensions `dims` filled with the elements
-of `A` according to type conversion and broadcasting rules (see
-[`broadcast`](@ref)).  Compared to [`bcastlazy`](@ref), it is guaranteed that
-the returned array does not share its contents with `A`.
+yields a new array of element type `T` and dimensions `dims` filled with `x`
+according to type conversion and broadcasting rules (see [`broadcast`](@ref)).
+Compared to [`bcastlazy`](@ref), it is guaranteed that the returned array does
+not share its contents with `x`.
 
-Arguments `A` and `T` can be exchanged, that is `bcastcopy(A,T,dims)` is the
-same as `bcastcopy(T,A,dims)`.
+Argument `x` can be a scalar value or an array.
 
 See also [`bcastlazy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
 
 """
-bcastcopy(A::AbstractArray{T}, dims::Integer...) where {T} =
-    bcastcopy(T, A, dims)
-bcastcopy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, A, dims)
-bcastcopy(x::T, dims::Integer...) where {T} =
-    bcastcopy(T, x, dims)
-bcastcopy(x::T, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, x, dims)
-bcastcopy(x, ::Type{T}, dims::Integer...) where {T} =
-    bcastcopy(T, x, dims)
-bcastcopy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, x, dims)
-bcastcopy(::Type{T}, x, dims::Integer...) where {T} =
-    bcastcopy(T, x, dims)
-bcastcopy(::Type{T}, x, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(T, x, map(Int, dims))
-
-function bcastcopy(::Type{T}, A::AbstractArray,
-                   dims::Tuple{Vararg{Int}}) where {T}
-    C = Array{T}(undef, dims)
-    @. C = A # This exprssion will clash if dimensions are not compatible.
-    return C
+function bcastcopy(x, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T}
+    A = Array{T}(undef, dims)
+    @. A = x # This expression will clash if dimensions are not compatible.
+    return A
 end
 
-bcastcopy(::Type{T}, x::T, dims::Tuple{}) where {T} = copy(x)
-bcastcopy(::Type{T}, x, dims::Tuple{}) where {T} = convert(T, x)
-bcastcopy(::Type{T}, x, dims::NTuple{N,Int}) where {N,T} =
-    fill!(Array{T,N}(undef, dims), x)
+# Convert dimensions.
+bcastcopy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastcopy(x, T, map(Int, dims))
+bcastcopy(x, ::Type{T}, dims::Integer...) where {T} =
+    bcastcopy(x, T, dims)
+
+# Guess element type.
+bcastcopy(x, dims::Tuple{Vararg{Integer}}) =
+    bcastcopy(x, eltype(x), dims)
+bcastcopy(x, dims::Integer...) =
+    bcastcopy(x, dims)
 
 """
 
 ```julia
-bcastlazy([T=eltype(A),] A, dims...)
+bcastlazy(x, [T=eltype(x),] dims...)
 ```
 
-yields a *flat* array of type `T` and dimensions `dims` filled with the
-elements of `A` according to type conversion and broadcasting rules (see
-[`broadcast`](@ref)).  Compared to [`bcastcopy`](@ref), making a copy of `A` is
-avoided if it already has the correct type and dimensions or can be reshaped
-(see [`reshape`](@ref)) to the correct type and dimensions.  This means that
-the result may share the same contents as `A`.  Array `A` must have 1-based
-indices.  The result has 1-based indices and contiguous elements which is
-suitable for fast linear indexing.
-
-Arguments `A` and `T` can be exchanged, that is `bcastlazy(A,T,dims)` is the
-same as `bcastlazy(T,A,dims)`.
+yields a *flat* array of type `T` and dimensions `dims` filled with `x`
+according to type conversion and broadcasting rules (see [`broadcast`](@ref)).
+Compared to [`bcastcopy`](@ref), making a copy of `x` is avoided if it is
+already an array with the correct type of elements and dimensions or if it can
+be reshaped (see [`reshape`](@ref)) to the correct type and dimensions.  This
+means that the result may share the same contents as `x`.  Argument `x` can be
+a scalar or an array with 1-based indices.  The result has 1-based indices and
+contiguous elements which is suitable for fast linear indexing.
 
 See also [`bcastcopy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
 
 """
-bcastlazy(A::AbstractArray{T}, dims::Integer...) where {T} =
-    bcastlazy(T, A, dims)
-bcastlazy(A::AbstractArray{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, A, dims)
-bcastlazy(x::T, dims::Integer...) where {T} =
-    bcastlazy(T, x, dims)
-bcastlazy(x::T, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, x, dims)
-bcastlazy(x, ::Type{T}, dims::Integer...) where {T} =
-    bcastlazy(T, x, dims)
-bcastlazy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, x, dims)
-bcastlazy(::Type{T}, x, dims::Integer...) where {T} =
-    bcastlazy(T, x, dims)
-bcastlazy(::Type{T}, x, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(T, x, map(Int, dims))
-
-function bcastlazy(::Type{T}, A::AbstractArray{T},
+function bcastlazy(A::DenseArray{T},
+                   ::Type{T},
                    dims::Tuple{Vararg{Int}}) where {T}
     has_standard_indexing(A) || throw_non_standard_indexing()
     Adims = size(A)
     Adims == dims && return A
     bcastdims(Adims, dims) == dims ||
         throw(DimensionMismatch("array has incompatible dimensions"))
-    return (isa(A, DenseArray) && length(A) == prod(dims) ? reshape(A, dims) :
-            bcastcopy(T, A, dims))
+    return (length(A) == prod(dims) ? reshape(A, dims) : bcastcopy(A, T, dims))
 end
 
-bcastlazy(::Type{T}, A::AbstractArray, dims::Tuple{Vararg{Int}}) where {T} =
-    bcastcopy(T, A, dims)
+# Call `bcastcopy` if argument `x` can certainly not be returned.
+bcastlazy(x, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T} =
+    bcastcopy(x, T, dims)
 
-bcastlazy(::Type{T}, x::T, dims::Tuple{}) where {T} = x
-bcastlazy(::Type{T}, x, dims::Tuple{}) where {T} = convert(T, x)
-bcastlazy(::Type{T}, x, dims::Tuple{Vararg{Int}}) where {T} =
-    bcastcopy(T, x, dims)
+# Convert dimensions.
+bcastlazy(x, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
+    bcastlazy(x, T, map(Int, dims))
+bcastlazy(x, ::Type{T}, dims::Integer...) where {T} =
+    bcastlazy(x, T, dims)
+
+# Guess element type.
+bcastlazy(x, dims::Tuple{Vararg{Integer}}) =
+    bcastlazy(x, eltype(x), dims)
+bcastlazy(x, dims::Integer...) =
+    bcastlazy(x, dims)
 
 """
 
