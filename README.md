@@ -47,9 +47,8 @@ Leading/trailing indices may be specified as Cartesian indices (of type
 Technically, the constant `…` is defined as `RubberIndex()` where `RubberIndex`
 is the singleron type that represents any number of indices.
 
-Call `rubberindex(n)` if you need a *rubber index* of length `n`, that is a
-`n`-tuple of colons. When `n` is known at compile time, it is faster to call
-`rubberindex(Val(n))`.
+Call `colons(n)` if you need a `n`-tuple of colons `:`.  When `n` is known at
+compile time, it is faster to call `colons(Val(n))`.
 
 
 ## Array-like objects
