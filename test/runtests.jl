@@ -348,10 +348,6 @@ end
     @test eltype(B3) === Float16
     @test size(B3) === dims
     @test B3 == ones(Float16, dims)
-    B4 = bcastlazy(Float64, 1, dims...)
-    @test eltype(B4) === Float64
-    @test size(B4) === dims
-    @test B4 == ones(Float64, dims)
     # Check slices of arrays given by `bcastcopy`/`bcastlazy`
     X = generate(Float64, (dims[1], 1, dims[3:end]...))
     X1 = bcastlazy(X, dims)

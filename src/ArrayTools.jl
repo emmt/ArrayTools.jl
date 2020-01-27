@@ -520,7 +520,7 @@ See also [`bcastlazy`](@ref), [`bcastdims`](@ref), [`reshape`](@ref).
 """
 function bcastcopy(x, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T}
     A = Array{T}(undef, dims)
-    @. A = x # This expression will clash if dimensions are not compatible.
+    A .= x # This expression will clash if dimensions are not compatible.
     return A
 end
 
