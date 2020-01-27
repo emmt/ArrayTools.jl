@@ -24,16 +24,12 @@ export
     AnyStorage,
     FlatStorage,
     flatarray,
-    flatmatrix,
-    flatvector,
     isflatarray,
     # Fast arrays and indexing trait:
     IndexingTrait,
     FastIndexing,
     AnyIndexing,
     fastarray,
-    fastmatrix,
-    fastvector,
     isfastarray
 
 using Base: OneTo, axes1, @_inline_meta
@@ -43,6 +39,10 @@ import Base: dotview, getindex, setindex!
 @deprecate indices cartesian_indices
 @deprecate cartesianindices cartesian_indices
 @deprecate safeindices safe_indices
+@deprecate flatmatrix flatarray
+@deprecate flatvector flatarray
+@deprecate fastmatrix fastarray
+@deprecate fastvector fastarray
 
 """
 ```julia
@@ -158,15 +158,6 @@ elements in column-major order and first element at index 1.  Optional argument
 it is already a flat array with the requested element type; otherwise,
 [`convert`](@ref) is called to produce the result (an `Array{T}` in that case).
 
-Similarly:
-
-```julia
-flatvector([T=eltype(V),] V)
-flatmatrix([T=eltype(M),] M)
-```
-
-respectively yield a *flat* vector from `V` and a *flat* matrix from `M`.
-
 See also [`isflatarray`](@ref), [`fastarray`](@ref), [`convert`](@ref).
 """
 flatarray(A::Array) = A
@@ -179,14 +170,6 @@ flatarray(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
 _flatarray(::FlatStorage, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
 _flatarray(::StorageType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)
-
-flatvector(V::AbstractVector{T}) where {T} = flatarray(T, V)
-flatvector(::Type{T}, V::AbstractVector) where {T} = flatarray(T, V)
-@doc @doc(flatarray) flatvector
-
-flatmatrix(M::AbstractMatrix{T}) where {T} = flatarray(T, M)
-flatmatrix(::Type{T}, M::AbstractMatrix) where {T} = flatarray(T, M)
-@doc @doc(flatarray) flatmatrix
 
 """
 
@@ -260,15 +243,6 @@ array* has standard 1-based indices and is efficiently indexed by linear
 indices.  If `A` is already a *fast array* with element type `T`, `A` is
 returned; otherwise, `A` is converted into an `Array` which is returned.
 
-Similarly:
-
-```julia
-fastvector([T=eltype(V),] V)
-fastmatrix([T=eltype(M),] M)
-```
-
-respectively yield a *fast* vector from `V` and a *fast* matrix from `M`.
-
 See also [`isfastarray`](@ref), [`IndexingTrait`](@ref), [`flatarray`](@ref).
 
 """
@@ -278,14 +252,6 @@ fastarray(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
 _fastarray(::FastIndexing, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
 _fastarray(::IndexingTrait, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)
-
-fastvector(V::AbstractVector{T}) where {T} = fastarray(T, V)
-fastvector(::Type{T}, V::AbstractVector) where {T} = fastarray(T, V)
-@doc @doc(fastarray) fastvector
-
-fastmatrix(M::AbstractMatrix{T}) where {T} = fastarray(T, M)
-fastmatrix(::Type{T}, M::AbstractMatrix) where {T} = fastarray(T, M)
-@doc @doc(fastarray) fastmatrix
 
 """
 
