@@ -2,6 +2,8 @@ module ArrayToolsTests
 
 using Test, Random
 using ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.PseudoArrays
+using Base: @propagate_inbounds
+import Base: getindex, setindex!, checkbounds
 
 function samevalues(A::AbstractArray, B::AbstractArray)
     @assert has_standard_indexing(A, B)
@@ -48,6 +50,43 @@ S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
 atol = 1e-6
 
+# Make a simple wrapped vector type to have a concrete dense array.
+struct WrappedVector{T,N} <: DenseArray{T,N}
+    vals::Vector{T}
+    dims::NTuple{N,Int}
+    len::Int
+    function WrappedVector{T,0}(vals::AbstractVector{T},
+                                ::Tuple{}) where {T}
+        return new{T,0}(vals, (), 0)
+    end
+    function WrappedVector{T,N}(vals::AbstractVector{T},
+                                dims::NTuple{N,Integer}) where {T,N}
+        @assert N > 0
+        len = 1
+        for dim in dims
+            @assert dim >= 0 "invalid dimension"
+            len *= Int(dim)
+        end
+        @assert length(vals) >= len
+        return new{T,N}(vals, dims, len)
+    end
+end
+WrappedVector(vals::AbstractVector{T}, dims::NTuple{N,Integer}) where {T,N} =
+    WrappedVector{T,N}(vals, dims)
+
+Base.size(A::WrappedVector) = A.dims
+Base.length(A::WrappedVector) = A.len
+Base.parent(A::WrappedVector) = A.vals
+Base.axes(A::WrappedVector) = map(x -> Base.OneTo(x), size(A))
+@inline @propagate_inbounds getindex(A::WrappedVector, i::Int) = begin
+    @boundscheck checkbounds(A, i)
+    @inbounds getindex(parent(A), i)
+end
+@inline @propagate_inbounds setindex!(A::WrappedVector, x, i::Int) = begin
+    @boundscheck checkbounds(A, i)
+    @inbounds setindex!(parent(A), x, i)
+end
+
 @testset "Miscellaneous" begin
     # Promotion of element types.
     for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
@@ -79,9 +118,9 @@ atol = 1e-6
     #
     # Tests for `allof`, `anyof` and `noneof`.
     #
-    W = (true, true, true)
+    W = [true, true, true]
     X = [true, false]
-    Y = (false, false)
+    Y = [false, false]
     for i in randperm(length(X)) # prevent compilation-time optimization
         @test anyof(X[i]) == X[i]
     end
@@ -94,15 +133,21 @@ atol = 1e-6
     @test allof(W) == true
     @test anyof(W) == true
     @test noneof(W) == false
-    @test allof(collect(W)) == allof(W)
-    @test anyof(collect(W)) == anyof(W)
-    @test noneof(collect(W)) == noneof(W)
+    @test allof(Tuple(W)) == allof(W)
+    @test anyof(Tuple(W)) == anyof(W)
+    @test noneof(Tuple(W)) == noneof(W)
     @test allof(X) == false
     @test anyof(X) == true
     @test noneof(X) == false
+    @test allof(Tuple(X)) == allof(X)
+    @test anyof(Tuple(X)) == anyof(X)
+    @test noneof(Tuple(X)) == noneof(X)
     @test allof(Y) == false
     @test anyof(Y) == false
     @test noneof(Y) == true
+    @test allof(Tuple(Y)) == allof(Y)
+    @test anyof(Tuple(Y)) == anyof(Y)
+    @test noneof(Tuple(Y)) == noneof(Y)
     for (x, y) in ((W,W),(X,X),(Y,Y),(W,X),(X,Y),(Y,W))
         @test anyof(x, y) == (anyof(x) || anyof(y))
         @test allof(x, y) == (allof(x) && allof(y))
@@ -218,11 +263,14 @@ end
 end
 
 @testset "Storage" begin
+    Q = WrappedVector(generate(Float32, 15), (3,5))
     B = flatarray(Float32, A)
     C = flatarray(Float32, Va)
     @test StorageType() === AnyStorage()
     @test StorageType("a") === AnyStorage()
     @test StorageType(A) === FlatStorage()
+    @test isa(Q, DenseArray)
+    @test StorageType(Q) === FlatStorage()
     @test StorageType(Vf) === FlatStorage()
     @test StorageType(Va) === AnyStorage()
     @test isflatarray() == false
@@ -252,8 +300,10 @@ end
     for n in 1:5
         K = rand(Float64, ntuple(x -> 3, n))
         L = view(K, 2:3, colons(n-1)...)
+        M = view(K, colons(n-1)..., 2:3)
         @test StorageType(K) == FlatStorage()
         @test StorageType(L) == (n == 1 ? FlatStorage() : AnyStorage())
+        @test StorageType(M) == FlatStorage()
     end
     L = ((nothing,               false),
          ("a",                   false),

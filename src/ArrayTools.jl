@@ -32,7 +32,7 @@ export
     fastarray,
     isfastarray
 
-using Base: OneTo, axes1, @_inline_meta
+using Base: OneTo, axes1
 import Base: dotview, getindex, setindex!
 
 @deprecate rubberindex colons
@@ -105,6 +105,17 @@ StorageType(A::StridedArray{T,N}) where {T,N} = begin
     end
     return FlatStorage()
 end
+
+# According to Julia documentation (subsection "Implementation" in section
+# "Multi-dimensional Arrays") `DenseArray` is an abstract subtype of
+# `AbstractArray` intended to include all arrays where elements are stored
+# contiguously in column-major order.
+# (https://docs.julialang.org/en/v1.5-dev/manual/arrays/#Implementation-1)
+#
+# Also note that abstract type `DenseArray` belongs to the union
+# `StridedArray`.
+StorageType(A::DenseArray) =
+    (has_standard_indexing(A) ? FlatStorage() : AnyStorage())
 
 """
 ```julia
@@ -457,11 +468,9 @@ end
     return CartesianIndices(inds)
 end
 
-all_match_first(f::Function, val, arg, args...) = begin
-    @_inline_meta
-    (val == f(arg)) & all_match_first(f, val, args...)
-end
 all_match_first(f::Function, val) = true
+@inline all_match_first(f::Function, val, arg, args...) =
+    (val == f(arg)) & all_match_first(f, val, args...)
 
 @noinline function throw_indices_mismatch(::IndexLinear,
                                           A::AbstractArray...)
