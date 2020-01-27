@@ -41,6 +41,8 @@ end
 T = Float32
 dims = (3, 4, 5, 6)
 A = generate(T, dims)
+Vf = view(A, :, :, :, 3:4)   # a flat sub-array
+Va = view(A, 2:3, :, :, 3:4) # a non-flat sub-array
 V = view(A, :, 2:3, :, :)
 S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
@@ -61,15 +63,15 @@ atol = 1e-6
             promote_type(T1,T2,T3)
     end
     # Dimensions.
-    @test dimensions(()) == ()
-    @test dimensions(5) == (5,)
-    @test dimensions(Int16(5)) == (5,)
+    @test dimensions(()) === ()
+    @test dimensions(5) === (5,)
+    @test dimensions(Int16(5)) === (5,)
     @test isa(dimensions(Int16(5)), Tuple{Int})
-    @test dimensions(A) == size(A)
-    @test dimensions(dims) == dims
-    @test dimensions(dims...) == dims
-    @test dimensions(UInt16(dims[1]), dims[2:end]...) == dims
-    @test dimensions((UInt16(dims[1]), dims[2:end]...)) == dims
+    @test dimensions(A) === size(A)
+    @test dimensions(dims) === dims
+    @test dimensions(dims...) === dims
+    @test dimensions(UInt16(dims[1]), dims[2:end]...) === dims
+    @test dimensions((UInt16(dims[1]), dims[2:end]...)) === dims
     @test checkdimensions(()) === true
     @test checkdimensions((1,0,2)) === true
     @test_throws ErrorException checkdimensions((1,0,-1))
@@ -127,8 +129,8 @@ atol = 1e-6
     X = rand(T, 6)
     @test safe_indices(X) === eachindex(X)
     @test safe_indices(A) === eachindex(A)
-    @test safe_indices(V) === eachindex(V)
-    @test_throws DimensionMismatch safe_indices(A,V)
+    @test safe_indices(Va) === eachindex(Va)
+    @test_throws DimensionMismatch safe_indices(A,Va)
     @test eachindex(A,C) === eachindex(A)
     @test_throws DimensionMismatch safe_indices(A,C)
     #
@@ -208,27 +210,36 @@ end
 
 @testset "Storage" begin
     B = flatarray(Float32, A)
-    C = flatarray(Float32, V)
-    @test StorageType() == AnyStorage()
-    @test StorageType("a") == AnyStorage()
-    @test StorageType(A) == FlatStorage()
+    C = flatarray(Float32, Va)
+    @test StorageType() === AnyStorage()
+    @test StorageType("a") === AnyStorage()
+    @test StorageType(A) === FlatStorage()
+    @test StorageType(Vf) === FlatStorage()
+    @test StorageType(Va) === AnyStorage()
     @test isflatarray() == false
     @test isflatarray("a") == false
     @test isflatarray(S) == false
     @test isflatarray(A) == true
-    @test isflatarray(V) == false
+    @test isflatarray(Vf) == true
+    @test isflatarray(Va) == false
     @test isflatarray(A,B,C) == true
-    @test isflatarray(A,B,C,V) == false
-    @test isflatarray(flatarray(V)) == true
-    @test pointer(A) == pointer(flatarray(A))
-    @test pointer(A) == pointer(flatarray(eltype(A), A))
-    @test pointer(A) != pointer(flatarray(V))
+    @test isflatarray(A,B,C,Vf) == true
+    @test isflatarray(A,B,C,Va) == false
+    @test flatarray(A) === A
+    @test flatarray(eltype(A), A) === A
+    @test pointer(A) != pointer(flatarray(Va))
     @test samevalues(S, flatarray(S))
     @test eltype(S) === eltype(flatarray(S))
-    @test samevalues(V, flatarray(V))
-    @test samevalues(A, flatarray(A))
     @test maxabsdif(A, B) ≤ atol
-    @test maxabsdif(V, C) ≤ atol
+    @test maxabsdif(Va, C) ≤ atol
+    Da = flatarray(Va)
+    @test isflatarray(Da) == true
+    @test Da == Va
+    @test Da !== Va
+    Df = flatarray(Vf)
+    @test isflatarray(Df) == true
+    @test Df == Vf
+    @test Df === Vf
     for n in 1:5
         K = rand(Float64, ntuple(x -> 3, n))
         L = view(K, 2:3, colons(n-1)...)
@@ -255,34 +266,45 @@ end
 end
 
 @testset "Indexing" begin
-    for Q in (A,V,S,101,Colon())
+    for Q in (A,Va,S,101,Colon())
         @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
     end
     B = fastarray(Float32, A)
-    C = fastarray(Float32, V)
-    @test has_standard_indexing(A,V) == (has_standard_indexing(A) &&
-                                         has_standard_indexing(V))
-    @test IndexingTrait(A) == FastIndexing()
-    @test IndexingTrait(V) == AnyIndexing()
-    @test IndexingTrait("a") == AnyIndexing()
+    C = fastarray(Float32, Va)
+    @test has_standard_indexing(A,Va) == (has_standard_indexing(A) &&
+                                         has_standard_indexing(Va))
+    @test IndexingTrait(A) === FastIndexing()
+    @test IndexingTrait(Va) === AnyIndexing()
+    @test IndexingTrait("a") === AnyIndexing()
     @test isfastarray() == false
     @test isfastarray(S) == true
-    @test samevalues(V, fastarray(V))
+    @test samevalues(Va, fastarray(Va))
     @test samevalues(A, fastarray(A))
     @test isfastarray(A) == true
     @test isfastarray(A,B,C) == true
-    @test isfastarray(V) == false
-    @test isfastarray(A,B,C,V) == false
-    @test isfastarray(fastarray(V)) == true
+    @test isfastarray(Va) == false
+    @test isfastarray(A,B,C,Va) == false
+    @test isfastarray(fastarray(Va)) == true
     @test pointer(A) == pointer(fastarray(A))
-    @test pointer(A) != pointer(fastarray(V))
-    @test samevalues(V, fastarray(V))
+    @test pointer(A) != pointer(fastarray(Va))
+    @test samevalues(Va, fastarray(Va))
     @test samevalues(A, fastarray(A))
     @test maxabsdif(A, B) ≤ atol
-    @test maxabsdif(V, C) ≤ atol
+    @test maxabsdif(Va, C) ≤ atol
 end
 
 @testset "Broadcasting" begin
+    @test_throws DimensionMismatch bcastdim(3, 4)
+    for (a,b) in (((), ()),
+                  ((Int16(5), Int32(6), Int64(7)), (5,6,7)),)
+        @test bcastdims(a) === b
+        @test bcastdims((), a) === b
+        @test bcastdims(a, ()) === b
+        @test bcastdims(a, (a..., 3,)) === (b..., 3,)
+        @test bcastdims((a..., 3,), a) === (b..., 3,)
+        @test bcastdims((a..., 1,), (a..., 3,)) === (b..., 3,)
+        @test bcastdims((a..., 3,), (a..., 1,)) === (b..., 3,)
+    end
     A1 = bcastlazy(A, size(A))
     A2 = bcastcopy(A, size(A))
     @test pointer(A1) == pointer(A) && samevalues(A, A1)
@@ -411,12 +433,12 @@ Base.parent(A::DummyArray) = A.arr
     A53 = AnnotatedArray(Array{T,N}(undef, dims), pairs(D2)...)
     A54 = AnnotatedArray(Array{T,N}(undef, dims); K2...)
 
-    Q = UnfinishedArray(V)
+    Q = UnfinishedArray(Va)
     @test_throws ErrorException Q[1]
-    R = DummyArray(V)
+    R = DummyArray(Va)
 
     copyto!(G, rand(dims...)) # exercise setindex! for linear indices
-    copyto!(R, rand(size(V)...)) # exercise setindex! for Cartesian indices
+    copyto!(R, rand(size(Va)...)) # exercise setindex! for Cartesian indices
     sum1 = 0.0
     for val in G
         sum1 += val
@@ -427,8 +449,8 @@ Base.parent(A::DummyArray) = A.arr
     for val in R
         sum2 += val
     end
-    @test samevalues(R, V)
-    @test sum(R) == sum(V) ≈ sum2
+    @test samevalues(R, Va)
+    @test sum(R) == sum(Va) ≈ sum2
     @test pointer(parent(F)) == pointer(parent(G))
     @test length(F) == length(G) == prod(dims)
     @test eltype(F) == eltype(G) == T
@@ -439,13 +461,13 @@ Base.parent(A::DummyArray) = A.arr
     @test ntuple(d -> axes(F,d), N) == ntuple(d -> axes(G,d), N) == inds
     @test Base.axes1(F) == Base.axes1(G) == inds[1]
     @test Base.elsize(F) == Base.elsize(G) == Base.elsize(parent(F))
-    @test Base.elsize(R) == Base.elsize(typeof(R)) == Base.elsize(V)
+    @test Base.elsize(R) == Base.elsize(typeof(R)) == Base.elsize(Va)
     @test sizeof(F) == sizeof(G) == sizeof(parent(F))
     @test IndexStyle(F) == IndexStyle(G) == IndexStyle(parent(F))
     @test_throws ErrorException parent(Q)
     @test IndexStyle(R) == IndexStyle(parent(R)) == IndexCartesian()
     @test pairs(IndexStyle(F), F) == pairs(IndexStyle(G), G) == pairs(IndexStyle(parent(F)), parent(F))
-    @test pairs(IndexStyle(R), R) == pairs(IndexStyle(V), V)
+    @test pairs(IndexStyle(R), R) == pairs(IndexStyle(Va), Va)
     @test_throws ErrorException size(F,0)
     @test_throws BoundsError F[0]
     @test keytype(F) === keytype(G) === String
