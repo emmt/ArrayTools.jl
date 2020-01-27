@@ -378,12 +378,11 @@ cartesian_indices(A::AbstractArray) = cartesian_indices(axes(A))
 cartesian_indices(R::CartesianIndices) = R
 @inline function cartesian_indices(start::CartesianIndex{N},
                                    stop::CartesianIndex{N}) where {N}
-    CartesianIndices(map((i,j) -> (i == 1 ? Base.OneTo(j) : i:j),
-                         start.I, stop.I))
+    CartesianIndices(map((i,j) -> i:j, start.I, stop.I))
 end
 cartesian_indices(dims::Tuple{Vararg{Integer}}) =
     CartesianIndices(map(dim -> Base.OneTo(dim), dims))
-cartesian_indices(rngs::NTuple{N,AbstractUnitRange{<:Integer}}) where {N} =
+cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
     CartesianIndices(rngs)
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
