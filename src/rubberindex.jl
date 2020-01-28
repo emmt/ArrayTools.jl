@@ -1,3 +1,9 @@
+#
+# rubberindex.jl -
+#
+# Rubber-index for Julia arrays.
+#
+
 """
 
 ```julia

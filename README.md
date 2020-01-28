@@ -234,24 +234,14 @@ Similar types are provided by
 The `safe_indices` method takes any number of array arguments and yields an
 efficient iterator for visiting all indices each index of the arguments.  Its
 behavior is similar to that of `eachindex` method except that `safe_indices`
-throws a `DimensionMismatch` exception if the arrays have different axes.  As a
-consequence, it is always safe to specify `@inbounds` for a loop like:
+throws a `DimensionMismatch` exception if the arrays have different axes.  It
+is always safe to specify `@inbounds` (and `@simd`) for a loop like:
 
 ```julia
 for i in safe_indices(A, B, C, D)
    A[i] = B[i]*C[i] + D[i]
 end
 ```
-
-As a result `@simd` can also be used.  The above loop can then be rewritten
-as:
-
-```julia
-@inbounds @simd for i in safe_indices(A, B, C, D)
-   A[i] = B[i]*C[i] + D[i]
-end
-```
-
 
 The `eachindex` and `safe_indices` methods are very useful when writing loops
 over array elements so as to be agnostic to which specfic indexing rule is the

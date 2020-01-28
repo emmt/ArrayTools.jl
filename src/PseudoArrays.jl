@@ -3,13 +3,6 @@
 #
 # Types and methods to facilitate the definition of custom array-like types.
 #
-#-------------------------------------------------------------------------------
-#
-# This file if part of the TAO software (https://github.com/emmt/ArrayTools)
-# licensed under the MIT license.
-#
-# Copyright (C) 2019, Éric Thiébaut.
-#
 
 module PseudoArrays
 

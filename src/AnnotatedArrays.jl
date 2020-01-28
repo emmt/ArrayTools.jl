@@ -4,13 +4,6 @@
 # Objects that combine values stored in an array and properties stored in a
 # dictionary or a named tuple.
 #
-#-------------------------------------------------------------------------------
-#
-# This file if part of the TAO software (https://github.com/emmt/ArrayTools)
-# licensed under the MIT license.
-#
-# Copyright (C) 2019, Éric Thiébaut.
-#
 
 module AnnotatedArrays
 
@@ -21,6 +14,7 @@ export
 
 using ..ArrayTools.PseudoArrays
 
+# Method `hasproperty` was introduced in Julia 1.2.
 if isdefined(Base, :hasproperty)
     import Base: hasproperty
 end
@@ -89,7 +83,8 @@ const StaticallyAnnotatedArray{T,N,S} = AbstractAnnotatedArray{T,N,<:NamedTuple,
 @doc @doc(AbstractAnnotatedArray) StaticallyAnnotatedArray
 
 struct AnnotatedArray{T,N,P<:Properties,
-                      A<:AbstractArray{T,N},S} <: AbstractAnnotatedArray{T,N,P,S}
+                      A<:AbstractArray{T,N},
+                      S} <: AbstractAnnotatedArray{T,N,P,S}
     data::A
     prop::P
     function AnnotatedArray{T,N,P,A,S}(data::A,
