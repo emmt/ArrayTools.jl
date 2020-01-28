@@ -240,11 +240,10 @@ Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) where {T,N
 #   algorithm as the one used by dictionary constructors to determine the value
 #   type.
 #
-keytype(::T) where {T<:NamedTuple} = keytype(T)
-keytype(::Type{<:NamedTuple}) = Symbol
+keytype(x) = Base.keytype(x) # use Base definition by default
 
-keytype(::T) where {T<:AbstractDict} = keytype(T)
-keytype(::Type{<:AbstractDict{K}}) where {K} = K
+keytype(::NamedTuple) = Symbol
+keytype(::Type{<:NamedTuple}) = Symbol
 
 keytype(::T) where {T<:AbstractAnnotatedArray} = keytype(T)
 keytype(::Type{<:AbstractAnnotatedArray{<:Any,<:Any,P}}) where {P} = keytype(P)
@@ -252,13 +251,12 @@ keytype(::Type{<:AbstractAnnotatedArray{<:Any,<:Any,P}}) where {P} = keytype(P)
 Base.keytype(::T) where {T<:AbstractAnnotatedArray} = keytype(T)
 Base.keytype(::Type{T}) where {T<:AbstractAnnotatedArray} = keytype(T)
 
-valtype(::T) where {T<:NamedTuple} = valtype(T)
-valtype(::Type{<:NamedTuple{<:Any,T}}) where {T} = _valtype(T)
-_valtype(::Type{<:Tuple{Vararg{V}}}) where {V} = V
-_valtype(::Type{<:Tuple}) = Any
+valtype(x) = Base.valtype(x) # use Base definition by default
 
-valtype(::T) where {T<:AbstractDict} = valtype(T)
-valtype(::Type{<:AbstractDict{<:Any,V}}) where {V} = V
+valtype(::T) where {T<:NamedTuple} = valtype(T)
+valtype(::Type{<:NamedTuple{<:Any,T}}) where {T} = _eltype(T)
+_eltype(::Type{<:Tuple{Vararg{T}}}) where {T} = T
+_eltype(::Type{<:Tuple}) = Any
 
 valtype(::T) where {T<:AbstractAnnotatedArray} = valtype(T)
 valtype(::Type{<:AbstractAnnotatedArray{<:Any,<:Any,P}}) where {P} = valtype(P)

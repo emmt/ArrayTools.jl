@@ -453,6 +453,40 @@ Base.parent(A::DummyArray) = A.arr
     G = AnnotatedArray(zeros(T, dims), pairs(D1)...)
     F = AnnotatedArray{T}(parent(G), Dict{String,Any}())
     H = AnnotatedArray{T,N}(undef, dims, Dict{Symbol,Float32}())
+    @test (AnnotatedArrays.keytype(D1) ===
+           AnnotatedArrays.keytype(typeof(D1)) ===
+           keytype(D1) === keytype(typeof(D1)) === String)
+    @test (AnnotatedArrays.valtype(D1) ===
+           AnnotatedArrays.valtype(typeof(D1)) ===
+           valtype(D1) === valtype(typeof(D1)) === Any)
+    @test (AnnotatedArrays.keytype(D2) ===
+           AnnotatedArrays.keytype(typeof(D2)) ===
+           keytype(D2) === keytype(typeof(D2)) === Symbol)
+    @test (AnnotatedArrays.valtype(D2) ===
+           AnnotatedArrays.valtype(typeof(D2)) ===
+           valtype(D2) === valtype(typeof(D2)) === Any)
+    @test (AnnotatedArrays.keytype(K2) ===
+           AnnotatedArrays.keytype(typeof(K2)) === Symbol)
+    @test (AnnotatedArrays.valtype(K2) ===
+           AnnotatedArrays.valtype(typeof(K2)) === Any)
+    @test (AnnotatedArrays.keytype(D3) ===
+           AnnotatedArrays.keytype(typeof(D3)) ===
+           keytype(D3) === keytype(typeof(D3)) === Symbol)
+    @test (AnnotatedArrays.valtype(D3) ===
+           AnnotatedArrays.valtype(typeof(D3)) ===
+           valtype(D3) === valtype(typeof(D3)) === Int)
+    @test (AnnotatedArrays.keytype(D4) ===
+           AnnotatedArrays.keytype(typeof(D4)) ===
+           keytype(D4) === keytype(typeof(D4)) === Any)
+    @test (AnnotatedArrays.valtype(D4) ===
+           AnnotatedArrays.valtype(typeof(D4)) ===
+           valtype(D4) === valtype(typeof(D4)) === Any)
+    @test (AnnotatedArrays.keytype(D5) ===
+           AnnotatedArrays.keytype(typeof(D5)) ===
+           keytype(D5) === keytype(typeof(D5)) === Float64)
+    @test (AnnotatedArrays.valtype(D5) ===
+           AnnotatedArrays.valtype(typeof(D5)) ===
+           valtype(D5) === valtype(typeof(D5)) === Any)
 
     # Forbidden key types.
     @test_throws ErrorException AnnotatedArray{T}(undef, dims, Dict{Any,Any}())
