@@ -2,6 +2,11 @@ module ArrayToolsTests
 
 using Test, Random
 using ArrayTools, ArrayTools.AnnotatedArrays, ArrayTools.PseudoArrays
+using .AnnotatedArrays:
+    propertyname,
+    propertynames,
+    DynamicallyAnnotatedArray,
+    StaticallyAnnotatedArray
 using Base: @propagate_inbounds
 import Base: getindex, setindex!, checkbounds
 
@@ -40,8 +45,9 @@ generate!(A::AbstractArray{T,N}) where {T,N} = begin
     return A
 end
 
-T = Float32
-dims = (3, 4, 5, 6)
+const T = Float32
+const dims = (3, 4, 5, 6)
+const N = length(dims)
 A = generate(T, dims)
 Vf = view(A, :, :, :, 3:4)   # a flat sub-array
 Va = view(A, 2:3, :, :, 3:4) # a non-flat sub-array
@@ -460,63 +466,246 @@ Base.parent(A::DummyArray) = A.arr
     @test_throws ErrorException AnnotatedArray(undef, dims...)
 
     # Annotated arrays with immutable properties.
-    A11 = AnnotatedArray(zeros(T, dims), (a = 1,))
-    A12 = AnnotatedArray{T}(zeros(T, dims), (a = "1", b = "2"))
-    A13 = AnnotatedArray{T}(undef, dims, (a = 1.0, b = 2.0, c = 3.0))
-    A14 = AnnotatedArray{T,N}(zeros(T, dims), (a = 1, b = 2, c = 3, d = 4))
-    A15 = AnnotatedArray{T,N}(undef, dims, (a = 1, b = 2, c = 3, d = 4, e = 5))
-    @test keytype(A11) === keytype(A12) === keytype(A13) === Symbol
-    @test valtype(A11) === Int
-    @test valtype(A12) === String
-    @test valtype(A13) === Float64
-    @test nkeys(A11) == 1 && nkeys(A12) == 2 && nkeys(A13) == 3
-    @test_throws ErrorException A11.x = 40
-    @test_throws ErrorException A11[:x] = 40
-    @test haskey(A11, :a) == true
-    @test haskey(A11, :b) == false
-    @test haskey(A11, "b") == false
-    @test getkey(A11, :a, :x) == :a
-    @test getkey(A11, :b, :x) == :x
-    @test getkey(A11, "b", :x) == :x
-    @test get(A11, :a, :x) == A11.a
-    @test get(A11, :b, :x) == :x
-    @test get(A11, "b", :x) == :x
-    @test A11[:a] == A11.a
-    @test_throws ErrorException A11.x
-    @test_throws ErrorException delete!(A11, :a)
-    @test_throws ErrorException get!(A11, :a, 1)
-    @test_throws ErrorException pop!(A11, :a)
-    @test_throws ErrorException pop!(A11, :a, 1)
-    @test_throws ErrorException merge!(A11, A12)
-    @test_throws ErrorException merge!(+, A11, A12)
+    let X = AnnotatedArray(A, (a = 1,)),
+        Y = AnnotatedArray{T}(A, (a = "1", b = "2"))
+        @test isa(X, StaticallyAnnotatedArray)
+        @test keytype(X) === Symbol
+        @test valtype(X) === Int
+        @test nkeys(X) == 1
+        @test propertyname(typeof(X), :foo) === :foo
+        @test isa(Y, StaticallyAnnotatedArray)
+        @test keytype(Y) === Symbol
+        @test valtype(Y) === String
+        @test nkeys(Y) == 2
+        @test_throws ErrorException X.field = 40
+        @test_throws ErrorException X[:field] = 40
+        @test :a ∈ propertynames(X)
+        @test :b ∈ propertynames(Y)
+        @test haskey(X, :a) == true
+        @test haskey(X, :b) == false
+        @test haskey(X, "b") == false
+        @test getkey(X, :a, :x) == :a
+        @test getkey(X, :b, :x) == :x
+        @test getkey(X, "b", :x) == :x
+        @test get(X, :a, :x) == X.a
+        @test get(X, :b, :x) == :x
+        @test get(X, "b", :x) == :x
+        @test X[:a] == X.a
+        @test_throws ErrorException X.unknown
+        @test_throws ErrorException delete!(X, :a)
+        @test_throws ErrorException get!(X, :a, 1)
+        @test_throws ErrorException pop!(X, :a)
+        @test_throws ErrorException pop!(X, :a, 1)
+        @test_throws ErrorException merge!(X, Y)
+        @test_throws ErrorException merge!(+, X, Y)
+    end
+    let X = AnnotatedArray{T}(undef, dims, (a = 1.0, b = 2.0, c = 3.0))
+        @test isa(X, StaticallyAnnotatedArray)
+        @test eltype(X) === T
+        @test keytype(X) === Symbol
+        @test valtype(X) === Float64
+        @test nkeys(X) == 3
+    end
+    let X = AnnotatedArray{T,N}(A, (a = 1, b = 2, c = 3, d = 4))
+        @test isa(X, StaticallyAnnotatedArray)
+        @test eltype(X) === T
+        @test keytype(X) === Symbol
+        @test valtype(X) === Int
+        @test nkeys(X) == 4
+    end
+    let X = AnnotatedArray{T,N}(undef, dims,
+                                (a = 1, b = 2, c = 3, d = 4, e = 5))
+        @test isa(X, StaticallyAnnotatedArray)
+        @test eltype(X) === T
+        @test keytype(X) === Symbol
+        @test valtype(X) === Int
+        @test nkeys(X) == 5
+    end
 
-    A31 = AnnotatedArray{T,N}(Array{T,N}(undef, dims))
-    A32 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), D3)
-    A33 = AnnotatedArray{T,N}(Array{T,N}(undef, dims), pairs(D3)...)
-    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
-                                                    D4)
-    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
-                                                    pairs(D4))
-    @test_throws ErrorException AnnotatedArray{T,N}(Array{T,N}(undef, dims),
-                                                    pairs(D4)...)
-    A34 = AnnotatedArray{T,N}(undef, dims)
-    A35 = AnnotatedArray{T,N}(undef, dims, D2)
-    A36 = AnnotatedArray{T,N}(undef, dims, pairs(D2)...)
-    A37 = AnnotatedArray{T,N}(Array{T,N}(undef, dims); K2...)
-    A38 = AnnotatedArray{T,N}(undef, dims; K2...)
-
-    A41 = AnnotatedArray{T}(Array{T,N}(undef, dims))
-    A42 = AnnotatedArray{T}(Array{T,N}(undef, dims), D1)
-    A43 = AnnotatedArray{T}(Array{T,N}(undef, dims), pairs(D1)...)
-    A44 = AnnotatedArray{T}(undef, dims)
-    A45 = AnnotatedArray{T}(undef, dims, D2)
-    A46 = AnnotatedArray{T}(undef, dims, pairs(D2)...)
-    A47 = AnnotatedArray{T}(undef, dims; K2...)
-
-    A51 = AnnotatedArray(Array{T,N}(undef, dims))
-    A52 = AnnotatedArray(Array{T,N}(undef, dims), D1)
-    A53 = AnnotatedArray(Array{T,N}(undef, dims), pairs(D2)...)
-    A54 = AnnotatedArray(Array{T,N}(undef, dims); K2...)
+    # Annotated arrays with mutable properties.
+    let X = AnnotatedArray{T,N}(A)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T,N}(A, D3)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test keytype(X) === Symbol
+        @test valtype(X) === Int
+    end
+    let X = AnnotatedArray{T,N}(A, pairs(D3)...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    @test_throws ErrorException AnnotatedArray{T,N}(A, D4)
+    @test_throws ErrorException AnnotatedArray{T,N}(A, pairs(D4))
+    @test_throws ErrorException AnnotatedArray{T,N}(A, pairs(D4)...)
+    let X = AnnotatedArray{T,N}(undef, dims)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T,N}(undef, dims, D2)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T,N}(undef, dims, pairs(D2)...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T,N}(A; K2...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T,N}(undef, dims; K2...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(A)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(A, D1)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === String
+        @test valtype(X) === Any
+        @test propertyname(typeof(X), :somekey) == "somekey"
+    end
+    let X = AnnotatedArray{T}(A, pairs(D1)...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === String
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(undef, dims)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(undef, dims, D2)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(undef, dims, pairs(D2)...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(undef, dims; K2...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray(A)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray(A, D1)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === String
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray(A, pairs(D2)...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray(A; K2...)
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test ndims(X) == N
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray(A, π=>"π", sqrt(2)=>"√2")
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === eltype(A)
+        @test axes(X) === axes(A)
+        @test keytype(X) === Real
+        @test valtype(X) === Any
+        @test_throws ErrorException propertyname(typeof(X), :foo)
+    end
+    let X = AnnotatedArray{T}(undef, dims, π=>"π", sqrt(2)=>"√2")
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test size(X) === dims
+        @test keytype(X) === Real
+        @test valtype(X) === Any
+    end
+    let X = AnnotatedArray{T}(undef, dims...; a="π", b="√2")
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+        @test propertyname(typeof(X), :foo) === :foo
+    end
+    let X = AnnotatedArray{T,N}(undef, dims...; a="π", b="√2")
+        @test isa(X, DynamicallyAnnotatedArray)
+        @test eltype(X) === T
+        @test size(X) === dims
+        @test keytype(X) === Symbol
+        @test valtype(X) === Any
+        @test X.a == "π"
+        @test X.b == "√2"
+        @test :a ∈ propertynames(X)
+    end
 
     Q = UnfinishedArray(Va)
     @test_throws ErrorException Q[1]
@@ -559,9 +748,6 @@ Base.parent(A::DummyArray) = A.arr
     @test keytype(H) === Symbol
     @test valtype(F) === valtype(G) === Any
     @test valtype(H) === Float32
-    @test keytype(A31) === Symbol && valtype(A31) == Any
-    @test keytype(A32) === Symbol && valtype(A32) == Int
-    @test keytype(A33) === Symbol && valtype(A33) == Any
 
     @test nkeys(F) == nkeys(properties(F)) == 0 && nkeys(G) == nkeys(properties(G)) == 3
     @test keys(F) == keys(properties(F))
