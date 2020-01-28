@@ -71,6 +71,7 @@ struct  AnyStorage <: StorageType end
 StorageType(::Array) = FlatStorage()
 StorageType(::Any) = AnyStorage()
 StorageType() = AnyStorage()
+
 StorageType(A::StridedVector) =
     (first(axes(A,1)) == 1 && stride(A,1) == 1) ? FlatStorage() : AnyStorage()
 StorageType(A::StridedMatrix) = begin
@@ -629,11 +630,11 @@ bcastdim(a::Int, b::Int) =
 
 """
 ```julia
-allof(p, args...) -> Bool
+allof(f, args...) -> Bool
 ```
 
-checks whether predicate `p` returns `true` for all arguments in `args...`,
-returning `false` as soon as possible (short-circuiting).
+checks whether predicate function `f` returns `true` for all arguments in
+`args...`, returning `false` as soon as possible (short-circuiting).
 
 ```julia
 allof(args...) -> Bool
@@ -646,16 +647,16 @@ considered as `false` otherwise (if any of their elements are `false`).
 Arguments can also be iterables to check whether all their values are `true`.
 An empty iterable is considered as `true`.
 
-This method can be much faster than `all(p, args)` or `all(args)` because its
+This method can be much faster than `all(f, args)` or `all(args)` because its
 result may be determined at compile time.  However, `missing` values are not
 considered as special.
 
 See also [`all`](@ref), [`anyof`](@ref), [`noneof`](@ref).
 
 """
-allof(p::Function, a) = p(a)::Bool
-allof(p::Function, a, b...) = p(a) && allof(p, b...)
-allof(a, b...) = allof(a) && allof(b...)
+allof(f::Function, a) = f(a)::Bool
+@inline allof(f::Function, a, b...) = allof(f, a) && allof(f, b...)
+@inline allof(a, b...) = allof(a) && allof(b...)
 allof(a::Bool) = a
 function allof(a::AbstractArray{Bool})
     @inbounds for i in eachindex(a)
@@ -672,11 +673,11 @@ end
 
 """
 ```julia
-anyof(p, args...) -> Bool
+anyof(f, args...) -> Bool
 ```
 
-checks whether predicate `p` returns `true` for any argument `args...`,
-returning `true` as soon as possible (short-circuiting).
+checks whether predicate function `f` returns `true` for any argument
+`args...`, returning `true` as soon as possible (short-circuiting).
 
 ```julia
 anyof(args...) -> Bool
@@ -689,15 +690,15 @@ considered as `false` otherwise (if all their elements are `false`).  Arguments
 can also be iterables to check whether any of their values are `true`.  An
 empty iterable is considered as `false`.
 
-This method can be much faster than `any(p, args)` or `any(args)` because its
+This method can be much faster than `any(f, args)` or `any(args)` because its
 result may be determined at compile time.  However, `missing` values are not
 considered as special.
 
-To check whether predicate `p` returns `false` for all argument `args...` or
+To check whether predicate `f` returns `false` for all argument `args...` or
 whether all argument `args...` are false, repectively call:
 
 ```julia
-noneof(p, args...) -> Bool
+noneof(f, args...) -> Bool
 ```
 
 or
@@ -706,14 +707,14 @@ or
 noneof(args...) -> Bool
 ```
 
-which are the same as `!anyof(p, args...)` and `!anyof(args...)`.
+which are the same as `!anyof(f, args...)` and `!anyof(args...)`.
 
 See also [`any`](@ref), [`allof`](@ref).
 
 """
-anyof(p::Function, a) = p(a)::Bool
-anyof(p::Function, a, b...) = p(a) || anyof(p, b...)
-anyof(a, b...) = anyof(a) || anyof(b...)
+anyof(f::Function, a) = f(a)::Bool
+@inline anyof(f::Function, a, b...) = anyof(f, a) || anyof(f, b...)
+@inline anyof(a, b...) = anyof(a) || anyof(b...)
 anyof(a::Bool) = a
 function anyof(a::AbstractArray{Bool})
     @inbounds for i in eachindex(a)
@@ -728,7 +729,7 @@ function anyof(itr)
     return false
 end
 
-noneof(args...) = ! anyof(args...)
+@inline noneof(args...) = ! anyof(args...)
 @doc @doc(anyof) noneof
 
 """
