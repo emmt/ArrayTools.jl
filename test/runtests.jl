@@ -56,43 +56,6 @@ S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
 atol = 1e-6
 
-# Make a simple wrapped vector type to have a concrete dense array.
-struct WrappedVector{T,N} <: DenseArray{T,N}
-    vals::Vector{T}
-    dims::NTuple{N,Int}
-    len::Int
-    function WrappedVector{T,0}(vals::AbstractVector{T},
-                                ::Tuple{}) where {T}
-        return new{T,0}(vals, (), 0)
-    end
-    function WrappedVector{T,N}(vals::AbstractVector{T},
-                                dims::NTuple{N,Integer}) where {T,N}
-        @assert N > 0
-        len = 1
-        for dim in dims
-            @assert dim >= 0 "invalid dimension"
-            len *= Int(dim)
-        end
-        @assert length(vals) >= len
-        return new{T,N}(vals, dims, len)
-    end
-end
-WrappedVector(vals::AbstractVector{T}, dims::NTuple{N,Integer}) where {T,N} =
-    WrappedVector{T,N}(vals, dims)
-
-Base.size(A::WrappedVector) = A.dims
-Base.length(A::WrappedVector) = A.len
-Base.parent(A::WrappedVector) = A.vals
-Base.axes(A::WrappedVector) = map(x -> Base.OneTo(x), size(A))
-@inline @propagate_inbounds getindex(A::WrappedVector, i::Int) = begin
-    @boundscheck checkbounds(A, i)
-    @inbounds getindex(parent(A), i)
-end
-@inline @propagate_inbounds setindex!(A::WrappedVector, x, i::Int) = begin
-    @boundscheck checkbounds(A, i)
-    @inbounds setindex!(parent(A), x, i)
-end
-
 @testset "Miscellaneous" begin
     # Promotion of element types.
     for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
@@ -269,14 +232,11 @@ end
 end
 
 @testset "Storage" begin
-    Q = WrappedVector(generate(Float32, 15), (3,5))
     B = flatarray(Float32, A)
     C = flatarray(Float32, Va)
     @test StorageType() === AnyStorage()
     @test StorageType("a") === AnyStorage()
     @test StorageType(A) === FlatStorage()
-    @test isa(Q, DenseArray)
-    @test StorageType(Q) === FlatStorage()
     @test StorageType(Vf) === FlatStorage()
     @test StorageType(Va) === AnyStorage()
     @test isflatarray() == false
@@ -503,13 +463,17 @@ Base.parent(A::DummyArray) = A.arr
     let X = AnnotatedArray(A, (a = 1,)),
         Y = AnnotatedArray{T}(A, (a = "1", b = "2"))
         @test isa(X, StaticallyAnnotatedArray)
-        @test AnnotatedArrays.keytype(X) === keytype(X) === Symbol
-        @test AnnotatedArrays.valtype(X) === valtype(X) === Int
+        @test (AnnotatedArrays.keytype(X) === keytype(X) ===
+               AnnotatedArrays.keytype(typeof(X)) === keytype(typeof(X)) === Symbol)
+        @test (AnnotatedArrays.valtype(X) === valtype(X) ===
+               AnnotatedArrays.valtype(typeof(X)) === valtype(typeof(X)) === Int)
         @test nkeys(X) == 1
         @test propertyname(typeof(X), :foo) === :foo
         @test isa(Y, StaticallyAnnotatedArray)
-        @test AnnotatedArrays.keytype(Y) === keytype(Y) === Symbol
-        @test AnnotatedArrays.valtype(Y) === valtype(Y) === String
+        @test (AnnotatedArrays.keytype(Y) === keytype(Y) ===
+               AnnotatedArrays.keytype(typeof(Y)) === keytype(typeof(Y)) === Symbol)
+        @test (AnnotatedArrays.valtype(Y) === valtype(Y) ===
+               AnnotatedArrays.valtype(typeof(Y)) === valtype(typeof(Y)) === String)
         @test nkeys(Y) == 2
         @test_throws ErrorException X.field = 40
         @test_throws ErrorException X[:field] = 40

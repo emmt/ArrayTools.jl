@@ -107,17 +107,6 @@ StorageType(A::StridedArray{T,N}) where {T,N} = begin
     return FlatStorage()
 end
 
-# According to Julia documentation (subsection "Implementation" in section
-# "Multi-dimensional Arrays") `DenseArray` is an abstract subtype of
-# `AbstractArray` intended to include all arrays where elements are stored
-# contiguously in column-major order.
-# (https://docs.julialang.org/en/v1.5-dev/manual/arrays/#Implementation-1)
-#
-# Also note that abstract type `DenseArray` belongs to the union
-# `StridedArray`.
-StorageType(A::DenseArray) =
-    (has_standard_indexing(A) ? FlatStorage() : AnyStorage())
-
 """
 ```julia
 isflatarray(A) -> boolean
