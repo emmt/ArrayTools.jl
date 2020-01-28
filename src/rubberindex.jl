@@ -54,7 +54,7 @@ colons(n::Integer) =
      n == 10 ? (:,:,:,:,:,:,:,:,:,:,) :
      _generatecolons(n))
 
-_generatecolons(n::Integer) = begin
+function _generatecolons(n::Integer)
     n ≥ 0 || bad_ndims(n)
     # The following is a bit faster than `ntuple(x->Colon(),n)`.
     return ([Colon() for i in 1:n]...,)
@@ -152,7 +152,7 @@ numberofindices(i::Index, inds::Index...) = numberofindices(i) + numberofindices
 
 # Generate a tuple with as many colons as the number of dimensions `N` minus
 # the number of indices specified by `inds...`.
-_colons(N::Int, inds::Index...) = begin
+function _colons(N::Int, inds::Index...)
     (n = N - numberofindices(inds...)) ≥ 0 ||
          throw(DimensionMismatch("the number of specified indices exceed the number of dimensions"))
     colons(n)
