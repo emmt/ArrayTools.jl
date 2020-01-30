@@ -3,6 +3,7 @@ module ArrayTools
 export
     …,
     RubberIndex,
+    all_match,
     allof,
     anyof,
     bcastcopy,
@@ -14,11 +15,13 @@ export
     colons,
     Dimensions,
     dimensions,
+    get_axis_limits,
     has_standard_indexing,
     noneof,
     promote_eltype,
     reversemap,
     safe_indices,
+    same_axes,
     # storage trait
     StorageType,
     AnyStorage,
@@ -404,6 +407,47 @@ cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
 """
 
 ```julia
+get_axis_limits(I) = (i0,i1)
+```
+
+yields the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and
+such that `i0:i1` represents the same indices as `I` (although not in the same
+order if `step(I) < 0`).  If `step(I)` is not equal to ±1, an `ArgumentError`
+exception is thrown.
+
+"""
+get_axis_limits(I::AbstractUnitRange{<:Integer}) =
+    (Int(first(I)), Int(last(I)))
+@inline function get_axis_limits(I::AbstractRange{<:Integer})
+    i0, i1, s = Int(first(I)), Int(last(I)), step(I)
+    return (s == +1 ? (i0,i1) :
+            s == -1 ? (i1,i0) :
+            throw(ArgumentError("expecting a range with a step equal to ±1")))
+end
+
+"""
+
+```julia
+same_axes(A, B...) -> axes(A)
+```
+
+checks whether arrays `A`, `B`, etc., have the same axes and return them.
+If axes are not all identical, a `DimensionMismatch` exception is thrown.
+
+"""
+same_axes(A::AbstractArray) = axes(A)
+@inline function same_axes(A::AbstractArray, B::AbstractArray...)
+    inds = axes(A)
+    all_match(inds, axes, B...) || throw_not_same_axes()
+    return inds
+end
+
+@noinline throw_not_same_axes() =
+    throw(DimensionMismatch("arrays must have same axes"))
+
+"""
+
+```julia
 safe_indices(A...)
 ```
 
@@ -443,7 +487,7 @@ arrays, `eachindex` only checks that they have the same linear index range
 
 @inline function safe_indices(::IndexLinear, A::AbstractArray,
                               B::AbstractArray...)
-    all_match_first(axes, axes(A), B...) ||
+    all_match(axes(A), axes, B...) ||
         throw_indices_mismatch(IndexLinear(), A, B...)
     return eachindex(IndexLinear(), A)
 end
@@ -451,16 +495,12 @@ end
 @inline function safe_indices(::IndexCartesian, A::AbstractArray,
                               B::AbstractArray...)
     inds = axes(A)
-    all_match_first(axes, inds, B...) ||
+    all_match(inds, axes, B...) ||
         throw_indices_mismatch(IndexCartesian(), A, B...)
     # The following is the same as `eachindex(IndexCartesian(),A)` which yields
     # `CartesianIndices(axes(A))`.
     return CartesianIndices(inds)
 end
-
-all_match_first(f::Function, val) = true
-@inline all_match_first(f::Function, val, arg, args...) =
-    (val == f(arg)) & all_match_first(f, val, args...)
 
 @noinline function throw_indices_mismatch(::IndexLinear,
                                           A::AbstractArray...)
@@ -497,6 +537,22 @@ end
     end
     throw(DimensionMismatch(String(take!(io))))
 end
+
+"""
+
+```julia
+all_match(val, f, args...) -> bool
+```
+
+yields as soon as possible (short-circuit) whether `f(arg) == val` for each
+argument `arg` in `args..`.  The returned value is `true` if there are no
+argumenst after `f`.
+
+"""
+all_match(val, f::Function) = true
+all_match(val, f::Function, A) = f(A) == val
+@inline all_match(val, f::Function, A, B...) =
+    all_match(val, f, A) && all_match(val, f::Function, B...)
 
 #------------------------------------------------------------------------------
 # BROADCASTING OF ARRAYS WITH OPTIONAL ELEMENT TYPE CONVERSION.

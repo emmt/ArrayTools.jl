@@ -140,6 +140,27 @@ atol = 1e-6
     @test cartesian_indices(I1,I2) ===
         CartesianIndices(([I1[k]:I2[k] for k in 1:length(I1)]...,))
     #
+    # Tests for `get_axis_limits`.
+    #
+    @test get_axis_limits(Base.OneTo(7)) === (1,7)
+    @test get_axis_limits(7:16) === (7,16)
+    @test get_axis_limits(Int16(7):Int16(1):Int16(16)) === (7,16)
+    @test get_axis_limits(16:-1:7) === (7,16)
+    @test get_axis_limits(7:-1:16) === (8,7)
+    @test_throws ArgumentError get_axis_limits(7:3:16)
+    #
+    # Tests for `same_axes`.
+    #
+    let A = Array{Char}(undef, (2,3)),
+        B = Array{Int}(undef, 2, 3),
+        C = Array{Float32}(undef, (2,3,4))
+        @test same_axes(A) === axes(A)
+        @test same_axes(B) === axes(B)
+        @test same_axes(A,B) == axes(A)
+        @test same_axes(A,B) == axes(B)
+        @test_throws DimensionMismatch same_axes(A,B,C)
+    end
+    #
     # Tests for `safe_indices`.
     #
     B = rand(T, dims[1:2])
