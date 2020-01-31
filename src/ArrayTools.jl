@@ -15,7 +15,7 @@ export
     colons,
     Dimensions,
     dimensions,
-    get_axis_limits,
+    axis_limits,
     has_standard_indexing,
     noneof,
     promote_eltype,
@@ -407,7 +407,7 @@ cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
 """
 
 ```julia
-get_axis_limits(I) = (i0,i1)
+axis_limits(I) = (i0,i1)
 ```
 
 yields the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and
@@ -416,9 +416,9 @@ order if `step(I) < 0`).  If `step(I)` is not equal to ±1, an `ArgumentError`
 exception is thrown.
 
 """
-get_axis_limits(I::AbstractUnitRange{<:Integer}) =
+axis_limits(I::AbstractUnitRange{<:Integer}) =
     (Int(first(I)), Int(last(I)))
-@inline function get_axis_limits(I::AbstractRange{<:Integer})
+@inline function axis_limits(I::AbstractRange{<:Integer})
     i0, i1, s = Int(first(I)), Int(last(I)), step(I)
     return (s == +1 ? (i0,i1) :
             s == -1 ? (i1,i0) :

@@ -140,14 +140,20 @@ atol = 1e-6
     @test cartesian_indices(I1,I2) ===
         CartesianIndices(([I1[k]:I2[k] for k in 1:length(I1)]...,))
     #
-    # Tests for `get_axis_limits`.
+    # Tests for `axis_limits`.
     #
-    @test get_axis_limits(Base.OneTo(7)) === (1,7)
-    @test get_axis_limits(7:16) === (7,16)
-    @test get_axis_limits(Int16(7):Int16(1):Int16(16)) === (7,16)
-    @test get_axis_limits(16:-1:7) === (7,16)
-    @test get_axis_limits(7:-1:16) === (8,7)
-    @test_throws ArgumentError get_axis_limits(7:3:16)
+    @test axis_limits(Base.OneTo(7)) === (1,7)
+    @test axis_limits(7:16) === (7,16)
+    @test axis_limits(Int16(7):Int16(1):Int16(16)) === (7,16)
+    @test axis_limits(16:-1:7) === (7,16)
+    @test axis_limits(7:-1:16) === (8,7)
+    @test_throws ArgumentError axis_limits(7:3:16)
+    #
+    # Tests for `all_match`.
+    #
+    @test all_match(nothing, identity)
+    @test all_match(1, length, π)
+    @test all_match(1, length, π, 2, "e")
     #
     # Tests for `same_axes`.
     #
