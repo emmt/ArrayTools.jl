@@ -418,12 +418,13 @@ exception is thrown.
 """
 axis_limits(I::AbstractUnitRange{<:Integer}) =
     (Int(first(I)), Int(last(I)))
-@inline function axis_limits(I::AbstractRange{<:Integer})
-    i0, i1, s = Int(first(I)), Int(last(I)), step(I)
-    return (s == +1 ? (i0,i1) :
-            s == -1 ? (i1,i0) :
-            throw(ArgumentError("expecting a range with a step equal to ±1")))
-end
+axis_limits(I::AbstractRange{<:Integer}) =
+    ((i0, i1, s) = (Int(first(I)), Int(last(I)), step(I));
+     (s == +1 ? (i0,i1) :
+      s == -1 ? (i1,i0) : throw_invalid_range_step()))
+
+@noinline throw_invalid_range_step() =
+    throw(ArgumentError("expecting a range with a step equal to ±1"))
 
 """
 
