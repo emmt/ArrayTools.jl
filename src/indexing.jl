@@ -6,6 +6,20 @@
 
 """
 
+`IndexRange` is the union of types that can define a range of indices along a
+single dimension of an array, that is integers and integer-valued unit ranges.
+
+The code purposely limited to these types, to make sure only ranges with step
+equal to 1 are considered.
+
+"""
+const IndexRange = Union{<:Integer,AbstractUnitRange{<:Integer}}
+
+# Types for the sign of an offset.
+const PlusMinus = Union{typeof(+),typeof(-)}
+
+"""
+
 ```julia
 dimensions(arg) -> dims
 ```
@@ -196,8 +210,6 @@ asserting that they are the same, as a result no bound checking should be
 necessary and the loop can be optimzed for vectorization.
 
 """ common_indices
-
-const PlusMinus = Union{typeof(+),typeof(-)}
 
 @inline function common_indices(A::AbstractArray{<:Any,N},
                                 B::AbstractArray{<:Any,N}) where {N}
