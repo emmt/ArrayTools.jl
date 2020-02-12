@@ -159,6 +159,172 @@ axis_limits(I::AbstractRange{<:Integer}) =
 
 """
 
+Assuming `A` and `B` are arrays with `N` dimensions:
+
+```julia
+common_indices(A, B) -> inds
+```
+
+yields the set of all the indices that are valid for both `A` and `B`.  The
+result is similar to `axes(A)` or `axes(B)`, that is an `N`-tuple of integer
+valued unit ranges.
+
+An offset `k` with a sign may be specified:
+
+```julia
+common_indices(A, B, +, k)
+common_indices(A, B, -, k)
+```
+
+to obtain the set of all indices `i` such that `A[i]` and, respectively,
+`B[i+k]` or `B[i-k]` are valid.  Offset `k` can be a tuple of integers or a
+Cartesian index.
+
+Arguments `A` and `B` may be both tuples of indices or index ranges or both
+scalar or index range.  This is used in the following example, where we want to
+do `A[i] = B[i]*C[i + k]` given the offset `k` and for all valid indices `i`:
+
+```julia
+I = common_indices(same_axes(A, B), axes(C), +, k)
+@inbounds @simd for i in CartesianIndices(I)
+   A[i] = B[i]*C[i + k]
+end
+```
+
+Remarks: `same_axes(A,B)` is called to get the axes of `A` and `B` while
+asserting that they are the same, as a result no bound checking should be
+necessary and the loop can be optimzed for vectorization.
+
+""" common_indices
+
+const PlusMinus = Union{typeof(+),typeof(-)}
+
+@inline function common_indices(A::AbstractArray{<:Any,N},
+                                B::AbstractArray{<:Any,N}) where {N}
+    common_indices(axes(A), axes(B))
+end
+@inline function common_indices(A::AbstractArray{<:Any,N},
+                                B::AbstractArray{<:Any,N},
+                                op::PlusMinus,
+                                K::CartesianIndex{N}) where {N}
+    common_indices(axes(A), axes(B), op, K)
+end
+@inline function common_indices(A::AbstractArray{<:Any,N},
+                                B::AbstractArray{<:Any,N},
+                                op::PlusMinus,
+                                K::NTuple{N,Integer}) where {N}
+    common_indices(axes(A), axes(B), op, K)
+end
+
+@inline function common_indices(I::NTuple{N,IndexRange},
+                                J::NTuple{N,IndexRange}) where {N}
+    map(common_indices, I, J)
+end
+
+@inline function common_indices(I::NTuple{N,IndexRange},
+                                J::NTuple{N,IndexRange},
+                                op::PlusMinus,
+                                K::CartesianIndex{N}) where {N}
+    common_indices(I, J, op, K.I)
+end
+
+@inline function common_indices(I::NTuple{N,IndexRange},
+                                J::NTuple{N,IndexRange},
+                                ::typeof(+),
+                                K::NTuple{N,Integer}) where {N}
+    map(_common_indices_plus, I, J, K)
+end
+
+@inline function common_indices(I::NTuple{N,IndexRange},
+                                J::NTuple{N,IndexRange},
+                                ::typeof(-),
+                                K::NTuple{N,Integer}) where {N}
+    map(_common_indices_minus, I, J, K)
+end
+
+@inline common_indices(i::IndexRange, j::IndexRange) =
+    max(Int(first(i)), Int(first(j))):min(Int(last(i)), Int(last(j)))
+
+@inline common_indices(i::IndexRange, j::IndexRange, ::typeof(+), k::Integer) =
+    _common_indices_plus(i, j, k)
+
+@inline common_indices(i::IndexRange, j::IndexRange, ::typeof(-), k::Integer) =
+    _common_indices_minus(i, j, k)
+
+@inline _common_indices_plus(i::IndexRange, j::IndexRange, k::Integer) =
+    max(Int(first(i)), Int(first(j) - k)):min(Int(last(i)), Int(last(j) - k))
+
+@inline _common_indices_minus(i::IndexRange, j::IndexRange, k::Integer) =
+    max(Int(first(i)), Int(first(j) + k)):min(Int(last(i)), Int(last(j) + k))
+
+"""
+
+```julia
+split_interval(I, J, +/-, k) -> Ia, Ib, Ic
+```
+
+given unit ranges `I` and `J` and offset `±k`, yields 3 unit ranges, such that
+`Ia ∪ Ib ∪ Ic = I` and:
+
+- `∀ i ∈ Ia`, `i ± k < first(J)`;
+
+- `∀ i ∈ Ib`, `i ± k ∈ J`;
+
+- `∀ i ∈ Ic`, `i ± k > last(J)`.
+
+unit ranges may be replaced by their first and last values:
+
+```julia
+split_interval(first(I), last(I), first(J), last(J), +/-, k)
+```
+
+yields the same result as above.
+
+""" split_interval
+
+@inline function split_interval(I::AbstractUnitRange{<:Integer},
+                                J::AbstractUnitRange{<:Integer},
+                                pm::PlusMinus, k::Integer)
+
+    split_interval(first(I), last(I), first(J), last(J), pm, k)
+end
+
+@inline function split_interval(imin::Integer, imax::Integer,
+                                jmin::Integer, jmax::Integer,
+                                pm::PlusMinus, k::Integer)
+    split_interval(Int(imin), Int(imax), Int(jmin), Int(jmax), pm, Int(k))
+end
+
+@inline function split_interval(imin::Int, imax::Int,
+                                jmin::Int, jmax::Int, ::typeof(-), k::Int)
+    split_interval(imin, imax, jmin, jmax, +, -k)
+end
+
+@inline function split_interval(imin::Int, imax::Int,
+                                jmin::Int, jmax::Int, ::typeof(+), k::Int)
+    #
+    # Intervals for different conditions: (a) below lower bound, (b) within
+    # bounds or (c) behyond upper bound.
+    #
+    # (a)  i ∈ imin:imax  and  j = i + k < jmin
+    #      ⟺ i ∈ imin : min(imax, jmin - k - 1)
+    #
+    Ia = imin:min(imax,jmin-k-1)
+    #
+    # (b)  i ∈ imin:imax  and  jmin ≤ j = i + k ≤ jmax
+    #      ⟺ i ∈ max(imin, jmin - k) ≤ i ≤ min(imax, jmax - k)
+    #
+    Ib = max(imin,jmin-k):min(imax,jmax-k)
+    #
+    # (c)  i ∈ imin:imax  and  j = i + k > jmax
+    #      ⟺ i ∈ max(imin, jmax - k + 1) : imax
+    #
+    Ic = max(imin,jmax-k+1):imax
+    return Ia, Ib, Ic
+end
+
+"""
+
 ```julia
 same_axes(A, B...) -> axes(A)
 ```

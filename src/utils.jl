@@ -151,3 +151,24 @@ Also see: [`map`](@ref), [`ntuple`](@ref).
 """
 reversemap(f::Function, args::NTuple{N,Any}) where {N} =
     ntuple(i -> f(args[(N + 1) - i]), Val{N}())
+
+"""
+
+```julia
+strictmap!(dst, f, src) -> dst
+```
+
+does `dst[i] = f(src[i])` for all indices `i` and returns `dst`.  Arguments
+`dst` and `src` must have the same axes.
+
+Except for the strict condition on the axes, this method is similar to
+`map!(f,dst,src)`.
+
+"""
+function strictmap!(dst::AbstractArray{<:Any,N}, f,
+                    src::AbstractArray{<:Any,N}) where {N}
+    @inbounds @simd for i in safe_indices(dst, src)
+        dst[i] = f(src[i])
+    end
+    return dst
+end
