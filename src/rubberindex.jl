@@ -52,31 +52,22 @@ colons(n::Integer) =
      n ==  8 ? (:,:,:,:,:,:,:,:,) :
      n ==  9 ? (:,:,:,:,:,:,:,:,:,) :
      n == 10 ? (:,:,:,:,:,:,:,:,:,:,) :
-     _generatecolons(n))
+     _colons(n))
 
-function _generatecolons(n::Integer)
+function _colons(n::Integer)
     n ≥ 0 || bad_ndims(n)
-    # The following is a bit faster than `ntuple(x->Colon(),n)`.
     return ([Colon() for i in 1:n]...,)
 end
 
 @noinline bad_ndims(n::Integer) =
     throw(ArgumentError(string("number of dimensions should be ≥ 0, got ", n)))
 
-colons(::Val{ 0}) = ()
-colons(::Val{ 1}) = (:,)
-colons(::Val{ 2}) = (:,:,)
-colons(::Val{ 3}) = (:,:,:,)
-colons(::Val{ 4}) = (:,:,:,:,)
-colons(::Val{ 5}) = (:,:,:,:,:,)
-colons(::Val{ 6}) = (:,:,:,:,:,:,)
-colons(::Val{ 7}) = (:,:,:,:,:,:,:,)
-colons(::Val{ 8}) = (:,:,:,:,:,:,:,:,)
-colons(::Val{ 9}) = (:,:,:,:,:,:,:,:,:,)
-colons(::Val{10}) = (:,:,:,:,:,:,:,:,:,:,)
-colons(v::Val{N}) where {N} = ntuple(x -> :, v)
+colons(v::Val{N}) where {N} = ntuple(colon, v)
 
-struct RubberIndex; end
+# Just yields a colon whatever the argument.
+colon(x) = Colon()
+
+struct RubberIndex end
 
 """
 
@@ -124,289 +115,42 @@ See also: [`colons`](@ref).
 const .. = RubberIndex()
 @doc @doc(..) RubberIndex
 
-const … = ..
-@doc @doc(…) RubberIndex
+const … = .. # FIXME: should be deprecated
 
-"""
-
-`Index` is the union of types that are eligible as a single index, that is
-integers and integer valued ranges.
-
-"""
-const Index = Union{Integer,AbstractRange{<:Integer},Colon,CartesianIndex}
-
-"""
-
-```julia
-numberofindices(inds...)
-```
-
-yields the total number of indices specified by `inds...`.  Integers, colons
-and integer valued ranges count as one each, Cartesian indices count as their
-dimensionality.
-
-"""
-numberofindices() = 0
-numberofindices(::Colon) = 1
-numberofindices(::Integer) = 1
-numberofindices(::CartesianIndex{N}) where {N} = N
-numberofindices(::AbstractRange{<:Integer}) = 1
-numberofindices(i::Index, inds::Index...) = numberofindices(i) + numberofindices(inds...)
-
-# Generate a tuple with as many colons as the number of dimensions `N` minus
-# the number of indices specified by `inds...`.
-function _colons(N::Int, inds::Index...)
-    (n = N - numberofindices(inds...)) ≥ 0 ||
-         throw(DimensionMismatch("the number of specified indices exceed the number of dimensions"))
-    colons(n)
-end
-
+# Quickly get the tuple inside a Cartesian index.
 to_tuple(I::CartesianIndex) = I.I
 
-# A[..]
-getindex(A::AbstractArray, ::RubberIndex) = copy(A)
-setindex!(A::AbstractArray{T,N}, val, ::RubberIndex) where {T,N} =
-    A[colons(Val(N))...] = val
+# Grow tuple of colons until tuple of axes is empty.
+@inline growcolons(colons, inds::Tuple{}) = colons
+@inline growcolons(colons, inds::Tuple) = growcolons((colons..., :), tail(inds))
+
+# Drop as many colons as there are specified indices.
+@inline dropcolons(colons, I::Tuple{}) = colons
+@inline dropcolons(colons::Tuple{}, ::Tuple{}) = ()
+@noinline dropcolons(colons::Tuple{}, I::Tuple) =
+    throw(ArgumentError("too many indices specifed"))
+@inline dropcolons(colons, I::Tuple) =
+    dropcolons(tail(colons), tail(I))
+@inline dropcolons(colons, I::Tuple{CartesianIndex, Vararg}) =
+    dropcolons(dropcolons(colons, to_tuple(I[1])), tail(I))
+@noinline dropcolons(colons, I::Tuple{RubberIndex, Vararg}) =
+    throw(ArgumentError("more than one rubber index specified"))
+
+@inline function to_indices(A, inds, I::Tuple{RubberIndex, Vararg})
+    # Align the remaining indices to the tail of the `inds`.  First
+    # `growcolons` is called to build a tuple of as many as colons as the
+    # number of remaining axes. Second, `dropcolons` is used to drop as
+    # many colons as the number of specified indices (taking into account
+    # Cartesian indices).
+    colons = dropcolons(growcolons((), inds), tail(I))
+    to_indices(A, inds, (colons..., tail(I)...))
+end
+
+# avoid copying if indexing with .. alone, see
+# https://github.com/JuliaDiffEq/OrdinaryDiffEq.jl/issues/214
+@inline Base.getindex(A::AbstractArray, ::RubberIndex) = A
+
+# The following is needed to allow for statements like `A[..] .+= expr` to
+# work properly.
 dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
-    dotview(A, colons(Val(N))...)
-
-# A[.., inds...]
-function getindex(A::AbstractArray{T,N},
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[_colons(N, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[_colons(N, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, _colons(N, inds...)..., inds...)
-end
-
-# A[i, ..]
-function getindex(A::AbstractArray{T,N},
-                  i::Index,
-                  ::RubberIndex) where {T,N}
-    A[i, _colons(N, i)...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i::Index,
-                   ::RubberIndex) where {T,N}
-    A[i, _colons(N, i)...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i::Index,
-                 ::RubberIndex) where {T,N}
-    dotview(A, i, _colons(N, i)...)
-end
-
-# A[i, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i, _colons(N, i, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i, _colons(N, i, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i, _colons(N, i, inds...)..., inds...)
-end
-
-# A[i1, i2, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, _colons(N, i1, i2, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, _colons(N, i1, i2, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, _colons(N, i1, i2, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, i5, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5,
-      _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5,
-      _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, i5,
-            _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, i5, i6, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                  i6::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6,
-      _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                   i6::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6,
-      _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                 i6::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, i5, i6,
-            _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, i5, i6, i7, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                  i6::Index, i7::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                   i6::Index, i7::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                 i6::Index, i7::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, i5, i6, i7,
-            _colons(N, i1, i2, i3, i4, i5, i6, i7, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, i5, i6, i7, i8, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                  i6::Index, i7::Index, i8::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7, i8,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                   i6::Index, i7::Index, i8::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7, i8,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                 i6::Index, i7::Index, i8::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, i5, i6, i7, i8,
-            _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, inds...)..., inds...)
-end
-
-# A[i1, i2, i3, i4, i5, i6, i7, i8, i9, .., inds...]
-function getindex(A::AbstractArray{T,N},
-                  i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                  i6::Index, i7::Index, i8::Index, i9::Index,
-                  ::RubberIndex,
-                  inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7, i8, i9,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, i9, inds...)..., inds...]
-end
-function setindex!(A::AbstractArray{T,N}, val,
-                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                   i6::Index, i7::Index, i8::Index, i9::Index,
-                   ::RubberIndex,
-                   inds::Index...) where {T,N}
-    A[i1, i2, i3, i4, i5, i6, i7, i8, i9,
-      _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, i9, inds...)..., inds...] = val
-end
-function dotview(A::AbstractArray{T,N},
-                 i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
-                 i6::Index, i7::Index, i8::Index, i9::Index,
-                 ::RubberIndex,
-                 inds::Index...) where {T,N}
-    dotview(A, i1, i2, i3, i4, i5, i6, i7, i8, i9,
-            _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, i9, inds...)..., inds...)
-end
+    dotview(A, ntuple(colon, Val{N}())...)

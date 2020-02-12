@@ -35,8 +35,8 @@ export
     fastarray,
     isfastarray
 
-using Base: OneTo, axes1
-import Base: dotview, getindex, setindex!
+using Base: OneTo, axes1, tail
+import Base: dotview, getindex, setindex!, to_indices
 
 @deprecate rubberindex colons
 @deprecate indices cartesian_indices
