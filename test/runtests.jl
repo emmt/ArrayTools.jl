@@ -201,6 +201,7 @@ end
     I5 = CartesianIndex(1,2,3,2,4)
     @test_throws ArgumentError colons(-1)
     @test_deprecated colons(5) === rubberindex(5)
+    #@test_deprecated A[…] === A # FIXME: not possible to deprecate
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
         @test colons(d) === tup
@@ -209,30 +210,31 @@ end
     for k ∈ 1:dims[end]
         @test samevalues(slice(A, k), A[:,:,:,k])
     end
-    @test A[…]           == A[:,:,:,:]
-    @test A[…,3]         == A[:,:,:,3]
-    @test A[2,…]         == A[2,:,:,:]
-    @test A[…,2:4,5]     == A[:,:,2:4,5]
-    @test A[2:3,…,1,2:4] == A[2:3,:,1,2:4]
-    @test A[:,2,…,2:4]   == A[:,2,:,2:4]
-    @test A[:,2:3,…]     == A[:,2:3,:,:]
-    @test A[…,2:3,:]     == A[:,:,2:3,:]
-    @test A[I1,…]        == A[I1,:,:,:]
-    @test A[I2,…]        == A[I2,:,:]
-    @test A[…,I1]        == A[:,:,:,I1]
-    @test A[…,I2]        == A[:,:,I2]
-    @test A[I1,…,I2]     == A[I1,:,I2]
-    @test A[I2,…,I1]     == A[I2,:,I1]
-    @test A[I1,…,I3]     == A[I1,I3]
-    @test A[1,2:end,…]   == A[1,2:end,:,:]
-    @test A[1,2:end-1,…] == A[1,2:end-1,:,:]
+    @test A[..]           === A
+    @test A[..]           == A[:,:,:,:]
+    @test A[..,3]         == A[:,:,:,3]
+    @test A[2,..]         == A[2,:,:,:]
+    @test A[..,2:4,5]     == A[:,:,2:4,5]
+    @test A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
+    @test A[:,2,..,2:4]   == A[:,2,:,2:4]
+    @test A[:,2:3,..]     == A[:,2:3,:,:]
+    @test A[..,2:3,:]     == A[:,:,2:3,:]
+    @test A[I1,..]        == A[I1,:,:,:]
+    @test A[I2,..]        == A[I2,:,:]
+    @test A[..,I1]        == A[:,:,:,I1]
+    @test A[..,I2]        == A[:,:,I2]
+    @test A[I1,..,I2]     == A[I1,:,I2]
+    @test A[I2,..,I1]     == A[I2,:,I1]
+    @test A[I1,..,I3]     == A[I1,I3]
+    @test A[1,2:end,..]   == A[1,2:end,:,:]
+    @test A[1,2:end-1,..] == A[1,2:end-1,:,:]
     # The `end` keyword can only appear **before** the rubber index.
-    @test_broken A[2,…,3:end] == A[2,:,:,3:end]
-    A[1,…] .= 3
+    @test_broken A[2,..,3:end] == A[2,:,:,3:end]
+    A[1,..] .= 3
     @test all(isequal(3), A[1,:,:,:])
-    A[1,…] = A[2,…]
+    A[1,..] = A[2,..]
     @test A[1,:,:,:] == A[2,:,:,:]
-    A[1,…,2:3] .= A[2,…,3:2:5]
+    A[1,..,2:3] .= A[2,..,3:2:5]
     @test A[1,:,:,2:3] == A[2,:,:,3:2:5]
     # Tests with a 9 dimensional array.
     siz = (3, 4, 2, 3, 4, 2, 3, 4, 2)
@@ -241,13 +243,10 @@ end
     C = copy(B)
     inds = (2:3, 4, Colon(), CartesianIndex(2),
             CartesianIndex(3), 1:2, 3, 2:3, CartesianIndex(1))
-    for k ∈ 0:n
-        @test ArrayTools.numberofindices(inds[1:k]...) == k
-    end
     for k in 0:n, l in 0:n-k
         J1 = inds[1:k]         # leading indices
         J2 = inds[n-l+1:n]     # trailing indices
-        J = (J1..., …, J2...,) # with a rubber index
+        J = (J1..., .., J2...,)# with a rubber index
         K = (J1..., colons(n - length(J1) - length(J2))..., J2...,)
         R = B[K...]            # extract region before change
         @test R == B[J...]     # extract values with `getindex`

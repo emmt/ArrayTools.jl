@@ -27,17 +27,17 @@ slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
 ```
 
 defines a function that returns the `i`-th slice of `A` assuming index `i`
-refers the last index of `A`.  Using the rubber-index `…`, a shorter
+refers the last index of `A`.  Using the rubber-index `..`, a shorter
 definition is:
 
 ```julia
-slice(A::AbstractArray, i) = A[…, i]
+slice(A::AbstractArray, i) = A[.., i]
 ```
 
 which is also able to deal with multiple trailing indices if `i` is a
 `CartesianIndex`.
 
-See also: [`…`](@ref), [`RubberIndex`](@ref).
+See also: [`..`](@ref), [`RubberIndex`](@ref).
 
 """
 colons(n::Integer) =
@@ -81,30 +81,30 @@ struct RubberIndex; end
 """
 
 `RubberIndex` is the singleron type that represents any number of indices.  The
-constant `…` is defined as `RubberIndex()` and can be used in array indexation
+constant `..` is defined as `RubberIndex()` and can be used in array indexation
 to left and/or right justify the other indices.  For instance, assuming `A` is
 a `3×4×5×6` array, then all the following equalities hold:
 
 ```julia
-A[…]           == A[:,:,:,:]
-A[…,3]         == A[:,:,:,3]
-A[2,…]         == A[2,:,:,:]
-A[…,2:4,5]     == A[:,:,2:4,5]
-A[2:3,…,1,2:4] == A[2:3,:,1,2:4]
+A[..]           == A[:,:,:,:]
+A[..,3]         == A[:,:,:,3]
+A[2,..]         == A[2,:,:,:]
+A[..,2:4,5]     == A[:,:,2:4,5]
+A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
 ```
 
-As you can see, the advantage of the rubber index `…` is that it automatically
+As you can see, the advantage of the rubber index `..` is that it automatically
 expands as the number of colons needed to have the correct number of indices.
 The expressions are also more readable.
 
 The rubber index may also be used for setting values.  For instance:
 
 ```julia
-A[…] .= 1        # to fill A with ones
-A[…,3] = A[…,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
-A[…,3] .= A[…,2] # idem but faster
-A[2,…] = A[3,…]  # to copy A[3,:,:,:] in A[2,:,:,:]
-A[…,2:4,5] .= 7  # to set all elements in A[:,:,2:4,5] to 7
+A[..] .= 1         # to fill A with ones
+A[..,3] = A[..,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
+A[..,3] .= A[..,2] # idem but faster
+A[2,..] = A[3,..]  # to copy A[3,:,:,:] in A[2,:,:,:]
+A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
 ```
 
 Leading/trailing indices may be specified as Cartesian indices (of type
@@ -121,7 +121,10 @@ Leading/trailing indices may be specified as Cartesian indices (of type
 See also: [`colons`](@ref).
 
 """
-const … = RubberIndex()
+const .. = RubberIndex()
+@doc @doc(..) RubberIndex
+
+const … = ..
 @doc @doc(…) RubberIndex
 
 """
@@ -158,14 +161,16 @@ function _colons(N::Int, inds::Index...)
     colons(n)
 end
 
-# A[…]
+to_tuple(I::CartesianIndex) = I.I
+
+# A[..]
 getindex(A::AbstractArray, ::RubberIndex) = copy(A)
 setindex!(A::AbstractArray{T,N}, val, ::RubberIndex) where {T,N} =
     A[colons(Val(N))...] = val
 dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
     dotview(A, colons(Val(N))...)
 
-# A[…, inds...]
+# A[.., inds...]
 function getindex(A::AbstractArray{T,N},
                   ::RubberIndex,
                   inds::Index...) where {T,N}
@@ -182,7 +187,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, _colons(N, inds...)..., inds...)
 end
 
-# A[i, …]
+# A[i, ..]
 function getindex(A::AbstractArray{T,N},
                   i::Index,
                   ::RubberIndex) where {T,N}
@@ -199,7 +204,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, i, _colons(N, i)...)
 end
 
-# A[i, …, inds...]
+# A[i, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i::Index,
                   ::RubberIndex,
@@ -219,7 +224,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, i, _colons(N, i, inds...)..., inds...)
 end
 
-# A[i1, i2, …, inds...]
+# A[i1, i2, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index,
                   ::RubberIndex,
@@ -239,7 +244,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, i1, i2, _colons(N, i1, i2, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, …, inds...]
+# A[i1, i2, i3, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index,
                   ::RubberIndex,
@@ -259,7 +264,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, i1, i2, i3, _colons(N, i1, i2, i3, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, …, inds...]
+# A[i1, i2, i3, i4, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index,
                   ::RubberIndex,
@@ -279,7 +284,7 @@ function dotview(A::AbstractArray{T,N},
     dotview(A, i1, i2, i3, i4, _colons(N, i1, i2, i3, i4, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, i5, …, inds...]
+# A[i1, i2, i3, i4, i5, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   ::RubberIndex,
@@ -302,7 +307,7 @@ function dotview(A::AbstractArray{T,N},
             _colons(N, i1, i2, i3, i4, i5, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, i5, i6, …, inds...]
+# A[i1, i2, i3, i4, i5, i6, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   i6::Index,
@@ -328,7 +333,7 @@ function dotview(A::AbstractArray{T,N},
             _colons(N, i1, i2, i3, i4, i5, i6, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, i5, i6, i7, …, inds...]
+# A[i1, i2, i3, i4, i5, i6, i7, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   i6::Index, i7::Index,
@@ -354,7 +359,7 @@ function dotview(A::AbstractArray{T,N},
             _colons(N, i1, i2, i3, i4, i5, i6, i7, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, i5, i6, i7, i8, …, inds...]
+# A[i1, i2, i3, i4, i5, i6, i7, i8, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   i6::Index, i7::Index, i8::Index,
@@ -380,7 +385,7 @@ function dotview(A::AbstractArray{T,N},
             _colons(N, i1, i2, i3, i4, i5, i6, i7, i8, inds...)..., inds...)
 end
 
-# A[i1, i2, i3, i4, i5, i6, i7, i8, i9, …, inds...]
+# A[i1, i2, i3, i4, i5, i6, i7, i8, i9, .., inds...]
 function getindex(A::AbstractArray{T,N},
                   i1::Index, i2::Index, i3::Index, i4::Index, i5::Index,
                   i6::Index, i7::Index, i8::Index, i9::Index,

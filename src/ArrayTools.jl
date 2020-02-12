@@ -1,7 +1,7 @@
 module ArrayTools
 
 export
-    …,
+    ..,
     RubberIndex,
     all_match,
     allof,
