@@ -91,10 +91,10 @@ bcastdims(size(A), size(B), ...)
 
 yields the dimensions of the array that would result from applying broadcasting
 rules (see [`broadcast`](@ref)) to arguments `A`, `B`, etc.  The result is a
-tuple of dimensions of type `Int`.  Call [`checkdimensions`](@ref) if you want
+tuple of dimensions of type `Int`.  Call [`check_dimensions`](@ref) if you want
 to also make sure that the result is a list of valid dimensions.
 
-See also [`dimensions`](@ref), [`checkdimensions`](@ref), [`bcastcopy`](@ref),
+See also [`dimensions`](@ref), [`check_dimensions`](@ref), [`bcastcopy`](@ref),
 [`bcastlazy`](@ref).
 
 """

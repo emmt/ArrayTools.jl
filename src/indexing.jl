@@ -37,7 +37,7 @@ dimensions(A) -> size(A)
 yields the list of dimensions of `A`, that is `size(A)`, after having checked
 that `A` has standard 1-based indices.
 
-See also [`has_standard_indexing`](@ref).
+See also [`has_standard_indexing`](@ref), [`same_dimensions`](@ref).
 
 """
 dimensions(dims::Tuple{}) = dims
@@ -58,12 +58,37 @@ const Dimensions = Union{Integer,Tuple{Vararg{Integer}}}
 @doc @doc(dimensions) Dimensions
 
 @noinline throw_non_standard_indexing() =
-    error("array have non-standard indices")
+    error("arrays have non-standard indices")
 
 """
 
 ```julia
-checkdimensions(dims)
+same_dimensions(A, B...) -> size(A)
+```
+
+checks whether arrays `A`, `B`, etc., have the same dimensions and standard
+indexing and returns these dimensions.  If dimensions are not all identical, a
+`DimensionMismatch` exception is thrown.  If arrays have non-standard indexing
+(that is indices not starting at index one), an `ArgumentError` exception is
+thrown.
+
+See also [`dimensions`](@ref), [`has_standard_indexing`](@ref).
+
+"""
+same_dimensions(A::AbstractArray) = dimensions(A)
+@inline function same_dimensions(A::AbstractArray, B::AbstractArray...)
+    dims = dimensions(A)
+    all_match(dims, dimensions, B...) || throw_not_same_dimensions()
+    return dims
+end
+
+@noinline throw_not_same_dimensions() =
+    throw(DimensionMismatch("arrays must have same dimensions"))
+
+"""
+
+```julia
+check_dimensions(dims)
 ```
 
 checks whether `dims` is a list of valid dimensions.  An error is thrown if not
@@ -72,11 +97,24 @@ all dimensions are nonnegative.
 See also [`dimensions`](@ref).
 
 """
-checkdimensions(::Tuple{}) = true
-checkdimensions(dims::Tuple{Vararg{Integer}}) =
-    allof(d -> d ≥ 0, dims...) || error("invalid array dimension(s)")
-checkdimensions(dim::Integer) =
+check_dimensions(::Tuple{}) = true
+check_dimensions(dims::Tuple{Vararg{Integer}}) =
+    allof(nonnegative, dims...) || error("invalid array dimension(s)")
+check_dimensions(dim::Integer) =
     dim ≥ 0 || error("invalid array dimension")
+
+"""
+
+```julia
+nonnegative(x) -> bool
+```
+
+yields whether `x` is greater or equal zero.
+
+"""
+nonnegative(x) = d ≥ zero(x)
+
+@deprecate checkdimensions check_dimensions
 
 """
 
@@ -341,7 +379,7 @@ end
 same_axes(A, B...) -> axes(A)
 ```
 
-checks whether arrays `A`, `B`, etc., have the same axes and return them.
+checks whether arrays `A`, `B`, etc., have the same axes and returns them.
 If axes are not all identical, a `DimensionMismatch` exception is thrown.
 
 """
@@ -353,7 +391,7 @@ same_axes(A::AbstractArray) = axes(A)
 end
 
 @noinline throw_not_same_axes() =
-    throw(DimensionMismatch("arrays must have same axes"))
+    throw(DimensionMismatch("arrays must have same indices"))
 
 """
 
