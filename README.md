@@ -18,7 +18,7 @@ array indexation to left or right justify the other indices.  For instance,
 assuming `A` is a `3×4×5×6` array, then all the following equalities hold:
 
 ```julia
-A[..]           == A[:,:,:,:]
+A[..]          === A # the two are the same object
 A[..,3]         == A[:,:,:,3]
 A[2,..]         == A[2,:,:,:]
 A[..,2:4,5]     == A[:,:,2:4,5]
@@ -34,11 +34,11 @@ of indices.  The expressions are also more readable.  The idea comes from the
 The rubber index may also be used for setting values.  For instance:
 
 ```julia
-A[..] .= 1        # to fill A with ones
+A[..] .= 1         # to fill A with ones
 A[..,3] = A[..,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
 A[..,3] .= A[..,2] # idem but faster
 A[2,..] = A[3,..]  # to copy A[3,:,:,:] in A[2,:,:,:]
-A[..,2:4,5] .= 7  # to set all elements in A[:,:,2:4,5] to 7
+A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
 ```
 
 Leading/trailing indices may be specified as Cartesian indices (of type
