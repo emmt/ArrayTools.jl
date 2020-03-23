@@ -112,7 +112,7 @@ nonnegative(x) -> bool
 yields whether `x` is greater or equal zero.
 
 """
-nonnegative(x) = d ≥ zero(x)
+nonnegative(x) = x ≥ zero(x)
 
 @deprecate checkdimensions check_dimensions
 
