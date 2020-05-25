@@ -167,7 +167,7 @@ Except for the strict condition on the axes, this method is similar to
 """
 function strictmap!(dst::AbstractArray{<:Any,N}, f,
                     src::AbstractArray{<:Any,N}) where {N}
-    @inbounds @simd for i in safe_indices(dst, src)
+    @inbounds @simd for i in all_indices(dst, src)
         dst[i] = f(src[i])
     end
     return dst

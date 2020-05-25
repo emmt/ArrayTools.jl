@@ -21,7 +21,7 @@ export
     noneof,
     promote_eltype,
     reversemap,
-    safe_indices,
+    all_indices,
     same_dimensions,
     same_axes,
     split_interval,
@@ -45,7 +45,7 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate rubberindex colons
 @deprecate indices cartesian_indices
 @deprecate cartesianindices cartesian_indices
-@deprecate safeindices safe_indices
+@deprecate safe_indices all_indices
 @deprecate flatmatrix flatarray
 @deprecate flatvector flatarray
 @deprecate fastmatrix fastarray

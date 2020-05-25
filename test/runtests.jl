@@ -168,22 +168,23 @@ atol = 1e-6
         @test_throws DimensionMismatch same_axes(A,B,C)
     end
     #
-    # Tests for `safe_indices`.
+    # Tests for `all_indices`.
     #
     B = rand(T, dims[1:2])
     C = rand(T, dims[1:end-2]..., dims[end], dims[end-1])
     X = rand(T, 6)
-    @test safe_indices(X) === eachindex(X)
-    @test safe_indices(A) === eachindex(A)
-    @test safe_indices(Va) === eachindex(Va)
-    @test_throws DimensionMismatch safe_indices(A,Va)
+    @test_deprecated safe_indices(X) === all_indices(X)
+    @test all_indices(X) === eachindex(X)
+    @test all_indices(A) === eachindex(A)
+    @test all_indices(Va) === eachindex(Va)
+    @test_throws DimensionMismatch all_indices(A,Va)
     @test eachindex(A,C) === eachindex(A)
-    @test_throws DimensionMismatch safe_indices(A,C)
-    @test safe_indices(A, rand(T, dims), rand(T, dims)) === eachindex(A)
+    @test_throws DimensionMismatch all_indices(A,C)
+    @test all_indices(A, rand(T, dims), rand(T, dims)) === eachindex(A)
     Y = rand(T, dims[1], dims[2]+2, dims[3:end]...)
     Z = view(Y, :, 2:dims[2]+1, colons(length(dims)-2)...)
     @test IndexStyle(Z) === IndexCartesian()
-    @test safe_indices(A, rand(T, dims), Z) === eachindex(IndexCartesian(), A)
+    @test all_indices(A, rand(T, dims), Z) === eachindex(IndexCartesian(), A)
     #
     # Other stuff.
     #
