@@ -348,23 +348,23 @@ end
 
 @testset "Broadcasting" begin
     # Check broadcasting of dimensions.
-    @test_throws DimensionMismatch bcastdim(3, 4)
+    @test_throws DimensionMismatch bcastsize(3, 4)
     for (a,b) in (((), ()),
                   ((Int16(5), Int32(6), Int64(7)), (5,6,7)),)
-        @test bcastdims(a) === b
-        @test bcastdims((), a) === b
-        @test bcastdims(a, ()) === b
-        @test bcastdims(a, (a..., 3,)) === (b..., 3,)
-        @test bcastdims(a, (a..., 3,), (a..., 1, 2)) === (b..., 3, 2)
-        @test bcastdims((a..., 3,), a) === (b..., 3,)
-        @test bcastdims((a..., 1,), (a..., 3,)) === (b..., 3,)
-        @test bcastdims((a..., 3,), (a..., 1,)) === (b..., 3,)
+        @test bcastsize(a) === b
+        @test bcastsize((), a) === b
+        @test bcastsize(a, ()) === b
+        @test bcastsize(a, (a..., 3,)) === (b..., 3,)
+        @test bcastsize(a, (a..., 3,), (a..., 1, 2)) === (b..., 3, 2)
+        @test bcastsize((a..., 3,), a) === (b..., 3,)
+        @test bcastsize((a..., 1,), (a..., 3,)) === (b..., 3,)
+        @test bcastsize((a..., 3,), (a..., 1,)) === (b..., 3,)
     end
     # Check `bcastcopy`.
     T = Int32
     dims1 = (1,2,3)
     dims2 = (3,2,1,4)
-    dims3 = bcastdims(dims1, dims2)
+    dims3 = bcastsize(dims1, dims2)
     A1 = generate(T, dims1)
     A2 = generate(T, dims2)
     @test A1 .+ zeros(T, dims2) == bcastcopy(A1, dims3...)

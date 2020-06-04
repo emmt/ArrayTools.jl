@@ -9,9 +9,8 @@ export
     anyof,
     axis_limits,
     bcastcopy,
-    bcastdim,
-    bcastdims,
     bcastlazy,
+    bcastsize,
     cartesian_indices,
     check_dimensions,
     colons,
@@ -26,6 +25,7 @@ export
     same_axes,
     split_interval,
     strictmap!,
+    to_int,
     # storage trait
     StorageType,
     AnyStorage,
@@ -50,6 +50,10 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate flatvector flatarray
 @deprecate fastmatrix fastarray
 @deprecate fastvector fastarray
+
+@deprecate bcastdim(a::Integer, b::Integer) bcastsize(a, b)
+@deprecate bcastdims bcastsize
+
 
 include("traits.jl")
 include("utils.jl")

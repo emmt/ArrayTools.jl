@@ -41,7 +41,7 @@ See also [`has_standard_indexing`](@ref), [`same_dimensions`](@ref).
 
 """
 dimensions(dims::Tuple{}) = dims
-dimensions(dim::Integer) = (Int(dim),)
+dimensions(dim::Integer) = (to_int(dim),)
 dimensions(dims::Tuple{Vararg{Integer}}) = map(Int, dims)
 dimensions(dims::Integer...) = map(Int, dims)
 dimensions(dim::Int) = (dim,)
@@ -183,7 +183,7 @@ cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
 # the indices of the Cartesian region defined by these arguments.
 #
 #cartesian_indices(dim::Int) = Base.OneTo(dim)
-#cartesian_indices(dim::Integer) = Base.OneTo(Int(dim))
+#cartesian_indices(dim::Integer) = Base.OneTo(to_int(dim))
 #cartesian_indices(rng::AbstractUnitRange{Int}) = rng
 #cartesian_indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
@@ -200,9 +200,9 @@ exception is thrown.
 
 """
 axis_limits(I::AbstractUnitRange{<:Integer}) =
-    (Int(first(I)), Int(last(I)))
+    (to_int(first(I)), to_int(last(I)))
 axis_limits(I::AbstractRange{<:Integer}) =
-    ((i0, i1, s) = (Int(first(I)), Int(last(I)), step(I));
+    ((i0, i1, s) = (to_int(first(I)), to_int(last(I)), step(I));
      (s == +1 ? (i0,i1) :
       s == -1 ? (i1,i0) : throw_invalid_range_step()))
 
@@ -293,7 +293,7 @@ end
 end
 
 @inline common_indices(i::IndexRange, j::IndexRange) =
-    max(Int(first(i)), Int(first(j))):min(Int(last(i)), Int(last(j)))
+    max(to_int(first(i)), to_int(first(j))):min(to_int(last(i)), to_int(last(j)))
 
 @inline common_indices(i::IndexRange, j::IndexRange, ::typeof(+), k::Integer) =
     _common_indices_plus(i, j, k)
@@ -302,10 +302,10 @@ end
     _common_indices_minus(i, j, k)
 
 @inline _common_indices_plus(i::IndexRange, j::IndexRange, k::Integer) =
-    max(Int(first(i)), Int(first(j) - k)):min(Int(last(i)), Int(last(j) - k))
+    max(to_int(first(i)), to_int(first(j) - k)):min(to_int(last(i)), to_int(last(j) - k))
 
 @inline _common_indices_minus(i::IndexRange, j::IndexRange, k::Integer) =
-    max(Int(first(i)), Int(first(j) + k)):min(Int(last(i)), Int(last(j) + k))
+    max(to_int(first(i)), to_int(first(j) + k)):min(to_int(last(i)), to_int(last(j) + k))
 
 """
 
@@ -342,7 +342,8 @@ end
 @inline function split_interval(imin::Integer, imax::Integer,
                                 jmin::Integer, jmax::Integer,
                                 pm::PlusMinus, k::Integer)
-    split_interval(Int(imin), Int(imax), Int(jmin), Int(jmax), pm, Int(k))
+    split_interval(to_int(imin), to_int(imax),
+                   to_int(jmin), to_int(jmax), pm, to_int(k))
 end
 
 @inline function split_interval(imin::Int, imax::Int,

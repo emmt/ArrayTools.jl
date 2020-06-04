@@ -5,6 +5,26 @@
 #
 
 """
+    to_int(x)
+
+converts `x` to a similar object whose values are all of type `Int`.  Argument
+`x` can be a scalar, an array, a tuple or a range.  Argument `x` is returned if
+already of the correct type.
+
+"""
+to_int(x::Int) = x
+to_int(x::Integer) = Int(x)
+to_int(I::AbstractUnitRange{Int}) = I
+to_int(I::AbstractUnitRange{<:Integer}) = to_int(first(I)):to_int(last(I))
+to_int(I::StepRange{Int,Int}) = I
+to_int(I::StepRange{<:Integer,<:Integer}) =
+    to_int(first(I)):to_int(step(I)):to_int(last(I))
+to_int(A::AbstractArray{Int,N}) where {N} = A
+to_int(A::AbstractArray{<:Integer,N}) where {N} = map(to_int, A)
+to_int(T::NTuple{N,Int}) where {N} = T
+to_int(T::NTuple{N,Integer}) where {N} = map(to_int, T)
+
+"""
 
 ```julia
 promote_eltype(A, B, ...) -> T

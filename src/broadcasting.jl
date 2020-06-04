@@ -15,7 +15,7 @@ the returned array does not share its contents with `A`.
 
 Argument `A` can be a scalar value or an array.
 
-See also [`bcastlazy`](@ref), [`bcastdims`](@ref).
+See also [`bcastlazy`](@ref), [`bcastsize`](@ref).
 
 """
 function bcastcopy(A, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T}
@@ -50,7 +50,7 @@ type and dimensions.  This means that the result may share the same contents as
 result has 1-based indices and contiguous elements which is suitable for fast
 linear indexing.
 
-See also [`bcastcopy`](@ref), [`bcastdims`](@ref).
+See also [`bcastcopy`](@ref), [`bcastsize`](@ref).
 
 """
 function bcastlazy(A::DenseArray{T},
@@ -59,7 +59,7 @@ function bcastlazy(A::DenseArray{T},
     has_standard_indexing(A) || throw_non_standard_indexing()
     Adims = size(A)
     Adims == dims && return A
-    bcastdims(Adims, dims) == dims ||
+    bcastsize(Adims, dims) == dims ||
         throw(DimensionMismatch("array has incompatible dimensions"))
     return (length(A) == prod(dims) ? reshape(A, dims) : bcastcopy(A, T, dims))
 end
@@ -82,40 +82,40 @@ bcastlazy(A, dims::Integer...) =
 
 """
 
-    bcastdims(size(A), size(B), ...) -> siz
+    bcastsize(size(A), size(B), ...) -> siz
 
 yields the size `siz` of the array that would result from applying broadcasting
 rules (see `broadcast`) to arguments `A`, `B`, etc.  The result is a tuple of
 integers (of type `Int`).  Call [`check_dimensions`](@ref) if you want to also
 make sure that the result is a list of valid dimensions.
 
+The method can also be applied to a single dimension:
+
+    bcastsize(a, b) -> c
+
+to yield the dimension `c` gievn by broadcasting dimensions `a` and `b`
+throwing an exception if dimensions are not compatible according to
+broadcasting rules.  This is the same as `Base.Broadcasting._bcs1` but it takes
+care of converting to `Int`.
+
 See also [`dimensions`](@ref), [`check_dimensions`](@ref), [`bcastcopy`](@ref),
 [`bcastlazy`](@ref).
 
 """
-bcastdims(::Tuple{}) = ()
-bcastdims(a::Tuple{Vararg{Integer}}) = dimensions(a)
-bcastdims(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}, args...) =
-    bcastdims(bcastdims(a, b), args...)
+bcastsize(::Tuple{}) = ()
+bcastsize(a::Tuple{Vararg{Integer}}) = dimensions(a)
+bcastsize(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}, args...) =
+    bcastsize(bcastsize(a, b), args...)
 
 # Use a recursion to build the dimension list from two lists, if code is
 # inlined (for a few number of dimensions), it should be very fast.
-bcastdims(::Tuple{}, ::Tuple{}) = ()
-bcastdims(::Tuple{}, b::Tuple{Vararg{Integer}}) = bcastdims(b)
-bcastdims(a::Tuple{Vararg{Integer}}, ::Tuple{}) = bcastdims(a)
-bcastdims(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}) =
-    (bcastdim(a[1], b[1]), bcastdims(Base.tail(a), Base.tail(b))...)
+bcastsize(::Tuple{}, ::Tuple{}) = ()
+bcastsize(::Tuple{}, b::Tuple{Vararg{Integer}}) = bcastsize(b)
+bcastsize(a::Tuple{Vararg{Integer}}, ::Tuple{}) = bcastsize(a)
+bcastsize(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}) =
+    (bcastsize(a[1], b[1]), bcastsize(Base.tail(a), Base.tail(b))...)
 
-"""
-    bcastdim(a, b) -> c
-
-applies broadcasting rules for a single dimension (same as
-`Base.Broadcasting._bcs1` but takes care of converting to `Int`), throwing an
-exception if dimensions `a` and `b` are not compatible according to these
-rules.
-
-"""
-bcastdim(a::Integer, b::Integer) = bcastdim(Int(a), Int(b))
-bcastdim(a::Int, b::Int) =
+bcastsize(a::Integer, b::Integer) = bcastsize(to_int(a), to_int(b))
+bcastsize(a::Int, b::Int) =
     (a == b || b == 1 ? a : a == 1 ? b :
     throw(DimensionMismatch("arrays could not be broadcast to a common size")))
