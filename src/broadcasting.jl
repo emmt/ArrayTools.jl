@@ -26,7 +26,7 @@ end
 
 # Convert dimensions.
 bcastcopy(A, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastcopy(A, T, map(Int, dims))
+    bcastcopy(A, T, to_size(dims))
 bcastcopy(A, ::Type{T}, dims::Integer...) where {T} =
     bcastcopy(A, T, dims)
 
@@ -70,7 +70,7 @@ bcastlazy(A, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T} =
 
 # Convert dimensions.
 bcastlazy(A, ::Type{T}, dims::Tuple{Vararg{Integer}}) where {T} =
-    bcastlazy(A, T, map(Int, dims))
+    bcastlazy(A, T, to_size(dims))
 bcastlazy(A, ::Type{T}, dims::Integer...) where {T} =
     bcastlazy(A, T, dims)
 

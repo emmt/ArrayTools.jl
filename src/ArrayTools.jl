@@ -48,10 +48,10 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate indices cartesian_indices
 @deprecate cartesianindices cartesian_indices
 @deprecate safe_indices all_indices
-@deprecate flatmatrix flatarray
-@deprecate flatvector flatarray
-@deprecate fastmatrix fastarray
-@deprecate fastvector fastarray
+@deprecate flatmatrix to_flat_array
+@deprecate flatvector to_flat_array
+@deprecate fastmatrix to_fast_array
+@deprecate fastvector to_fast_array
 @deprecate isfastarray is_fast_array
 @deprecate isflatarray is_flat_array
 @deprecate fastarray to_fast_array
