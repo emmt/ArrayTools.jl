@@ -6,6 +6,15 @@
 
 """
 
+`ArraySize` is the union of types acceptable to define array size.  Calling
+`[to_size](@ref)(siz)` on any argument `siz` such that `isa(siz,ArraySize)` is
+true yields an array size in canonical form, that is as an `N`-tuple of `Int`.
+
+"""
+const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
+
+"""
+
 `IndexRange` is the union of types that can define a range of indices along a
 single dimension of an array, that is integers and integer-valued unit ranges.
 
@@ -62,22 +71,27 @@ end
     throw(DimensionMismatch("arrays must have same dimensions"))
 
 """
+     check_size(siz) -> len
 
-```julia
-check_dimensions(dims)
-```
+checks the validity of the array size `siz` and yields the corresponding number
+of elements (throwing an `ArgumentError` exception if this is not the case).
+To be a valid array size, the values of `siz` must all be nonnegative.
 
-checks whether `dims` is a list of valid dimensions.  An error is thrown if not
-all dimensions are nonnegative.
-
-See also [`standard_size`](@ref).
+See also [`to_size`](@ref).
 
 """
-check_dimensions(::Tuple{}) = true
-check_dimensions(dims::Tuple{Vararg{Integer}}) =
-    allof(nonnegative, dims...) || error("invalid array dimension(s)")
-check_dimensions(dim::Integer) =
-    dim ≥ 0 || error("invalid array dimension")
+check_size(siz::Integer) =
+    siz ≥ 0 ? to_int(siz) : throw(ArgumentError("invalid dimension"))
+
+function check_size(siz::NTuple{N,Integer}) where {N}
+    len = 1
+    @inbounds for i in 1:N
+        dim = to_int(siz[i])
+        dim ≥ 0 || throw(ArgumentError("invalid dimension(s)"))
+        len *= dim
+    end
+    return len
+end
 
 """
 

@@ -12,7 +12,7 @@ export
     bcastlazy,
     bcastsize,
     cartesian_indices,
-    check_dimensions,
+    check_size,
     colons,
     common_indices,
     has_standard_indexing,
@@ -58,8 +58,8 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate bcastdim(a::Integer, b::Integer) bcastsize(a, b)
 @deprecate bcastdims bcastsize
 @deprecate Dimensions ArraySize
-@deprecate checkdimensions check_dimensions
-
+@deprecate checkdimensions check_size
+@deprecate check_dimensions check_size
 
 include("traits.jl")
 include("utils.jl")

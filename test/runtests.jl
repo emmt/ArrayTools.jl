@@ -80,10 +80,12 @@ atol = 1e-6
     @test to_size(dims...) === dims
     @test to_size(UInt16(dims[1]), dims[2:end]...) === dims
     @test to_size((UInt16(dims[1]), dims[2:end]...)) === dims
-    @test check_dimensions(()) === true
-    @test check_dimensions((1,0,2)) === true
-    @test_throws ErrorException check_dimensions((1,0,-1))
-    @test_throws ErrorException check_dimensions(-1)
+    @test check_size(()) == 1
+    @test check_size((1,0,2)) == 0
+    @test check_size((1,2,3)) == 6
+    @test check_size(0xff) == 255
+    @test_throws ArgumentError check_size((1,0,-1))
+    @test_throws ArgumentError check_size(-1)
     @test_deprecated checkdimensions((1,2,))
     #
     # Tests for `allof`, `anyof` and `noneof`.
