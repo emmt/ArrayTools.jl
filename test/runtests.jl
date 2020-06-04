@@ -262,35 +262,35 @@ end
 end
 
 @testset "Storage" begin
-    B = flatarray(Float32, A)
-    C = flatarray(Float32, Va)
+    B = to_flat_array(Float32, A)
+    C = to_flat_array(Float32, Va)
     @test StorageType() === AnyStorage()
     @test StorageType("a") === AnyStorage()
     @test StorageType(A) === FlatStorage()
     @test StorageType(Vf) === FlatStorage()
     @test StorageType(Va) === AnyStorage()
-    @test isflatarray() == false
-    @test isflatarray("a") == false
-    @test isflatarray(S) == false
-    @test isflatarray(A) == true
-    @test isflatarray(Vf) == true
-    @test isflatarray(Va) == false
-    @test isflatarray(A,B,C) == true
-    @test isflatarray(A,B,C,Vf) == true
-    @test isflatarray(A,B,C,Va) == false
-    @test flatarray(A) === A
-    @test flatarray(eltype(A), A) === A
-    @test pointer(A) != pointer(flatarray(Va))
-    @test samevalues(S, flatarray(S))
-    @test eltype(S) === eltype(flatarray(S))
+    @test is_flat_array() == false
+    @test is_flat_array("a") == false
+    @test is_flat_array(S) == false
+    @test is_flat_array(A) == true
+    @test is_flat_array(Vf) == true
+    @test is_flat_array(Va) == false
+    @test is_flat_array(A,B,C) == true
+    @test is_flat_array(A,B,C,Vf) == true
+    @test is_flat_array(A,B,C,Va) == false
+    @test to_flat_array(A) === A
+    @test to_flat_array(eltype(A), A) === A
+    @test pointer(A) != pointer(to_flat_array(Va))
+    @test samevalues(S, to_flat_array(S))
+    @test eltype(S) === eltype(to_flat_array(S))
     @test maxabsdif(A, B) ≤ atol
     @test maxabsdif(Va, C) ≤ atol
-    Da = flatarray(Va)
-    @test isflatarray(Da) == true
+    Da = to_flat_array(Va)
+    @test is_flat_array(Da) == true
     @test Da == Va
     @test Da !== Va
-    Df = flatarray(Vf)
-    @test isflatarray(Df) == true
+    Df = to_flat_array(Vf)
+    @test is_flat_array(Df) == true
     @test Df == Vf
     @test Df === Vf
     for n in 1:5
@@ -314,36 +314,36 @@ end
          (view(A, :, :, 2, 3:3), false))
     for i in randperm(length(L)) # prevent compilation-time optimization
         x, b = L[i]
-        @test isflatarray(x) == b
+        @test is_flat_array(x) == b
     end
-    @test isflatarray(A, view(A, :, :, 2, 3), view(A, :, :, 2:2, 3)) == true
-    @test isflatarray(A, view(A, :, :, 2:2, :), view(A, :, :, 2:2, 3)) == false
+    @test is_flat_array(A, view(A, :, :, 2, 3), view(A, :, :, 2:2, 3)) == true
+    @test is_flat_array(A, view(A, :, :, 2:2, :), view(A, :, :, 2:2, 3)) == false
 end
 
 @testset "Indexing" begin
     for Q in (A,Va,S,101,Colon())
         @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
     end
-    B = fastarray(Float32, A)
-    C = fastarray(Float32, Va)
+    B = to_fast_array(Float32, A)
+    C = to_fast_array(Float32, Va)
     @test has_standard_indexing(A,Va) == (has_standard_indexing(A) &&
                                          has_standard_indexing(Va))
     @test IndexingTrait(A) === FastIndexing()
     @test IndexingTrait(Va) === AnyIndexing()
     @test IndexingTrait("a") === AnyIndexing()
-    @test isfastarray() == false
-    @test isfastarray(S) == true
-    @test samevalues(Va, fastarray(Va))
-    @test samevalues(A, fastarray(A))
-    @test isfastarray(A) == true
-    @test isfastarray(A,B,C) == true
-    @test isfastarray(Va) == false
-    @test isfastarray(A,B,C,Va) == false
-    @test isfastarray(fastarray(Va)) == true
-    @test pointer(A) == pointer(fastarray(A))
-    @test pointer(A) != pointer(fastarray(Va))
-    @test samevalues(Va, fastarray(Va))
-    @test samevalues(A, fastarray(A))
+    @test is_fast_array() == false
+    @test is_fast_array(S) == true
+    @test samevalues(Va, to_fast_array(Va))
+    @test samevalues(A, to_fast_array(A))
+    @test is_fast_array(A) == true
+    @test is_fast_array(A,B,C) == true
+    @test is_fast_array(Va) == false
+    @test is_fast_array(A,B,C,Va) == false
+    @test is_fast_array(to_fast_array(Va)) == true
+    @test pointer(A) == pointer(to_fast_array(A))
+    @test pointer(A) != pointer(to_fast_array(Va))
+    @test samevalues(Va, to_fast_array(Va))
+    @test samevalues(A, to_fast_array(A))
     @test maxabsdif(A, B) ≤ atol
     @test maxabsdif(Va, C) ≤ atol
 end

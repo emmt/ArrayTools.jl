@@ -250,7 +250,7 @@ if all involved arrays are indexed by a single 1-based index.  In that case,
 `using ArrayTools` provides:
 
 ```julia
-fastarray(A)
+to_fast_array(A)
 ```
 
 which checks whether array `A` is suitable for fast indexing (by a single
@@ -261,11 +261,11 @@ indexing and is returned to the caller.
 To just check whether array `A` is suitable for fast indexing, call:
 
 ```julia
-isfastarray(A) -> bool
+is_fast_array(A) -> bool
 ```
 
-Multiple arguments can be checked at the same time: `isfastarray(A,B,...)` is
-the same as `isfastarray(A) && isfastarray(B) && isflatarray(...)`.
+Multiple arguments can be checked at the same time: `is_fast_array(A,B,...)` is
+the same as `is_fast_array(A) && is_fast_array(B) && is_flat_array(...)`.
 
 
 ### Array storage
@@ -279,20 +279,20 @@ Typically, you want to ensure that the elements are stored in memory
 contiguously and in column-major order.  This can be ckecked by calling:
 
 ```julia
-isflatarray(A) -> bool
+is_flat_array(A) -> bool
 ```
 
 or, with several arguments:
 
 ```julia
-isflatarray(A, B, C, ...)  -> bool
+is_flat_array(A, B, C, ...)  -> bool
 ```
 
 In order to get an array with such *flat* storage and possibly with a given
 element type `T`, call:
 
 ```julia
-flatarray([T = eltype(A),] A)
+to_flat_array([T = eltype(A),] A)
 ```
 
 which just returns `A` if the requirements hold or converts `A` to a suitable

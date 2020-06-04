@@ -32,14 +32,14 @@ export
     StorageType,
     AnyStorage,
     FlatStorage,
-    flatarray,
-    isflatarray,
+    to_flat_array,
+    is_flat_array,
     # Fast arrays and indexing trait:
     IndexingTrait,
     FastIndexing,
     AnyIndexing,
-    fastarray,
-    isfastarray
+    to_fast_array,
+    is_fast_array
 
 using Base: OneTo, axes1, tail
 import Base: dotview, getindex, setindex!, to_indices
@@ -52,6 +52,10 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate flatvector flatarray
 @deprecate fastmatrix fastarray
 @deprecate fastvector fastarray
+@deprecate isfastarray is_fast_array
+@deprecate isflatarray is_flat_array
+@deprecate fastarray to_fast_array
+@deprecate flatarray to_flat_array
 @deprecate dimensions(A::AbstractArray) standard_size(A)
 @deprecate dimensions(dim::Integer) to_size(dims)
 @deprecate dimensions(dims::Integer...) to_size(dims)

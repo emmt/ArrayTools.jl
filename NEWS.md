@@ -1,3 +1,8 @@
+- `isfastarray` and `isflatarray` deprecated in favor of `is_fast_array` and
+  `is_flat_array` which are more readable and thus less confusing.  `fastarray`
+  and `flatarray` deprecated in favor of `to_fast_array` and `to_flat_array`
+  which are more clear about their purpose.
+
 - New method `same_size` to get the common size of arrays checking that they
   all have the same size.
 
