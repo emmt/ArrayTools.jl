@@ -98,12 +98,12 @@ throwing an exception if dimensions are not compatible according to
 broadcasting rules.  This is the same as `Base.Broadcasting._bcs1` but it takes
 care of converting to `Int`.
 
-See also [`dimensions`](@ref), [`check_dimensions`](@ref), [`bcastcopy`](@ref),
+See also [`standard_size`](@ref), [`check_dimensions`](@ref), [`bcastcopy`](@ref),
 [`bcastlazy`](@ref).
 
 """
 bcastsize(::Tuple{}) = ()
-bcastsize(a::Tuple{Vararg{Integer}}) = dimensions(a)
+bcastsize(a::Tuple{Vararg{Integer}}) = to_size(a)
 bcastsize(a::Tuple{Vararg{Integer}}, b::Tuple{Vararg{Integer}}, args...) =
     bcastsize(bcastsize(a, b), args...)
 

@@ -71,15 +71,15 @@ atol = 1e-6
             promote_type(T1,T2,T3)
     end
     # Dimensions.
-    @test dimensions(()) === ()
-    @test dimensions(5) === (5,)
-    @test dimensions(Int16(5)) === (5,)
-    @test isa(dimensions(Int16(5)), Tuple{Int})
-    @test dimensions(A) === size(A)
-    @test dimensions(dims) === dims
-    @test dimensions(dims...) === dims
-    @test dimensions(UInt16(dims[1]), dims[2:end]...) === dims
-    @test dimensions((UInt16(dims[1]), dims[2:end]...)) === dims
+    @test to_size(()) === ()
+    @test to_size(5) === (5,)
+    @test to_size(Int16(5)) === (5,)
+    @test isa(to_size(Int16(5)), Tuple{Int})
+    @test standard_size(A) === size(A)
+    @test to_size(dims) === dims
+    @test to_size(dims...) === dims
+    @test to_size(UInt16(dims[1]), dims[2:end]...) === dims
+    @test to_size((UInt16(dims[1]), dims[2:end]...)) === dims
     @test check_dimensions(()) === true
     @test check_dimensions((1,0,2)) === true
     @test_throws ErrorException check_dimensions((1,0,-1))
@@ -189,7 +189,7 @@ atol = 1e-6
     # Other stuff.
     #
     @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))
-    @test_throws ErrorException ArrayTools.throw_non_standard_indexing()
+    @test_throws ArgumentError ArrayTools.throw_non_standard_indexing()
 end
 
 #

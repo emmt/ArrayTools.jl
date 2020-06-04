@@ -20,45 +20,21 @@ const PlusMinus = Union{typeof(+),typeof(-)}
 
 """
 
-```julia
-dimensions(arg) -> dims
-```
+    standard_size(A) -> size(A)
 
-yields a list of dimensions (as a tuple of `Int`) out of argument `arg`.  The
-union `Dimensions` matches the types of argument `arg` acceptable for
-`dimensions(arg)`: scalar integer and tuple of integers.
-
-As a special case, for an array `A`:
-
-```julia
-dimensions(A) -> size(A)
-```
-
-yields the list of dimensions of `A`, that is `size(A)`, after having checked
-that `A` has standard 1-based indices.
+yields the list of dimensions of `A`, that is `size(A)`, throwing an
+`ArgmentError` exception if `A` does not have standard 1-based indices.
 
 See also [`has_standard_indexing`](@ref), [`same_dimensions`](@ref).
 
 """
-dimensions(dims::Tuple{}) = dims
-dimensions(dim::Integer) = (to_int(dim),)
-dimensions(dims::Tuple{Vararg{Integer}}) = map(Int, dims)
-dimensions(dims::Integer...) = map(Int, dims)
-dimensions(dim::Int) = (dim,)
-dimensions(dims::Tuple{Vararg{Int}}) = dims
-dimensions(dims::Int...) = dims
-
-function dimensions(A::AbstractArray)
+function standard_size(A::AbstractArray)
     has_standard_indexing(A) || throw_non_standard_indexing()
     return size(A)
 end
 
-const Dimensions = Union{Integer,Tuple{Vararg{Integer}}}
-
-@doc @doc(dimensions) Dimensions
-
 @noinline throw_non_standard_indexing() =
-    error("arrays have non-standard indices")
+    throw(ArgumentError("arrays have non-standard indices"))
 
 """
 
@@ -72,17 +48,17 @@ indexing and returns these dimensions.  If dimensions are not all identical, a
 (that is indices not starting at index one), an `ArgumentError` exception is
 thrown.
 
-See also [`dimensions`](@ref), [`has_standard_indexing`](@ref).
+See also [`standard_size`](@ref), [`has_standard_indexing`](@ref).
 
 """
-same_dimensions(A::AbstractArray) = dimensions(A)
+same_dimensions(A::AbstractArray) = standard_size(A)
 @inline function same_dimensions(A::AbstractArray, B::AbstractArray...)
-    dims = dimensions(A)
-    all_match(dims, dimensions, B...) || throw_not_same_dimensions()
+    dims = standard_size(A)
+    all_match(dims, standard_size, B...) || throw_not_same_size()
     return dims
 end
 
-@noinline throw_not_same_dimensions() =
+@noinline throw_not_same_size() =
     throw(DimensionMismatch("arrays must have same dimensions"))
 
 """
@@ -94,7 +70,7 @@ check_dimensions(dims)
 checks whether `dims` is a list of valid dimensions.  An error is thrown if not
 all dimensions are nonnegative.
 
-See also [`dimensions`](@ref).
+See also [`standard_size`](@ref).
 
 """
 check_dimensions(::Tuple{}) = true
@@ -102,8 +78,6 @@ check_dimensions(dims::Tuple{Vararg{Integer}}) =
     allof(nonnegative, dims...) || error("invalid array dimension(s)")
 check_dimensions(dim::Integer) =
     dim ≥ 0 || error("invalid array dimension")
-
-@deprecate checkdimensions check_dimensions
 
 """
 

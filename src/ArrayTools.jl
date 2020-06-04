@@ -2,7 +2,7 @@ module ArrayTools
 
 export
     ..,
-    Dimensions,
+    ArraySize,
     RubberIndex,
     all_match,
     allof,
@@ -15,7 +15,6 @@ export
     check_dimensions,
     colons,
     common_indices,
-    dimensions,
     has_standard_indexing,
     noneof,
     promote_eltype,
@@ -24,8 +23,10 @@ export
     same_dimensions,
     same_axes,
     split_interval,
+    standard_size,
     strictmap!,
     to_int,
+    to_size,
     # storage trait
     StorageType,
     AnyStorage,
@@ -50,9 +51,14 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate flatvector flatarray
 @deprecate fastmatrix fastarray
 @deprecate fastvector fastarray
-
+@deprecate dimensions(A::AbstractArray) standard_size(A)
+@deprecate dimensions(dim::Integer) to_size(dims)
+@deprecate dimensions(dims::Integer...) to_size(dims)
+@deprecate dimensions(dims::Tuple{Vararg{Integer}}) to_size(dims)
 @deprecate bcastdim(a::Integer, b::Integer) bcastsize(a, b)
 @deprecate bcastdims bcastsize
+@deprecate Dimensions ArraySize
+@deprecate checkdimensions check_dimensions
 
 
 include("traits.jl")
