@@ -34,7 +34,7 @@ const PlusMinus = Union{typeof(+),typeof(-)}
 yields the list of dimensions of `A`, that is `size(A)`, throwing an
 `ArgmentError` exception if `A` does not have standard 1-based indices.
 
-See also [`has_standard_indexing`](@ref), [`same_dimensions`](@ref).
+See also [`has_standard_indexing`](@ref), [`same_standard_size`](@ref).
 
 """
 function standard_size(A::AbstractArray)
@@ -48,11 +48,11 @@ end
 """
 
 ```julia
-same_dimensions(A, B...) -> size(A)
+same_standard_size(A, B...) -> size(A)
 ```
 
-checks whether arrays `A`, `B`, etc., have the same dimensions and standard
-indexing and returns these dimensions.  If dimensions are not all identical, a
+checks whether arrays `A`, `B`, etc., all have standard indexing and the same
+size which is returned.  If array sizes are not all identical, a
 `DimensionMismatch` exception is thrown.  If arrays have non-standard indexing
 (that is indices not starting at index one), an `ArgumentError` exception is
 thrown.
@@ -60,15 +60,56 @@ thrown.
 See also [`standard_size`](@ref), [`has_standard_indexing`](@ref).
 
 """
-same_dimensions(A::AbstractArray) = standard_size(A)
-@inline function same_dimensions(A::AbstractArray, B::AbstractArray...)
-    dims = standard_size(A)
-    all_match(dims, standard_size, B...) || throw_not_same_size()
-    return dims
+same_standard_size(A::AbstractArray) = standard_size(A)
+@inline function same_standard_size(A::AbstractArray, B::AbstractArray...)
+    siz = standard_size(A)
+    all_match(siz, standard_size, B...) || throw_not_same_size()
+    return siz
+end
+
+"""
+
+```julia
+same_size(A, B...) -> size(A)
+```
+
+checks whether arrays `A`, `B`, etc., all have the same size which is returned.
+A `DimensionMismatch` exception is thrown if array sizes are not all identical.
+
+See also [`same_standard_size`](@ref), [`same_axes`](@ref).
+
+"""
+same_size(A::AbstractArray) = size(A)
+@inline function same_size(A::AbstractArray, B::AbstractArray...)
+    siz = size(A)
+    all_match(siz, size, B...) || throw_not_same_size()
+    return siz
 end
 
 @noinline throw_not_same_size() =
     throw(DimensionMismatch("arrays must have same dimensions"))
+
+"""
+
+```julia
+same_axes(A, B...) -> axes(A)
+```
+
+checks whether arrays `A`, `B`, etc., have the same axes and returns them.  A
+`DimensionMismatch` exception is thrown if axes are not all identical.
+
+See also [`same_size`](@ref), [`all_indices`](@ref).
+
+"""
+same_axes(A::AbstractArray) = axes(A)
+@inline function same_axes(A::AbstractArray, B::AbstractArray...)
+    inds = axes(A)
+    all_match(inds, axes, B...) || throw_not_same_axes()
+    return inds
+end
+
+@noinline throw_not_same_axes() =
+    throw(DimensionMismatch("arrays must have same indices"))
 
 """
      check_size(siz) -> len
@@ -361,26 +402,6 @@ end
     Ic = max(imin,jmax-k+1):imax
     return Ia, Ib, Ic
 end
-
-"""
-
-```julia
-same_axes(A, B...) -> axes(A)
-```
-
-checks whether arrays `A`, `B`, etc., have the same axes and returns them.
-If axes are not all identical, a `DimensionMismatch` exception is thrown.
-
-"""
-same_axes(A::AbstractArray) = axes(A)
-@inline function same_axes(A::AbstractArray, B::AbstractArray...)
-    inds = axes(A)
-    all_match(inds, axes, B...) || throw_not_same_axes()
-    return inds
-end
-
-@noinline throw_not_same_axes() =
-    throw(DimensionMismatch("arrays must have same indices"))
 
 """
 

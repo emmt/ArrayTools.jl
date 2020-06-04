@@ -20,8 +20,9 @@ export
     promote_eltype,
     reversemap,
     all_indices,
-    same_dimensions,
     same_axes,
+    same_size,
+    same_standard_size,
     split_interval,
     standard_size,
     strictmap!,
@@ -60,6 +61,7 @@ import Base: dotview, getindex, setindex!, to_indices
 @deprecate Dimensions ArraySize
 @deprecate checkdimensions check_size
 @deprecate check_dimensions check_size
+@deprecate same_dimensions same_standard_size
 
 include("traits.jl")
 include("utils.jl")

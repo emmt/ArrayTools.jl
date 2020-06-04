@@ -1,3 +1,9 @@
+- New method `same_size` to get the common size of arrays checking that they
+  all have the same size.
+
+- `same_dimensions` deprecated in favor of `same_standard_size` which is more
+  explicit.
+
 - `check_dimensions` deprecated in favor of `check_size` which yields the
   number of elements and throws an `ArgumentError` exception if not all
   dimensions are nonnegative.
