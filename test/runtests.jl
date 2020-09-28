@@ -328,9 +328,9 @@ end
     C = to_fast_array(Float32, Va)
     @test has_standard_indexing(A,Va) == (has_standard_indexing(A) &&
                                          has_standard_indexing(Va))
-    @test IndexingTrait(A) === FastIndexing()
-    @test IndexingTrait(Va) === AnyIndexing()
-    @test IndexingTrait("a") === AnyIndexing()
+    @test IndexingType(A) === FastIndexing()
+    @test IndexingType(Va) === AnyIndexing()
+    @test IndexingType("a") === AnyIndexing()
     @test is_fast_array() == false
     @test is_fast_array(S) == true
     @test samevalues(Va, to_fast_array(Va))

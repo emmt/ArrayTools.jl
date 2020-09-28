@@ -35,7 +35,7 @@ export
     to_flat_array,
     is_flat_array,
     # Fast arrays and indexing trait:
-    IndexingTrait,
+    IndexingType,
     FastIndexing,
     AnyIndexing,
     to_fast_array,

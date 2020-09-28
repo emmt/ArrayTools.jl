@@ -5,9 +5,8 @@
 #
 
 """
-```julia
-StorageType(A)
-```
+
+    StorageType(A)
 
 yields the type of storage of the elements of argument `A`.  If `A` is a *flat*
 array, that is an array with contiguous elements in column-major order and
@@ -19,7 +18,8 @@ correct answer.
 
 See also [`is_flat_array`](@ref), [`to_flat_array`](@ref).
 
-"""
+""" StorageType
+
 abstract type StorageType end
 
 struct FlatStorage <: StorageType end
@@ -68,9 +68,8 @@ StorageType(A::StridedArray{T,N}) where {T,N} = begin
 end
 
 """
-```julia
-is_flat_array(A) -> boolean
-```
+
+    is_flat_array(A) -> boolean
 
 yields whether array `A` can be indexed as a *flat* array, that is an array
 with contiguous elements in column-major order and first element at index 1.
@@ -78,9 +77,7 @@ This also means that `A` has 1-based indices along all its dimensions.
 
 Several arguments can be checked in a single call:
 
-```julia
-is_flat_array(A, B, C, ...)
-```
+    is_flat_array(A, B, C, ...)
 
 is the same as:
 
@@ -88,8 +85,8 @@ is the same as:
 is_flat_array(A) && is_flat_array(B) && is_flat_array(C) && ...
 ```
 
-See also [`StorageType`](@ref), [`to_flat_array`](@ref), [`is_fast_array`](@ref),
-[`has_standard_indexing`](@ref).
+See also [`StorageType`](@ref), [`to_flat_array`](@ref),
+[`is_fast_array`](@ref), [`has_standard_indexing`](@ref).
 
 """
 is_flat_array() = false
@@ -109,17 +106,17 @@ _is_flat_array(::StorageType) = false
 #
 
 """
-```julia
-to_flat_array([T=eltype(A),] A)
-```
+
+    to_flat_array([T=eltype(A),] A)
 
 lazily yields a *flat* array based on `A`, that is an array with contiguous
 elements in column-major order and first element at index 1.  Optional argument
 `T` is to specify the element type of the result.  Argument `A` is returned if
 it is already a flat array with the requested element type; otherwise,
-[`convert`](@ref) is called to produce the result (an `Array{T}` in that case).
+`convert` method is called to produce the result (an `Array{T}` in that case).
 
-See also [`is_flat_array`](@ref), [`to_fast_array`](@ref), [`convert`](@ref).
+See also [`is_flat_array`](@ref), [`to_fast_array`](@ref).
+
 """
 to_flat_array(A::Array) = A
 to_flat_array(::Type{T}, A::Array{T,N}) where {T,N} = A
@@ -134,9 +131,7 @@ _to_flat_array(::StorageType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} 
 
 """
 
-```julia
-IndexingTrait(A)
-```
+    IndexingType(A)
 
 yields one of the singletons `FastIndexing()` or `AnyIndexing()` to indicate
 whether or not array `A` has standard 1-based indices and can be efficiently
@@ -148,69 +143,63 @@ correct answer.
 
 See also [`is_fast_array`](@ref), [`to_fast_array`](@ref).
 
-"""
-abstract type IndexingTrait end
+""" IndexingType
 
-struct FastIndexing <: IndexingTrait end
-struct  AnyIndexing <: IndexingTrait end
+abstract type IndexingType end
 
-@doc @doc(IndexingTrait) FastIndexing
-@doc @doc(IndexingTrait) AnyIndexing
+struct FastIndexing <: IndexingType end
+struct  AnyIndexing <: IndexingType end
 
-IndexingTrait(::Array) = FastIndexing()
-IndexingTrait(::Any) = AnyIndexing()
-IndexingTrait(A::AbstractArray) =
+@doc @doc(IndexingType) FastIndexing
+@doc @doc(IndexingType) AnyIndexing
+
+IndexingType(::Array) = FastIndexing()
+IndexingType(::Any) = AnyIndexing()
+IndexingType(A::AbstractArray) =
     (IndexStyle(A) === IndexLinear() && has_standard_indexing(A) ?
      FastIndexing() : AnyIndexing())
 
 """
 
-```julia
-is_fast_array(A)
-```
+    is_fast_array(A)
 
 yields whether array `A` has standard 1-based indices and is efficiently
 indexed by linear indices.
 
 Several arguments can be checked in a single call:
 
-```julia
-is_fast_array(A, B, C, ...)
-```
+    is_fast_array(A, B, C, ...)
 
 is the same as:
 
-```julia
-is_fast_array(A) && is_fast_array(B) && is_fast_array(C) && ...
-```
+    is_fast_array(A) && is_fast_array(B) && is_fast_array(C) && ...
 
-See also [`IndexingType`](@ref), [`to_fast_array`](@ref), [`is_flat_array`](@ref).
+See also [`IndexingType`](@ref), [`to_fast_array`](@ref),
+[`is_flat_array`](@ref).
 
 """
 is_fast_array() = false
 is_fast_array(args...) = allof(is_fast_array, args...)
-is_fast_array(arg) = _is_fast_array(IndexingTrait(arg))
+is_fast_array(arg) = _is_fast_array(IndexingType(arg))
 _is_fast_array(::FastIndexing) = true
 _is_fast_array(::AnyIndexing) = false
 
 """
 
-```julia
-to_fast_array([T=eltype(A),] A)
-```
+    to_fast_array([T=eltype(A),] A)
 
 lazily yields a *fast array* equivalent to `A` with element type `T`.  A *fast
 array* has standard 1-based indices and is efficiently indexed by linear
 indices.  If `A` is already a *fast array* with element type `T`, `A` is
 returned; otherwise, `A` is converted into an `Array` which is returned.
 
-See also [`is_fast_array`](@ref), [`IndexingTrait`](@ref),
+See also [`is_fast_array`](@ref), [`IndexingType`](@ref),
 [`to_flat_array`](@ref).
 
 """
 to_fast_array(A::AbstractArray{T,N}) where {T,N} = to_fast_array(T, A)
 to_fast_array(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
-    _to_fast_array(IndexingTrait(A), T, A)
+    _to_fast_array(IndexingType(A), T, A)
 _to_fast_array(::FastIndexing, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
-_to_fast_array(::IndexingTrait, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
+_to_fast_array(::IndexingType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)

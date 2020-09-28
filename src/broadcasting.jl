@@ -41,14 +41,14 @@ bcastcopy(A, dims::Integer...) =
     bcastlazy(A, [T=eltype(A),] dims...)
 
 yields a *flat* array of type `T` and dimensions `dims` whose values are given
-by `A` according to type conversion and broadcasting rules (see
-[`broadcast`](@ref)).  Compared to [`bcastcopy`](@ref), making a copy of `A` is
-avoided if it is already an array with the correct type of elements and
-dimensions or if it can be reshaped (by the `reshape` method) to the correct
-type and dimensions.  This means that the result may share the same contents as
-`A`.  Argument `A` can be a scalar or an array with 1-based indices.  The
-result has 1-based indices and contiguous elements which is suitable for fast
-linear indexing.
+by `A` according to type conversion and broadcasting rules (see `broadcast`
+method).  Compared to [`bcastcopy`](@ref), making a copy of `A` is avoided if
+it is already an array with the correct type of elements and dimensions or if
+it can be reshaped (by the `reshape` method) to the correct type and
+dimensions.  This means that the result may share the same contents as `A`.
+Argument `A` can be a scalar or an array with 1-based indices.  The result has
+1-based indices and contiguous elements which is suitable for fast linear
+indexing.
 
 See also [`bcastcopy`](@ref), [`bcastsize`](@ref).
 
@@ -85,9 +85,9 @@ bcastlazy(A, dims::Integer...) =
     bcastsize(size(A), size(B), ...) -> siz
 
 yields the size `siz` of the array that would result from applying broadcasting
-rules (see `broadcast`) to arguments `A`, `B`, etc.  The result is a tuple of
-integers (of type `Int`).  Call [`check_size`](@ref) if you want to also
-make sure that the result is a list of valid dimensions.
+rules (see `broadcast` method) to arguments `A`, `B`, etc.  The result is a
+tuple of integers (of type `Int`).  Call [`check_size`](@ref) if you want to
+also make sure that the result is a list of valid dimensions.
 
 The method can also be applied to a single dimension:
 
