@@ -321,7 +321,7 @@ end
 end
 
 @testset "Indexing" begin
-    for Q in (A,Va,S,101,Colon())
+    for Q in (A,Va,S,101,Colon(),(),(1,),("e",2,))
         @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
     end
     B = to_fast_array(Float32, A)

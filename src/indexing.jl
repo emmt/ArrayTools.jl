@@ -18,8 +18,8 @@ const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
 `IndexRange` is the union of types that can define a range of indices along a
 single dimension of an array, that is integers and integer-valued unit ranges.
 
-The code purposely limited to these types, to make sure only ranges with step
-equal to 1 are considered.
+The code is purposely limited to these types, to make sure only ranges with
+step equal to 1 are considered.
 
 """
 const IndexRange = Union{<:Integer,AbstractUnitRange{<:Integer}}
@@ -173,6 +173,7 @@ has_standard_indexing(args...) = allof(has_standard_indexing, args...)
 has_standard_indexing(arg::Array) = true
 has_standard_indexing(::Colon) = true
 has_standard_indexing(::Number) = true
+has_standard_indexing(::Tuple) = true
 
 """
 
@@ -322,7 +323,9 @@ end
 end
 
 @inline common_indices(i::IndexRange, j::IndexRange) =
-    max(to_int(first(i)), to_int(first(j))):min(to_int(last(i)), to_int(last(j)))
+    max(to_int(first(i)),
+        to_int(first(j))):min(to_int(last(i)),
+                              to_int(last(j)))
 
 @inline common_indices(i::IndexRange, j::IndexRange, ::typeof(+), k::Integer) =
     _common_indices_plus(i, j, k)
@@ -331,10 +334,14 @@ end
     _common_indices_minus(i, j, k)
 
 @inline _common_indices_plus(i::IndexRange, j::IndexRange, k::Integer) =
-    max(to_int(first(i)), to_int(first(j) - k)):min(to_int(last(i)), to_int(last(j) - k))
+    max(to_int(first(i)),
+        to_int(first(j) - k)):min(to_int(last(i)),
+                                  to_int(last(j) - k))
 
 @inline _common_indices_minus(i::IndexRange, j::IndexRange, k::Integer) =
-    max(to_int(first(i)), to_int(first(j) + k)):min(to_int(last(i)), to_int(last(j) + k))
+    max(to_int(first(i)),
+        to_int(first(j) + k)):min(to_int(last(i)),
+                                  to_int(last(j) + k))
 
 """
 
@@ -351,7 +358,7 @@ given unit ranges `I` and `J` and offset `±k`, yields 3 unit ranges, such that
 
 - `∀ i ∈ Ic`, `i ± k > last(J)`.
 
-unit ranges may be replaced by their first and last values:
+Unit ranges may be replaced by their first and last values:
 
 ```julia
 split_interval(first(I), last(I), first(J), last(J), +/-, k)
@@ -364,7 +371,6 @@ yields the same result as above.
 @inline function split_interval(I::AbstractUnitRange{<:Integer},
                                 J::AbstractUnitRange{<:Integer},
                                 pm::PlusMinus, k::Integer)
-
     split_interval(first(I), last(I), first(J), last(J), pm, k)
 end
 
@@ -384,7 +390,7 @@ end
                                 jmin::Int, jmax::Int, ::typeof(+), k::Int)
     #
     # Intervals for different conditions: (a) below lower bound, (b) within
-    # bounds or (c) behyond upper bound.
+    # bounds or (c) beyond upper bound.
     #
     # (a)  i ∈ imin:imax  and  j = i + k < jmin
     #      ⟺ i ∈ imin : min(imax, jmin - k - 1)
