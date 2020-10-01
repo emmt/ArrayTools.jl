@@ -321,13 +321,18 @@ end
 end
 
 @testset "Indexing" begin
+    # Prior to version 1.1, Base.has_offset_axes does not work for tuples.
     for Q in (A,Va,S,101,Colon(),(),(1,),("e",2,))
-        @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
+        if isa(Q, Tuple) && VERSION < v"1.1"
+            @test has_standard_indexing(Q) == true
+        else
+            @test has_standard_indexing(Q) == !Base.has_offset_axes(Q)
+        end
     end
     B = to_fast_array(Float32, A)
     C = to_fast_array(Float32, Va)
     @test has_standard_indexing(A,Va) == (has_standard_indexing(A) &&
-                                         has_standard_indexing(Va))
+                                          has_standard_indexing(Va))
     @test IndexingType(A) === FastIndexing()
     @test IndexingType(Va) === AnyIndexing()
     @test IndexingType("a") === AnyIndexing()
