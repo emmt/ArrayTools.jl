@@ -170,7 +170,7 @@ older than 0.7.
 """
 has_standard_indexing(arg) = allof(x -> first(x) == 1, axes(arg)...)
 has_standard_indexing(args...) = allof(has_standard_indexing, args...)
-has_standard_indexing(arg::Array) = true
+has_standard_indexing(::Array) = true
 has_standard_indexing(::Colon) = true
 has_standard_indexing(::Number) = true
 has_standard_indexing(::Tuple) = true
@@ -254,17 +254,17 @@ valued unit ranges.
 An offset `k` with a sign may be specified:
 
 ```julia
-common_indices(A, B, +, k)
-common_indices(A, B, -, k)
+common_indices(A, B, ±, k)
 ```
 
-to obtain the set of all indices `i` such that `A[i]` and, respectively,
-`B[i+k]` or `B[i-k]` are valid.  Offset `k` can be a tuple of integers or a
-Cartesian index.
+to obtain the set of all indices `i` such that `A[i]` and `B[i ± k]` are valid
+and where here and above `±` is either `+` or `-`.  Offset `k` can be a tuple
+of integers or a Cartesian index.
 
 Arguments `A` and `B` may be both tuples of indices or index ranges or both
-scalar or index range.  This is used in the following example, where we want to
-do `A[i] = B[i]*C[i + k]` given the offset `k` and for all valid indices `i`:
+scalar or index range which specify the size or the axes of the arrays to be
+indexed.  This is used in the following example, where we want to do `A[i] =
+B[i]*C[i + k]` given the offset `k` and for all valid indices `i`:
 
 ```julia
 I = common_indices(same_axes(A, B), axes(C), +, k)
@@ -273,9 +273,9 @@ I = common_indices(same_axes(A, B), axes(C), +, k)
 end
 ```
 
-Remarks: `same_axes(A,B)` is called to get the axes of `A` and `B` while
-asserting that they are the same, as a result no bound checking should be
-necessary and the loop can be optimzed for vectorization.
+Note that `same_axes(A,B)` is called to get the axes of `A` and `B` while
+asserting that they are the same, as a result no bound checking is necessary
+and the loop can be optimized for vectorization.
 
 """ common_indices
 
@@ -393,17 +393,14 @@ end
     # bounds or (c) beyond upper bound.
     #
     # (a)  i ∈ imin:imax  and  j = i + k < jmin
-    #      ⟺ i ∈ imin : min(imax, jmin - k - 1)
     #
     Ia = imin:min(imax,jmin-k-1)
     #
     # (b)  i ∈ imin:imax  and  jmin ≤ j = i + k ≤ jmax
-    #      ⟺ i ∈ max(imin, jmin - k) ≤ i ≤ min(imax, jmax - k)
     #
     Ib = max(imin,jmin-k):min(imax,jmax-k)
     #
     # (c)  i ∈ imin:imax  and  j = i + k > jmax
-    #      ⟺ i ∈ max(imin, jmax - k + 1) : imax
     #
     Ic = max(imin,jmax-k+1):imax
     return Ia, Ib, Ic
