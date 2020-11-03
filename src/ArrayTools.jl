@@ -44,29 +44,6 @@ export
 using Base: OneTo, axes1, tail
 import Base: dotview, getindex, setindex!, to_indices
 
-@deprecate rubberindex colons
-@deprecate indices cartesian_indices
-@deprecate cartesianindices cartesian_indices
-@deprecate safe_indices all_indices
-@deprecate flatmatrix to_flat_array
-@deprecate flatvector to_flat_array
-@deprecate fastmatrix to_fast_array
-@deprecate fastvector to_fast_array
-@deprecate isfastarray is_fast_array
-@deprecate isflatarray is_flat_array
-@deprecate fastarray to_fast_array
-@deprecate flatarray to_flat_array
-@deprecate dimensions(A::AbstractArray) standard_size(A)
-@deprecate dimensions(dim::Integer) to_size(dims)
-@deprecate dimensions(dims::Integer...) to_size(dims)
-@deprecate dimensions(dims::Tuple{Vararg{Integer}}) to_size(dims)
-@deprecate bcastdim(a::Integer, b::Integer) bcastsize(a, b)
-@deprecate bcastdims bcastsize
-@deprecate Dimensions ArraySize
-@deprecate checkdimensions check_size
-@deprecate check_dimensions check_size
-@deprecate same_dimensions same_standard_size
-
 include("traits.jl")
 include("utils.jl")
 include("indexing.jl")

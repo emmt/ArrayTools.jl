@@ -86,7 +86,6 @@ atol = 1e-6
     @test check_size(0xff) == 255
     @test_throws ArgumentError check_size((1,0,-1))
     @test_throws ArgumentError check_size(-1)
-    @test_deprecated checkdimensions((1,2,))
     #
     # Tests for `allof`, `anyof` and `noneof`.
     #
@@ -133,7 +132,6 @@ atol = 1e-6
     #
     # Tests for `cartesian_indices`.
     #
-    @test_deprecated indices(A) === CartesianIndices(axes(A))
     @test cartesian_indices(A) === CartesianIndices(axes(A))
     @test cartesian_indices(A) === cartesian_indices(size(A))
     @test cartesian_indices(A) === cartesian_indices(axes(A))
@@ -175,7 +173,6 @@ atol = 1e-6
     B = rand(T, dims[1:2])
     C = rand(T, dims[1:end-2]..., dims[end], dims[end-1])
     X = rand(T, 6)
-    @test_deprecated safe_indices(X) === all_indices(X)
     @test all_indices(X) === eachindex(X)
     @test all_indices(A) === eachindex(A)
     @test all_indices(Va) === eachindex(Va)
@@ -204,8 +201,6 @@ end
     I4 = CartesianIndex(1,2,3,2)
     I5 = CartesianIndex(1,2,3,2,4)
     @test_throws ArgumentError colons(-1)
-    @test_deprecated colons(5) === rubberindex(5)
-    #@test_deprecated A[…] === A # FIXME: not possible to deprecate
     for d ∈ 0:12
         tup = ntuple(x -> Colon(), d)
         @test colons(d) === tup
