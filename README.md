@@ -227,6 +227,26 @@ Similar types are provided by
 [ImageMetadata](https://github.com/JuliaImages/ImageMetadata.jl).
 
 
+### Zipped arrays
+
+Zipped arrays are useful if you need a small number of arrays that can be jointly
+indexed.  For instance:
+
+```julia
+using ZippedArrays
+A = ZippedVector(W,X,Y,Z)
+```
+
+then indexing `A` yields a 4-tuple of values:
+
+```julia
+A[i] -> (W[i],X[i],Y[i],Z[i])
+```
+
+and the syntax `A[i] = (w,x,y,z)` can be used to set the values of the arrays
+embedded in `A`.
+
+
 ## General tools
 
 ### Array indexing
@@ -338,8 +358,8 @@ manager REPL (you should get a `... pkg>` prompt) and type:
 [license-url]: ./LICENSE.md
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
 
-[travis-img]: https://travis-ci.org/emmt/ArrayTools.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/emmt/ArrayTools.jl
+[travis-img]: https://travis-ci.com/emmt/ArrayTools.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/emmt/ArrayTools.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/emmt/ArrayTools.jl?branch=master
 [appveyor-url]: https://ci.appveyor.com/project/emmt/ArrayTools-jl/branch/master
