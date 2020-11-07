@@ -358,8 +358,8 @@ manager REPL (you should get a `... pkg>` prompt) and type:
 [license-url]: ./LICENSE.md
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
 
-[travis-img]: https://travis-ci.com/emmt/ArrayTools.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/emmt/ArrayTools.jl
+[travis-img]: https://travis-ci.org/emmt/ArrayTools.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/emmt/ArrayTools.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/emmt/ArrayTools.jl?branch=master
 [appveyor-url]: https://ci.appveyor.com/project/emmt/ArrayTools-jl/branch/master
