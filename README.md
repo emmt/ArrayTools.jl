@@ -26,8 +26,8 @@ A[:,2:3,..]     == A[:,2:3,:,:]
 A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
 ```
 
-As you can see, the advantage of the *rubber index* `..` is that it
-automatically expands as the number of colons needed to have the correct number
+As can be seen, the advantage of the *rubber index* `..` is that it
+automatically expands as the list of colons needed to have the correct number
 of indices.  The expressions are also more readable.  The idea comes from the
 [`Yorick`](http://yorick.github.com/) language by Dave Munro.
 
@@ -41,7 +41,7 @@ A[2,..] = A[3,..]  # to copy A[3,:,:,:] in A[2,:,:,:]
 A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
 ```
 
-Leading/trailing indices may be specified as Cartesian indices (of type
+Leading/trailing indices may also be specified as Cartesian indices (of type
 `CartesianIndex`).
 
 Technically, the constant `..` is defined as `RubberIndex()` where `RubberIndex`
@@ -227,26 +227,6 @@ Similar types are provided by
 [ImageMetadata](https://github.com/JuliaImages/ImageMetadata.jl).
 
 
-### Zipped arrays
-
-Zipped arrays are useful if you need a small number of arrays that can be jointly
-indexed.  For instance:
-
-```julia
-using ZippedArrays
-A = ZippedVector(W,X,Y,Z)
-```
-
-then indexing `A` yields a 4-tuple of values:
-
-```julia
-A[i] -> (W[i],X[i],Y[i],Z[i])
-```
-
-and the syntax `A[i] = (w,x,y,z)` can be used to set the values of the arrays
-embedded in `A`.
-
-
 ## General tools
 
 ### Array indexing
@@ -343,12 +323,12 @@ array form.
 
 ## Installation
 
-`ArrayTools` is not yet an [official Julia package][julia-pkgs-url] so you have
-to clone its repository.  In Julia, hit the `]` key to switch to the package
-manager REPL (you should get a `... pkg>` prompt) and type:
+`ArrayTools` is an [official Julia package][julia-pkgs-url] and is easy to
+install.  In Julia, hit the `]` key to switch to the package manager REPL (you
+should get a `... pkg>` prompt) and type:
 
 ```julia
-... pkg> add https://github.com/emmt/ArrayTools.jl
+... pkg> add ArrayTools
 ```
 
 
