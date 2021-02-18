@@ -306,8 +306,12 @@ Base.getindex(A::DynamicallyAnnotatedArray{<:Any,<:Any,String}, key::AbstractStr
 Base.getindex(A::StaticallyAnnotatedArray, key::Symbol) =
     getindex(properties(A), key)
 
-Base.setindex!(A::DynamicallyAnnotatedArray{<:Any,<:Any,K}, val, key::K) where {K} =
-    setindex!(properties(A), val, key)
+@inline function Base.setindex!(A::DynamicallyAnnotatedArray{<:Any,<:Any,K},
+                                val, key::K) where {K}
+    properties(A)[key] = val
+    A
+end
+
 Base.setindex!(A::StaticallyAnnotatedArray, val, key::Symbol) =
     throw_immutable_properties()
 
