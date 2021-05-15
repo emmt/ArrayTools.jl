@@ -49,10 +49,7 @@ to_size(siz::Integer) = (to_int(siz),)
 to_size(siz::Integer...) = to_size(siz)
 
 """
-
-```julia
-promote_eltype(A, B, ...) -> T
-```
+    promote_eltype(A, B, ...) -> T
 
 yields an element type `T` resulting from calling `promote_type` onto the
 element types of all the arguments which must be arrays or array types.
@@ -62,14 +59,11 @@ promote_eltype(args::Union{AbstractArray,Type{<:AbstractArray}}...) =
     promote_type(map(eltype, args)...)
 
 """
-
-```julia
-all_match(val, f, args...) -> bool
-```
+    all_match(val, f, args...) -> bool
 
 yields as soon as possible (short-circuit) whether `f(arg) == val` for each
-argument `arg` in `args..`.  The returned value is `true` if there are no
-argumenst after `f`.
+argument `arg` in `args...`.  The returned value is `true` if there are no
+arguments after `f`.
 
 """
 all_match(val, f::Function) = true
@@ -78,16 +72,12 @@ all_match(val, f::Function, A) = f(A) == val
     all_match(val, f, A) && all_match(val, f::Function, B...)
 
 """
-```julia
-allof(f, args...) -> Bool
-```
+    allof(f, args...) -> Bool
 
 checks whether predicate function `f` returns `true` for all arguments in
 `args...`, returning `false` as soon as possible (short-circuiting).
 
-```julia
-allof(args...) -> Bool
-```
+    allof(args...) -> Bool
 
 checks whether all arguments `args...` are `true`, returning `false` as soon as
 possible (short-circuiting).  Arguments can be booleans or arrays of booleans.
@@ -121,16 +111,12 @@ function allof(itr)
 end
 
 """
-```julia
-anyof(f, args...) -> Bool
-```
+    anyof(f, args...) -> Bool
 
 checks whether predicate function `f` returns `true` for any argument
 `args...`, returning `true` as soon as possible (short-circuiting).
 
-```julia
-anyof(args...) -> Bool
-```
+    anyof(args...) -> Bool
 
 checks whether all arguments `args...` are `true`, returning `false` as soon as
 possible (short-circuiting).  Arguments can be booleans or arrays of booleans.
@@ -146,15 +132,11 @@ considered as special.
 To check whether predicate `f` returns `false` for all argument `args...` or
 whether all argument `args...` are false, repectively call:
 
-```julia
-noneof(f, args...) -> Bool
-```
+    noneof(f, args...) -> Bool
 
 or
 
-```julia
-noneof(args...) -> Bool
-```
+    noneof(args...) -> Bool
 
 which are the same as `!anyof(f, args...)` and `!anyof(args...)`.
 
@@ -182,9 +164,7 @@ end
 @doc @doc(anyof) noneof
 
 """
-```julia
-reversemap(f, args)
-```
+    reversemap(f, args)
 
 applies the function `f` to arguments `args` in reverse order and return the
 result.  For now, the arguments `args` must be in the form of a simple tuple
@@ -197,10 +177,7 @@ reversemap(f::Function, args::NTuple{N,Any}) where {N} =
     ntuple(i -> f(args[(N + 1) - i]), Val{N}())
 
 """
-
-```julia
-strictmap!(dst, f, src) -> dst
-```
+    strictmap!(dst, f, src) -> dst
 
 does `dst[i] = f(src[i])` for all indices `i` and returns `dst`.  Arguments
 `dst` and `src` must have the same axes.
