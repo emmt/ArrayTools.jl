@@ -45,10 +45,23 @@ Leading/trailing indices may also be specified as Cartesian indices (of type
 `CartesianIndex`).
 
 Technically, the constant `..` is defined as `RubberIndex()` where `RubberIndex`
-is the singleron type that represents any number of indices.
+is the singleton type that represents any number of indices.
 
 Call `colons(n)` if you need a `n`-tuple of colons `:`.  When `n` is known at
 compile time, it is faster to call `colons(Val(n))`.
+
+!!! warning
+    A current limitation of the rubber index is that it will confuse the
+    interpretation of the `end` token appearing in the same index list *after*
+    the rubber index.  This is beacuse the parser wrongly assumes that the
+    rubber index counts for a single dimension.  The `end` token may however
+    appears *before* the rubber index.
+
+    ```.julia
+    A = rand(5,10,4,3);
+    A[:,5:end,..] == A[:,5:end,:,:] # ok
+    A[..,5:end,:] == A[:,:,5:end,:] # throws a BoundsError
+    ```
 
 
 ## Array-like objects
