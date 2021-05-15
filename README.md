@@ -50,11 +50,11 @@ is the singleton type that represents any number of indices.
 Call `colons(n)` if you need a `n`-tuple of colons `:`.  When `n` is known at
 compile time, it is faster to call `colons(Val(n))`.
 
-:warning: A current limitation of the rubber index is that it will confuse the
-interpretation of the `end` token appearing in the same index list *after* the
-rubber index.  This is beacuse the parser wrongly assumes that the rubber index
-counts for a single dimension.  The `end` token may however appears *before*
-the rubber index.
+:warning: **Warning** A current limitation of the rubber index is that it will
+confuse the interpretation of the `end` token appearing in the same index list
+*after* the rubber index.  This is beacuse the parser wrongly assumes that the
+rubber index counts for a single dimension.  The `end` token may however
+appears *before* the rubber index.  Example:
 
 ```.julia
 A = rand(5,10,4,3);
