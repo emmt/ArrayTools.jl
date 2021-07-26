@@ -50,7 +50,7 @@ is the singleton type that represents any number of indices.
 Call `colons(n)` if you need a `n`-tuple of colons `:`.  When `n` is known at
 compile time, it is faster to call `colons(Val(n))`.
 
-:warning: **Warning** A current limitation of the rubber index is that it will
+:warning: **Warning.** A current limitation of the rubber index is that it will
 confuse the interpretation of the `end` token appearing in the same index list
 *after* the rubber index.  This is beacuse the parser wrongly assumes that the
 rubber index counts for a single dimension.  The `end` token may however
@@ -350,8 +350,8 @@ should get a `... pkg>` prompt) and type:
 [license-url]: ./LICENSE.md
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
 
-[travis-img]: https://travis-ci.org/emmt/ArrayTools.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/emmt/ArrayTools.jl
+[travis-img]: https://travis-ci.com/emmt/ArrayTools.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/emmt/ArrayTools.jl
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/emmt/ArrayTools.jl?branch=master
 [appveyor-url]: https://ci.appveyor.com/project/emmt/ArrayTools-jl/branch/master
