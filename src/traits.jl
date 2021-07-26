@@ -5,7 +5,6 @@
 #
 
 """
-
     StorageType(A)
 
 yields the type of storage of the elements of argument `A`.  If `A` is a *flat*
@@ -22,11 +21,23 @@ See also [`is_flat_array`](@ref), [`to_flat_array`](@ref).
 
 abstract type StorageType end
 
-struct FlatStorage <: StorageType end
-struct  AnyStorage <: StorageType end
+"""
+    FlatStorage()
 
-@doc @doc(StorageType) FlatStorage
-@doc @doc(StorageType)  AnyStorage
+yields the storage type of *flat* arrays.  See [`StorageType`](@ref).
+
+""" FlatStorage
+
+struct FlatStorage <: StorageType end
+
+"""
+    AnyStorage()
+
+yields the storage type of a *non-flat* arrays.  See [`StorageType`](@ref).
+
+""" AnyStorage
+
+struct  AnyStorage <: StorageType end
 
 StorageType(::Array) = FlatStorage()
 StorageType(::Any) = AnyStorage()
@@ -68,7 +79,6 @@ StorageType(A::StridedArray{T,N}) where {T,N} = begin
 end
 
 """
-
     is_flat_array(A) -> boolean
 
 yields whether array `A` can be indexed as a *flat* array, that is an array
@@ -81,9 +91,7 @@ Several arguments can be checked in a single call:
 
 is the same as:
 
-```julia
-is_flat_array(A) && is_flat_array(B) && is_flat_array(C) && ...
-```
+    is_flat_array(A) && is_flat_array(B) && is_flat_array(C) && ...
 
 See also [`StorageType`](@ref), [`to_flat_array`](@ref),
 [`is_fast_array`](@ref), [`has_standard_indexing`](@ref).
@@ -106,7 +114,6 @@ _is_flat_array(::StorageType) = false
 #
 
 """
-
     to_flat_array([T=eltype(A),] A)
 
 lazily yields a *flat* array based on `A`, that is an array with contiguous
@@ -119,10 +126,9 @@ See also [`is_flat_array`](@ref), [`to_fast_array`](@ref).
 
 """
 to_flat_array(A::Array) = A
-to_flat_array(::Type{T}, A::Array{T,N}) where {T,N} = A
-to_flat_array(A::AbstractArray{T,N}) where {T,N} =
-    _to_flat_array(StorageType(A), T, A)
-to_flat_array(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
+to_flat_array(::Type{T}, A::Array{T}) where {T} = A
+to_flat_array(A::AbstractArray) = _to_flat_array(StorageType(A), eltype(A), A)
+to_flat_array(::Type{T}, A::AbstractArray{<:Any}) where {T} =
     _to_flat_array(StorageType(A), T, A)
 
 _to_flat_array(::FlatStorage, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
@@ -130,7 +136,6 @@ _to_flat_array(::StorageType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} 
     convert(Array{T,N}, A)
 
 """
-
     IndexingType(A)
 
 yields one of the singletons `FastIndexing()` or `AnyIndexing()` to indicate
@@ -147,11 +152,23 @@ See also [`is_fast_array`](@ref), [`to_fast_array`](@ref).
 
 abstract type IndexingType end
 
-struct FastIndexing <: IndexingType end
-struct  AnyIndexing <: IndexingType end
+"""
+    FastIndexing()
 
-@doc @doc(IndexingType) FastIndexing
-@doc @doc(IndexingType) AnyIndexing
+yields the indexing type of *fast* arrays.  See [`IndexingType`](@ref).
+
+""" FastIndexing
+
+struct FastIndexing <: IndexingType end
+
+"""
+    AnyIndexing()
+
+yields the indexing type of *non-fast* arrays.  See [`IndexingType`](@ref).
+
+""" AnyIndexing
+
+struct  AnyIndexing <: IndexingType end
 
 IndexingType(::Array) = FastIndexing()
 IndexingType(::Any) = AnyIndexing()
@@ -160,7 +177,6 @@ IndexingType(A::AbstractArray) =
      FastIndexing() : AnyIndexing())
 
 """
-
     is_fast_array(A)
 
 yields whether array `A` has standard 1-based indices and is efficiently
@@ -185,7 +201,6 @@ _is_fast_array(::FastIndexing) = true
 _is_fast_array(::AnyIndexing) = false
 
 """
-
     to_fast_array([T=eltype(A),] A)
 
 lazily yields a *fast array* equivalent to `A` with element type `T`.  A *fast
@@ -197,9 +212,10 @@ See also [`is_fast_array`](@ref), [`IndexingType`](@ref),
 [`to_flat_array`](@ref).
 
 """
-to_fast_array(A::AbstractArray{T,N}) where {T,N} = to_fast_array(T, A)
-to_fast_array(::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
+to_fast_array(A::AbstractArray) = to_fast_array(eltype(A), A)
+to_fast_array(::Type{T}, A::AbstractArray{<:Any}) where {T} =
     _to_fast_array(IndexingType(A), T, A)
+
 _to_fast_array(::FastIndexing, ::Type{T}, A::AbstractArray{T,N}) where {T,N} = A
 _to_fast_array(::IndexingType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} =
     convert(Array{T,N}, A)
