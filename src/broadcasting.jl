@@ -5,7 +5,6 @@
 #
 
 """
-
     bcastcopy(A, [T=eltype(A),] dims...)
 
 yields a new array of element type `T` and dimensions `dims` whose values are
@@ -18,7 +17,7 @@ Argument `A` can be a scalar value or an array.
 See also [`bcastlazy`](@ref), [`bcastsize`](@ref).
 
 """
-function bcastcopy(A, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T}
+function bcastcopy(A, ::Type{T}, dims::Dims) where {T}
     B = Array{T}(undef, dims)
     B .= A # This expression will clash if dimensions are not compatible.
     return B
@@ -37,7 +36,6 @@ bcastcopy(A, dims::Integer...) =
     bcastcopy(A, dims)
 
 """
-
     bcastlazy(A, [T=eltype(A),] dims...)
 
 yields a *flat* array of type `T` and dimensions `dims` whose values are given
@@ -55,7 +53,7 @@ See also [`bcastcopy`](@ref), [`bcastsize`](@ref).
 """
 function bcastlazy(A::DenseArray{T},
                    ::Type{T},
-                   dims::Tuple{Vararg{Int}}) where {T}
+                   dims::Dims) where {T}
     has_standard_indexing(A) || throw_non_standard_indexing()
     Adims = size(A)
     Adims == dims && return A
@@ -65,7 +63,7 @@ function bcastlazy(A::DenseArray{T},
 end
 
 # Call `bcastcopy` if argument `A` can certainly not be returned.
-bcastlazy(A, ::Type{T}, dims::Tuple{Vararg{Int}}) where {T} =
+bcastlazy(A, ::Type{T}, dims::Dims) where {T} =
     bcastcopy(A, T, dims)
 
 # Convert dimensions.
@@ -81,7 +79,6 @@ bcastlazy(A, dims::Integer...) =
     bcastlazy(A, dims)
 
 """
-
     bcastsize(size(A), size(B), ...) -> siz
 
 yields the size `siz` of the array that would result from applying broadcasting
