@@ -1,8 +1,8 @@
 # Utilities for coding with Julia arrays
 
-| **License**                     | **Build Status**                                                | **Code Coverage**                                                   |
-|:--------------------------------|:----------------------------------------------------------------|:--------------------------------------------------------------------|
-| [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
+| **Documentation**               | **License**                     | **Build Status**                                                | **Code Coverage**                                                   |
+|:--------------------------------|:--------------------------------|:----------------------------------------------------------------|:--------------------------------------------------------------------|
+| [![][doc-dev-img]][doc-dev-url] | [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
 
 This [Julia][julia-url] package provides a number of methods and types to deal
 with the variety of array types (sub-types of `AbstractArray`) that exist in
