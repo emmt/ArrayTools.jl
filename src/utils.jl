@@ -90,7 +90,7 @@ This method can be much faster than `all(f, args)` or `all(args)` because its
 result may be determined at compile time.  However, `missing` values are not
 considered as special.
 
-See also [`all`](@ref), [`anyof`](@ref), [`noneof`](@ref).
+See also `all`, [`anyof`](@ref), [`noneof`](@ref).
 
 """
 allof(f::Function, a) = f(a)::Bool
@@ -111,12 +111,12 @@ function allof(itr)
 end
 
 """
-    anyof(f, args...) -> Bool
+    anyof(f, args...) -> bool
 
 checks whether predicate function `f` returns `true` for any argument
 `args...`, returning `true` as soon as possible (short-circuiting).
 
-    anyof(args...) -> Bool
+    anyof(args...) -> bool
 
 checks whether all arguments `args...` are `true`, returning `false` as soon as
 possible (short-circuiting).  Arguments can be booleans or arrays of booleans.
@@ -129,18 +129,7 @@ This method can be much faster than `any(f, args)` or `any(args)` because its
 result may be determined at compile time.  However, `missing` values are not
 considered as special.
 
-To check whether predicate `f` returns `false` for all argument `args...` or
-whether all argument `args...` are false, repectively call:
-
-    noneof(f, args...) -> Bool
-
-or
-
-    noneof(args...) -> Bool
-
-which are the same as `!anyof(f, args...)` and `!anyof(args...)`.
-
-See also [`any`](@ref), [`allof`](@ref).
+See also `any`, [`allof`](@ref), [`noneof`](@ref).
 
 """
 anyof(f::Function, a) = f(a)::Bool
@@ -160,8 +149,19 @@ function anyof(itr)
     return false
 end
 
+"""
+    noneof(f, args...) -> bool
+
+checks whether predicate `f` returns `false` for all argument `args...`, while
+
+    noneof(args...) -> bool
+
+checks whether all argument `args...` are false.
+
+See also `any`, [`allof`](@ref), [`noneof`](@ref).
+
+"""
 @inline noneof(args...) = ! anyof(args...)
-@doc @doc(anyof) noneof
 
 """
     reversemap(f, args)
@@ -170,7 +170,7 @@ applies the function `f` to arguments `args` in reverse order and return the
 result.  For now, the arguments `args` must be in the form of a simple tuple
 and the result is the tuple: `(f(args[end]),f(args[end-1]),...,f(args[1])`.
 
-Also see: [`map`](@ref), [`ntuple`](@ref).
+Also see: `map`, `ntuple`.
 
 """
 reversemap(f::Function, args::NTuple{N,Any}) where {N} =

@@ -28,7 +28,6 @@ const IndexRange = Union{<:Integer,AbstractUnitRange{<:Integer}}
 const PlusMinus = Union{typeof(+),typeof(-)}
 
 """
-
     standard_size(A) -> size(A)
 
 yields the list of dimensions of `A`, that is `size(A)`, throwing an
@@ -46,10 +45,7 @@ end
     throw(ArgumentError("arrays have non-standard indices"))
 
 """
-
-```julia
-same_standard_size(A, B...) -> size(A)
-```
+    same_standard_size(A, B...) -> size(A)
 
 checks whether arrays `A`, `B`, etc., all have standard indexing and the same
 size which is returned.  If array sizes are not all identical, a
@@ -68,10 +64,7 @@ same_standard_size(A::AbstractArray) = standard_size(A)
 end
 
 """
-
-```julia
-same_size(A, B...) -> size(A)
-```
+    same_size(A, B...) -> size(A)
 
 checks whether arrays `A`, `B`, etc., all have the same size which is returned.
 A `DimensionMismatch` exception is thrown if array sizes are not all identical.
@@ -90,10 +83,7 @@ end
     throw(DimensionMismatch("arrays must have same dimensions"))
 
 """
-
-```julia
-same_axes(A, B...) -> axes(A)
-```
+    same_axes(A, B...) -> axes(A)
 
 checks whether arrays `A`, `B`, etc., have the same axes and returns them.  A
 `DimensionMismatch` exception is thrown if axes are not all identical.
@@ -135,10 +125,7 @@ function check_size(siz::NTuple{N,Integer}) where {N}
 end
 
 """
-
-```julia
-nonnegative(x) -> bool
-```
+    nonnegative(x) -> bool
 
 yields whether `x` is greater or equal zero.
 
@@ -146,23 +133,16 @@ yields whether `x` is greater or equal zero.
 nonnegative(x) = x ≥ zero(x)
 
 """
-
-```julia
-has_standard_indexing(A)
-```
+    has_standard_indexing(A)
 
 return `true` if the indices of `A` start with 1 along all axes.  Can be called
 with multiple arguments:
 
-```julia
-has_standard_indexing(A, B, ...)
-```
+    has_standard_indexing(A, B, ...)
 
 is equivalent to:
 
-```julia
-has_standard_indexing(A) && has_standard_indexing(B) && ...
-```
+    has_standard_indexing(A) && has_standard_indexing(B) && ...
 
 Opposite of `Base.has_offset_axes` which is not available in version of Julia
 older than 0.7.
@@ -179,13 +159,11 @@ has_standard_indexing(::Tuple) = true
 
 The calls:
 
-```julia
-cartesian_indices(A)
-cartesian_indices((n1, n2, ...))
-cartesian_indices((i1:j1, i2:j2, ...))
-cartesian_indices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
-cartesian_indices(R)
-```
+    cartesian_indices(A)
+    cartesian_indices((n1, n2, ...))
+    cartesian_indices((i1:j1, i2:j2, ...))
+    cartesian_indices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
+    cartesian_indices(R)
 
 all yield an instance of `CartesianIndices` suitable for multi-dimensional
 indexing of respectively: all the indices of array `A`, a multi-dimensional
@@ -218,10 +196,7 @@ cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
 #cartesian_indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
 """
-
-```julia
-axis_limits(I) = (i0,i1)
-```
+    axis_limits(I) = (i0,i1)
 
 yields the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and
 such that `i0:i1` represents the same indices as `I` (although not in the same
@@ -243,9 +218,7 @@ axis_limits(I::AbstractRange{<:Integer}) =
 
 Assuming `A` and `B` are arrays with `N` dimensions:
 
-```julia
-common_indices(A, B) -> inds
-```
+    common_indices(A, B) -> inds
 
 yields the set of all the indices that are valid for both `A` and `B`.  The
 result is similar to `axes(A)` or `axes(B)`, that is an `N`-tuple of integer
@@ -253,9 +226,7 @@ valued unit ranges.
 
 An offset `k` with a sign may be specified:
 
-```julia
-common_indices(A, B, ±, k)
-```
+    common_indices(A, B, ±, k)
 
 to obtain the set of all indices `i` such that `A[i]` and `B[i ± k]` are valid
 and where here and above `±` is either `+` or `-`.  Offset `k` can be a tuple
@@ -266,12 +237,10 @@ scalar or index range which specify the size or the axes of the arrays to be
 indexed.  This is used in the following example, where we want to do `A[i] =
 B[i]*C[i + k]` given the offset `k` and for all valid indices `i`:
 
-```julia
-I = common_indices(same_axes(A, B), axes(C), +, k)
-@inbounds @simd for i in CartesianIndices(I)
-   A[i] = B[i]*C[i + k]
-end
-```
+    I = common_indices(same_axes(A, B), axes(C), +, k)
+    @inbounds @simd for i in CartesianIndices(I)
+       A[i] = B[i]*C[i + k]
+    end
 
 Note that `same_axes(A,B)` is called to get the axes of `A` and `B` while
 asserting that they are the same, as a result no bound checking is necessary
@@ -344,10 +313,7 @@ end
                                   to_int(last(j) + k))
 
 """
-
-```julia
-split_interval(I, J, +/-, k) -> Ia, Ib, Ic
-```
+    split_interval(I, J, +/-, k) -> Ia, Ib, Ic
 
 given unit ranges `I` and `J` and offset `±k`, yields 3 unit ranges, such that
 `Ia ∪ Ib ∪ Ic = I` and:
@@ -360,9 +326,7 @@ given unit ranges `I` and `J` and offset `±k`, yields 3 unit ranges, such that
 
 Unit ranges may be replaced by their first and last values:
 
-```julia
-split_interval(first(I), last(I), first(J), last(J), +/-, k)
-```
+    split_interval(first(I), last(I), first(J), last(J), +/-, k)
 
 yields the same result as above.
 
@@ -407,15 +371,12 @@ end
 end
 
 """
-
-```julia
-all_indices(A...)
-```
+    all_indices(A...)
 
 yields an iterable object for visiting each index of array(s) `A` in an
 efficient manner. For array types that have opted into fast linear indexing
 (like `Array`), this is simply the range `1:length(A)`. For other array types,
-return a specialized Cartesian range to efficiently index into the array with
+return a specialized Cartesian range to efficiently index into the array(s) with
 indices specified for every dimension.
 
 If more than one `AbstractArray` argument are supplied, `all_indices` will
@@ -424,11 +385,9 @@ inputs have fast linear indexing, a `CartesianIndices` otherwise).  A
 `DimensionMismatch` exception is thrown if the arrays have different axes so
 that it is always safe to use `@inbounds` in front of a loop like:
 
-```julia
-for i in all_indices(A, B, C, D)
-   A[i] = B[i]*C[i] + D[i]
-end
-```
+   for i in all_indices(A, B, C, D)
+       A[i] = B[i]*C[i] + D[i]
+   end
 
 when `A`, `B` etc. are all (abstract) arrays.
 

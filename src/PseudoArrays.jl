@@ -21,7 +21,6 @@ provide an array-like interface.  Parameter `T` is the element type, parameter
 `N` is the number of dimensions and parameter `S` is the index style:
 `IndexCartesian` or `IndexLinear`.
 
-
 !!! note
     The indexing style must be part of the signature because it must be
     possible to call `IndexStyle()` on the data type not the instance.  Another
@@ -34,14 +33,12 @@ whose index style is linear.
 
 Usage can be as simple as:
 
-```julia
-struct CustomArray{T,N,...} <: LinearArray{T,N}
-    arr::Array{T,N} # can be any array type with linear index style
-    ...             # anything else
-end
+    struct CustomArray{T,N,...} <: LinearArray{T,N}
+        arr::Array{T,N} # can be any array type with linear index style
+        ...             # anything else
+    end
 
-@inline Base.parent(A::CustomArray) = A.arr
-```
+    @inline Base.parent(A::CustomArray) = A.arr
 
 As a result, instances of `CustomArray{T,N}` will be seen as instances of
 `AbstractArray{T,N}` and behave as if they implement linear indexing.  Apart
@@ -57,9 +54,7 @@ in an array whose index style is Cartesian.  For such array-like object, index
 checking requires an efficient implementation of the `Base.axes()` method which
 you may have to specialize.  The default implementation is:
 
-```julia
-@inline Base.axes(A::PseudoArray) = axes(parent(A))
-```
+    @inline Base.axes(A::PseudoArray) = axes(parent(A))
 
 """
 abstract type PseudoArray{T,N,S<:IndexStyle} <: AbstractArray{T,N} end

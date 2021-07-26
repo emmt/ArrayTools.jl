@@ -5,39 +5,30 @@
 #
 
 """
-
-```julia
-colons(n)
-```
+    colons(n)
 
 yields a `n`-tuple of colons `:` (a.k.a. `Colon()`).
 
 When `n` is known at compile time, it is faster to call:
 
-```julia
-colons(Val(n))
-```
+    colons(Val(n))
 
 This method is suitable to extract sub-arrays of build views when some kind of
 rubber index is needed.  For instance:
 
-```julia
-slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
-    A[colons(Val(N-1))..., i]
-```
+    slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
+        A[colons(Val(N-1))..., i]
 
 defines a function that returns the `i`-th slice of `A` assuming index `i`
 refers the last index of `A`.  Using the rubber-index `..`, a shorter
 definition is:
 
-```julia
-slice(A::AbstractArray, i) = A[.., i]
-```
+    slice(A::AbstractArray, i) = A[.., i]
 
 which is also able to deal with multiple trailing indices if `i` is a
 `CartesianIndex`.
 
-See also: [`..`](@ref), [`RubberIndex`](@ref).
+See also: `..`, [`RubberIndex`](@ref).
 
 """
 colons(n::Integer) =
@@ -67,8 +58,6 @@ colons(v::Val{N}) where {N} = ntuple(colon, v)
 # Just yields a colon whatever the argument.
 colon(x) = Colon()
 
-struct RubberIndex end
-
 """
 
 `RubberIndex` is the singleron type that represents any number of indices.  The
@@ -76,13 +65,11 @@ constant `..` is defined as `RubberIndex()` and can be used in array indexation
 to left and/or right justify the other indices.  For instance, assuming `A` is
 a `3×4×5×6` array, then all the following equalities hold:
 
-```julia
-A[..]           == A[:,:,:,:]
-A[..,3]         == A[:,:,:,3]
-A[2,..]         == A[2,:,:,:]
-A[..,2:4,5]     == A[:,:,2:4,5]
-A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
-```
+    A[..]           == A[:,:,:,:]
+    A[..,3]         == A[:,:,:,3]
+    A[2,..]         == A[2,:,:,:]
+    A[..,2:4,5]     == A[:,:,2:4,5]
+    A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
 
 As you can see, the advantage of the rubber index `..` is that it automatically
 expands as the number of colons needed to have the correct number of indices.
@@ -90,19 +77,17 @@ The expressions are also more readable.
 
 The rubber index may also be used for setting values.  For instance:
 
-```julia
-A[..] .= 1         # to fill A with ones
-A[..,3] = A[..,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
-A[..,3] .= A[..,2] # idem but faster
-A[2,..] = A[3,..]  # to copy A[3,:,:,:] in A[2,:,:,:]
-A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
-```
+    A[..] .= 1         # to fill A with ones
+    A[..,3] = A[..,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
+    A[..,3] .= A[..,2] # idem but faster
+    A[2,..] = A[3,..]  # to copy A[3,:,:,:] in A[2,:,:,:]
+    A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
 
 Leading/trailing indices may be specified as Cartesian indices (of type
 `CartesianIndex`).
 
-!!! warn
-    There is two known limitation:
+!!! warning
+    There are two known limitations:
     1. The `end` reserved word can only be used in intervals specified *before*
        the rubber index but not *after*.  This limitation is due to the Julia
        parser cannot be avoided.
@@ -111,10 +96,11 @@ Leading/trailing indices may be specified as Cartesian indices (of type
 
 See also: [`colons`](@ref).
 
-"""
-const .. = RubberIndex()
-@doc @doc(..) RubberIndex
+""" RubberIndex
 
+struct RubberIndex end
+
+const .. = RubberIndex()
 const … = .. # FIXME: should be deprecated
 
 # Quickly get the tuple inside a Cartesian index.
