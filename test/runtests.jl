@@ -76,9 +76,14 @@ atol = 1e-6
     @test to_type(Vector{Float32}, [1,2,3]) == Float32[1,2,3]
     @test isa(to_type(Vector{Float32}, [1,2,3]), Vector{Float32})
     # Dimensions.
+    @test_throws MethodError to_size(π)
+    @test_throws MethodError to_size((π,))
     @test to_size(()) === ()
     @test to_size(5) === (5,)
     @test to_size(Int16(5)) === (5,)
+    @test to_size((Int8(2),UInt16(3),Int32(4))...) === (2,3,4,)
+    @test to_size((Int8(2),UInt16(3),Int32(4))) === (2,3,4,)
+    @test to_size((2,3,4,)) === (2,3,4,)
     @test isa(to_size(Int16(5)), Tuple{Int})
     @test standard_size(A) === size(A)
     @test to_size(dims) === dims
