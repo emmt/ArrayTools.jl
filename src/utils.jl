@@ -34,30 +34,6 @@ to_int(T::NTuple{N,Int}) where {N} = T
 to_int(T::NTuple{N,Integer}) where {N} = map(to_int, T)
 
 """
-    to_size(siz)
-
-converts `siz` to an instance of `Dims{N}` which is an alias for an `N`-tuple
-of `Int`.  Argument `siz` can be a scalar integer or a tuple of integers.
-Argument `siz` is returned if already of the correct type.
-
-The union [`ArraySize`](@ref) matches the types of argument `arg` acceptable
-for `to_size(arg)`: scalar integers and tuples of integers.
-
-This method is intended for fast conversion, call `check_size(siz)` to verify
-that all dimensions in `siz` are nonnegative.
-
-As a convenience:
-
-    to_size(dim1, dim2, ...)
-
-with `dim1`, `dim2`, ... scalar integers also yields an `N`-tuple of `Int`.
-
-"""
-to_size(siz::Tuple{Vararg{Integer}}) = to_int(siz)
-to_size(siz::Integer) = (to_int(siz),)
-to_size(siz::Integer...) = to_size(siz)
-
-"""
     promote_eltype(A, B, ...) -> T
 
 yields an element type `T` resulting from calling `promote_type` onto the

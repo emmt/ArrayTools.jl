@@ -2,7 +2,11 @@ module ArrayTools
 
 export
     ..,
+    ArrayAxes,
+    ArrayAxis,
     ArraySize,
+    MaybeArrayAxes,
+    MaybeArrayAxis,
     RubberIndex,
     all_match,
     allof,
@@ -26,6 +30,8 @@ export
     split_interval,
     standard_size,
     strictmap!,
+    to_axes,
+    to_axis,
     to_int,
     to_size,
     to_type,

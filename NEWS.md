@@ -2,7 +2,16 @@
 
 ## Version 0.2.3
 
-- New `to_type(T,x)` method to convert argument `x` to type `T` with a type
+- New aliases `ArrayAxis` to `AbstractUnitRange{Int}` and `MaybeArrayAxis` to
+  `AbstractUnitRange{Integer}` to represent an argument that is a valid array
+  axis or eligible to be an array axis.  Similarly `ArrayAxes` and
+  `MaybeArrayAxes` are aliases to tuples of `ArrayAxis` and `MaybeArrayAxis` to
+  represent an argument that is a valid tuple of array axes or eligible to be a
+  tuple of array axes.  New methods `to_axis` and `to_axes` are provided to
+  respectively convert their argument(s) to instances of `ArrayAxis` and
+  `ArrayAxes`.
+
+- New method `to_type(T,x)` to convert argument `x` to type `T` with a type
   assertion on the result.
 
 ## Version 0.2.2

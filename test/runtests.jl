@@ -91,6 +91,16 @@ atol = 1e-6
     @test check_size(0xff) == 255
     @test_throws ArgumentError check_size((1,0,-1))
     @test_throws ArgumentError check_size(-1)
+    # Axis and axes.
+    @test to_axis(1:3) === 1:3
+    @test to_axis(UInt16(1):UInt16(3)) === 1:3
+    @test to_axis(5) === Base.OneTo(5)
+    @test to_axis(UInt16(5)) === Base.OneTo(5)
+    @test to_axes(()) === ()
+    @test to_axes((Base.OneTo(3), 0:4)) === (Base.OneTo(3), 0:4)
+    @test to_axes(5) === (to_axis(5),)
+    @test to_axes(2,UInt16(3),0:4) === (to_axis(2),to_axis(3),to_axis(0:4),)
+    @test to_axes((2,UInt16(3),0:4)) === (to_axis(2),to_axis(3),to_axis(0:4),)
     #
     # Tests for `allof`, `anyof` and `noneof`.
     #
@@ -145,6 +155,9 @@ atol = 1e-6
     I2 = CartesianIndex(5,7,9)
     @test cartesian_indices(I1,I2) ===
         CartesianIndices(([I1[k]:I2[k] for k in 1:length(I1)]...,))
+    @test cartesian_indices(3:4) === CartesianIndices((3:4,))
+    @test cartesian_indices(3:4,2:5) === CartesianIndices((3:4,2:5))
+    @test cartesian_indices((3:4,2:5)) === CartesianIndices((3:4,2:5))
     #
     # Tests for `axis_limits`.
     #

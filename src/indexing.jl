@@ -5,24 +5,116 @@
 #
 
 """
+    ArraySize
 
-`ArraySize` is the union of types acceptable to define array size.  Calling
+is the union of types eligible to define array size.  Calling
 `[to_size](@ref)(siz)` on any argument `siz` such that `isa(siz,ArraySize)` is
-true yields an array size in canonical form, that is as an `N`-tuple of `Int`.
+true yields an array size in canonical form, that is `Dims{N}` which is an
+alias for an `N`-tuple of `Int`.
 
 """
 const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
 
 """
+    to_size(dims)
 
-`IndexRange` is the union of types that can define a range of indices along a
-single dimension of an array, that is integers and integer-valued unit ranges.
+converts `dims` to an instance of `Dims{N}` which is an alias for an `N`-tuple
+of `Int`.  Argument `dims` can be a scalar integer or a tuple of integers.
+Argument `dims` is returned if already of the correct type.  This method may
+also be called as:
 
-The code is purposely limited to these types, to make sure only ranges with
-step equal to 1 are considered.
+    to_size(dim1, dim2, ...)
+
+to let `to_size` deal with a variable number of arguments.
+
+The union [`ArraySize`](@ref) matches the types of acceptable argument(s) for
+`to_size(arg)`: scalar integers and tuples of integers.
+
+This method is intended for fast conversion, call `check_size(dims)` to verify
+that all dimensions in `dims` are nonnegative.
 
 """
-const IndexRange = Union{<:Integer,AbstractUnitRange{<:Integer}}
+to_size(dims::Dims) = dims
+to_size(dims::Integer...) = to_size(dims)
+to_size(dims::Tuple{Vararg{Integer}}) = to_int(dims)
+
+"""
+    ArrayAxis
+
+is the super-type of an array axis, it is an alias to `AbstractUnitRange{Int}`.
+
+"""
+const ArrayAxis = AbstractUnitRange{Int}
+
+"""
+    MaybeArrayAxis
+
+is the union of types of arguments eligible to define an array axis.  This
+alias is identical to [`IndexRange`](@ref) but has a different purpose.
+
+Calling [`to_axis(x::MaybeArrayAxis)`](@ref) is guaranteed to yield an instance
+of `ArrayAxis`.
+
+"""
+const MaybeArrayAxis = Union{Integer,AbstractUnitRange{<:Integer}}
+
+"""
+    IndexRange
+
+is the union of types that can define a range of indices along a single
+dimension of an array, that is integers and integer-valued unit ranges.  This
+alias is identical to [`MaybeArrayAxis`](@ref) but has a different purpose.
+
+"""
+const IndexRange = Union{Integer,AbstractUnitRange{<:Integer}}
+
+"""
+    to_axis(ind)
+
+yields `ind` converted into an array axis.  Argument `ind` can be a dimension
+length or an integer valued unit range.  The type of the result inherits is a
+sub-type of [`ArrayAxis`](@ref) which is an alias to `AbstractUnitRange{Int}`.
+
+"""
+to_axis(ind::ArrayAxis) = ind
+to_axis(ind::AbstractUnitRange{<:Integer}) = to_type(ArrayAxis, ind)
+to_axis(ind::Int) = Base.OneTo(ind)
+to_axis(ind::Integer) = to_axis(to_type(Int, ind))
+
+"""
+    ArrayAxes{N}
+
+is the type of array axes, that is an `N`-tuple of [`ArrayAxis`](@ref).
+
+"""
+const ArrayAxes{N} = NTuple{N,ArrayAxis}
+
+"""
+    MaybeArrayAxes{N}
+
+is the type of arguments eligible to specify array axes, that is an `N`-tuple
+of `MaybeArrayAxis`.
+
+Calling `to_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance
+of `ArrayAxes{N}`.
+
+"""
+const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
+
+"""
+    to_axes(inds)
+
+yields `inds` converted in a proper list of array axes, that is a tuple of
+[`ArrayAxis`](@ref) instances.  This method may also be called as:
+
+    to_axes(ind1, ind2, ...)
+
+to let `to_axes` deal with a variable number of arguments.
+
+"""
+to_axes(inds::Tuple{Vararg{ArrayAxis}}) = inds
+to_axes(inds::MaybeArrayAxis...) = to_axes(inds)
+to_axes(inds::Tuple{Vararg{MaybeArrayAxis}}) = map(to_axis, inds)
 
 # Types for the sign of an offset.
 const PlusMinus = Union{typeof(+),typeof(-)}
@@ -156,9 +248,6 @@ has_standard_indexing(::Number) = true
 has_standard_indexing(::Tuple) = true
 
 """
-
-The calls:
-
     cartesian_indices(A)
     cartesian_indices((n1, n2, ...))
     cartesian_indices((i1:j1, i2:j2, ...))
@@ -178,10 +267,8 @@ cartesian_indices(R::CartesianIndices) = R
                                    stop::CartesianIndex{N}) where {N}
     CartesianIndices(map((i,j) -> i:j, start.I, stop.I))
 end
-cartesian_indices(dims::Tuple{Vararg{Integer}}) =
-    CartesianIndices(map(dim -> Base.OneTo(dim), dims))
-cartesian_indices(rngs::Tuple{Vararg{AbstractUnitRange{<:Integer}}}) =
-    CartesianIndices(rngs)
+cartesian_indices(inds::MaybeArrayAxis...) = cartesian_indices(inds)
+cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(to_axes(inds))
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
 # provided that is an integer or a range (not a tuple).  This lead to
