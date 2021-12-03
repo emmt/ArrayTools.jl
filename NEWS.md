@@ -1,3 +1,19 @@
+# User visible changes in `ArrayTools` package
+
+## Version 0.2.3
+
+- New `to_type(T,x)` method to convert argument `x` to type `T` with a type
+  assertion on the result.
+
+## Version 0.2.2
+
+- Documentation has been improved.
+
+- Some code ahs been simplified.
+
+
+## Version 0.2.1
+
 - `isfastarray` and `isflatarray` deprecated in favor of `is_fast_array` and
   `is_flat_array` which are more readable and thus less confusing.  `fastarray`
   and `flatarray` deprecated in favor of `to_fast_array` and `to_flat_array`

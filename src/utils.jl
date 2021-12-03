@@ -5,6 +5,15 @@
 #
 
 """
+    to_type(T, x)
+
+yields `x` converted to type `T`, the result is asserted to be of type `T`.
+
+"""
+to_type(::Type{T}, x::T) where {T} = x
+to_type(::Type{T}, x::Any) where {T} = convert(T, x)::T
+
+"""
     to_int(x)
 
 converts `x` to a similar object whose values are all of type `Int`.  Argument
@@ -27,9 +36,9 @@ to_int(T::NTuple{N,Integer}) where {N} = map(to_int, T)
 """
     to_size(siz)
 
-converts `siz` to an `N`-tuple of `Int`.  Argument `siz` can be a scalar
-integer or a tuple of integers.  Argument `siz` is returned if already of the
-correct type.
+converts `siz` to an instance of `Dims{N}` which is an alias for an `N`-tuple
+of `Int`.  Argument `siz` can be a scalar integer or a tuple of integers.
+Argument `siz` is returned if already of the correct type.
 
 The union [`ArraySize`](@ref) matches the types of argument `arg` acceptable
 for `to_size(arg)`: scalar integers and tuples of integers.

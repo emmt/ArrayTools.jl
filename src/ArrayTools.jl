@@ -28,6 +28,7 @@ export
     strictmap!,
     to_int,
     to_size,
+    to_type,
     # storage trait
     StorageType,
     AnyStorage,

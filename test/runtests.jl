@@ -56,7 +56,7 @@ S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
 atol = 1e-6
 
-@testset "Miscellaneous" begin
+@testset "Miscellaneous " begin
     # Promotion of element types.
     for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
         @test promote_eltype(zeros(T1,1)) == promote_type(T1)
@@ -70,6 +70,11 @@ atol = 1e-6
         @test promote_eltype(DenseMatrix{T1}, zeros(T2,5), AbstractVector{T3}) ==
             promote_type(T1,T2,T3)
     end
+    # Conversions.
+    @test to_type(Int32, 3) === Int32(3)
+    @test to_type(Float32, 3) === Float32(3)
+    @test to_type(Vector{Float32}, [1,2,3]) == Float32[1,2,3]
+    @test isa(to_type(Vector{Float32}, [1,2,3]), Vector{Float32})
     # Dimensions.
     @test to_size(()) === ()
     @test to_size(5) === (5,)
@@ -256,7 +261,7 @@ end
     end
 end
 
-@testset "Storage" begin
+@testset "Storage       " begin
     B = to_flat_array(Float32, A)
     C = to_flat_array(Float32, Va)
     @test StorageType() === AnyStorage()
@@ -315,7 +320,7 @@ end
     @test is_flat_array(A, view(A, :, :, 2:2, :), view(A, :, :, 2:2, 3)) == false
 end
 
-@testset "Indexing" begin
+@testset "Indexing      " begin
     # Prior to version 1.1, Base.has_offset_axes does not work for tuples.
     for Q in (A,Va,S,101,Colon(),(),(1,),("e",2,))
         if isa(Q, Tuple) && VERSION < v"1.1"
@@ -348,7 +353,7 @@ end
     @test maxabsdif(Va, C) ≤ atol
 end
 
-@testset "Broadcasting" begin
+@testset "Broadcasting  " begin
     # Check broadcasting of dimensions.
     @test_throws DimensionMismatch bcastsize(3, 4)
     for (a,b) in (((), ()),
@@ -425,7 +430,7 @@ DummyArray(arr::A, cnt::Integer=0) where {T,N,A<:AbstractArray{T,N}} = begin
 end
 Base.parent(A::DummyArray) = A.arr
 
-@testset "Custom arrays" begin
+@testset "Custom arrays " begin
     inds = map(n -> Base.OneTo(n), dims)
     T = Float32
     N = length(dims)
