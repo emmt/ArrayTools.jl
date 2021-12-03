@@ -1,16 +1,16 @@
 #
 # indexing.jl --
 #
-# Array dimensions and indexing.
+# Array dimensions, axes, and indexing.
 #
 
 """
     ArraySize
 
 is the union of types eligible to define array size.  Calling
-`[to_size](@ref)(siz)` on any argument `siz` such that `isa(siz,ArraySize)` is
-true yields an array size in canonical form, that is `Dims{N}` which is an
-alias for an `N`-tuple of `Int`.
+`[to_size](@ref)(dims)` on any argument `dims` such that `isa(dims,ArraySize)`
+is true yields an array size in canonical form, that is an instance of
+`Dims{N}` which is an alias for an `N`-tuple of `Int`.
 
 """
 const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
