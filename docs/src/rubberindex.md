@@ -16,7 +16,7 @@ A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
 As you can see, the advantage of the *rubber index* `..` is that it
 automatically expands as the number of colons needed to have the correct number
 of indices.  The expressions are also more readable.  The idea comes from the
-[`Yorick`](http://yorick.github.com/) language by Dave Munro.  Similar notation
+[`Yorick`](http://github.com/LLNL/yorick/) language by Dave Munro.  Similar notation
 exists in [`NumPy`](https://numpy.org/doc/stable/user/basics.indexing.html).
 
 The rubber index may also be used for setting values.  For instance:
