@@ -1,8 +1,11 @@
 # Utilities for coding with Julia arrays
 
-| **Documentation**               | **License**                     | **Build Status**                                                | **Code Coverage**                                                   |
-|:--------------------------------|:--------------------------------|:----------------------------------------------------------------|:--------------------------------------------------------------------|
-| [![][doc-dev-img]][doc-dev-url] | [![][license-img]][license-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] | [![][coveralls-img]][coveralls-url] [![][codecov-img]][codecov-url] |
+[![License][license-img]][license-url]
+[![Stable][doc-stable-img]][doc-stable-url]
+[![Dev][doc-dev-img]][doc-dev-url]
+[![Build Status][github-ci-img]][github-ci-url]
+[![Build Status][appveyor-img]][appveyor-url]
+[![Coverage][codecov-img]][codecov-url]
 
 This [Julia][julia-url] package provides a number of methods and types to deal
 with the variety of array types (sub-types of `AbstractArray`) that exist in
@@ -350,14 +353,11 @@ should get a `... pkg>` prompt) and type:
 [license-url]: ./LICENSE.md
 [license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat
 
-[travis-img]: https://travis-ci.com/emmt/ArrayTools.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/emmt/ArrayTools.jl
+[github-ci-img]: https://github.com/emmt/ArrayTools.jl/actions/workflows/CI.yml/badge.svg?branch=master
+[github-ci-url]: https://github.com/emmt/ArrayTools.jl/actions/workflows/CI.yml?query=branch%3Amaster
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/emmt/ArrayTools.jl?branch=master
 [appveyor-url]: https://ci.appveyor.com/project/emmt/ArrayTools-jl/branch/master
-
-[coveralls-img]: https://coveralls.io/repos/emmt/ArrayTools.jl/badge.svg?branch=master&service=github
-[coveralls-url]: https://coveralls.io/github/emmt/ArrayTools.jl?branch=master
 
 [codecov-img]: http://codecov.io/github/emmt/ArrayTools.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/emmt/ArrayTools.jl?branch=master
