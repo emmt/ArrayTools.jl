@@ -346,6 +346,8 @@ should get a `... pkg>` prompt) and type:
 ... pkg> add ArrayTools
 ```
 
+[doc-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[doc-stable-url]: https://emmt.github.io/ArrayTools.jl/stable
 
 [doc-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [doc-dev-url]: https://emmt.github.io/ArrayTools.jl/dev
