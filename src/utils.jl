@@ -33,14 +33,28 @@ to_int(x::Tuple{Vararg{Int}}) = x
 to_int(x::Tuple{Vararg{Integer}}) = map(to_int, x)
 
 """
-    promote_eltype(A, B, ...) -> T
+    UndefinedType
 
-yields an element type `T` resulting from calling `promote_type` onto the
-element types of all the arguments which must be arrays or array types.
+is a type used to represent undefined type in `promote_type`.  It is an
+abstract type so that `isbitstype(UndefinedType)` is false.
 
 """
-promote_eltype(args::Union{AbstractArray,Type{<:AbstractArray}}...) =
-    promote_type(map(eltype, args)...)
+abstract type UndefinedType end
+
+"""
+    promote_eltype(args...)
+
+yields the promoted element type of its arguments.  Arguments `args...` may be
+anything implementing the `eltype` method.
+
+"""
+promote_eltype(arg) = eltype(arg)
+promote_eltype(args...) = promote_type(map(eltype, args)...)
+promote_eltype() = UndefinedType
+
+Base.promote_type(T::Type, ::Type{UndefinedType}) = T
+Base.promote_type(::Type{UndefinedType}, T::Type) = T
+Base.promote_type(::Type{UndefinedType}, ::Type{UndefinedType}) = UndefinedType
 
 """
     all_match(val, f, args...) -> bool

@@ -59,6 +59,7 @@ atol = 1e-6
 @testset "Miscellaneous " begin
     # Promotion of element types.
     for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
+        @test promote_eltype() === UndefinedType
         @test promote_eltype(zeros(T1,1)) == promote_type(T1)
         @test promote_eltype(AbstractVector{T2}) == promote_type(T2)
         @test promote_eltype(zeros(T2,4), zeros(T3,2,3)) == promote_type(T2,T3)
@@ -69,6 +70,9 @@ atol = 1e-6
             promote_type(T1,T2,T3)
         @test promote_eltype(DenseMatrix{T1}, zeros(T2,5), AbstractVector{T3}) ==
             promote_type(T1,T2,T3)
+        @test promote_type(UndefinedType, Int) === Int
+        @test promote_type(Bool, UndefinedType) === Bool
+        @test promote_type(UndefinedType, UndefinedType) === UndefinedType
     end
     # Conversions.
     @test to_type(Int32, 3) === Int32(3)

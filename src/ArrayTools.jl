@@ -8,6 +8,7 @@ export
     MaybeArrayAxes,
     MaybeArrayAxis,
     RubberIndex,
+    UndefinedType,
     all_match,
     allof,
     anyof,
