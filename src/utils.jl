@@ -165,14 +165,14 @@ See also `any`, [`allof`](@ref), [`noneof`](@ref).
     reversemap(f, args)
 
 applies the function `f` to arguments `args` in reverse order and return the
-result.  For now, the arguments `args` must be in the form of a simple tuple
-and the result is the tuple: `(f(args[end]),f(args[end-1]),...,f(args[1])`.
+result. For now, the arguments `args` must be in the form of a simple tuple and
+the result is the tuple: `(f(args[end]),f(args[end-1]),...,f(args[1])`.
 
 Also see: `map`, `ntuple`.
 
 """
-reversemap(f::Function, args::NTuple{N,Any}) where {N} =
-    ntuple(i -> f(args[(N + 1) - i]), Val{N}())
+reversemap(f, args::NTuple{N,Any}) where {N} =
+    ntuple(i -> f(args[(N + 1) - i]), Val(N))
 
 """
     strictmap!(dst, f, src) -> dst
