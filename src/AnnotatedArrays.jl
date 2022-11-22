@@ -224,7 +224,7 @@ Base.propertynames(A::StaticallyAnnotatedArray, private::Bool=false) =
 # FIXME: Should return `Tuple(keys(properties(A)))` to conform to the doc. of
 #        `propertynames` but this is slower and for most purposes, an iterable
 #        is usually needed.
-Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) where {T,N,P} =
+Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) =
     keys(properties(A))
 
 
