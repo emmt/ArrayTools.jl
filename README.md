@@ -258,11 +258,22 @@ for i in all_indices(A, B, C, D)
 end
 ```
 
+An alternative is to call the `@assert_same_indices` macro which throws a
+`DimensionMismatch` exception if the provided arguments are not arrays with the
+same indices. For example:
+
+```julia
+@assert_same_indices A B C D
+@inbounds for i in eachindex(A, B, C, D)
+   A[i] = B[i]*C[i] + D[i]
+end
+```
+
 The `eachindex` and `all_indices` methods are very useful when writing loops
-over array elements so as to be agnostic to which specfic indexing rule is the
-most suitable.  Some algorithms are however more efficient or easier to write
-if all involved arrays are indexed by a single 1-based index.  In that case,
-`using ArrayTools` provides:
+over array elements so as to be agnostic to which specific indexing rule is the
+most suitable. Some algorithms are however more efficient or easier to write if
+all involved arrays are indexed by a single 1-based index. In that case, `using
+ArrayTools` provides:
 
 ```julia
 to_fast_array(A)
@@ -291,7 +302,7 @@ storage as assumed by these languages so that it is safe to pass the pointer of
 the array to the compiled function.
 
 Typically, you want to ensure that the elements are stored in memory
-contiguously and in column-major order.  This can be ckecked by calling:
+contiguously and in column-major order. This can be checked by calling:
 
 ```julia
 is_flat_array(A) -> bool
