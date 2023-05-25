@@ -33,7 +33,7 @@ function _assert_same_axes(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{Symb
             sep = i == 1 ? " `" : i < n ? ", `" : n == 2 ? " and `" : ", and `"
             write(buf, sep, sym, '`')
         end
-        write(buf, " must have the same indices")
+        write(buf, " must have the same axes")
         return :($ex ? Base.nothing : Base.throw(Base.DimensionMismatch($(String(take!(buf))))))
     end
 end
