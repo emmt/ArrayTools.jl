@@ -258,15 +258,20 @@ for i in all_indices(A, B, C, D)
 end
 ```
 
-An alternative is to call the `@assert_same_indices` macro which throws a
+An alternative is to call the `@assert_same_axes` macro which throws a
 `DimensionMismatch` exception if the provided arguments are not arrays with the
 same indices. For example:
 
 ```julia
-@assert_same_indices A B C D
+@assert_same_axes A B C D
 @inbounds for i in eachindex(A, B, C, D)
    A[i] = B[i]*C[i] + D[i]
 end
+```
+
+where the macro call amounts to:
+```julia
+axes(A) == axes(B) == axes(C) == axes(D) ? nothing : throw(DimensionMismatch("..."))
 ```
 
 The `eachindex` and `all_indices` methods are very useful when writing loops

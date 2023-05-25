@@ -1,5 +1,10 @@
 # User visible changes in `ArrayTools` package
 
+## Version 0.2.7
+
+- Rename `@assert_same_indices` as `@assert_same_axes` which is more specific
+  about what exactly does the macro.
+
 ## Version 0.2.6
 
 - New macro `@assert_same_indices` to ensure that arrays have the same indices.

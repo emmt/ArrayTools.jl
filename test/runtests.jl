@@ -375,11 +375,11 @@ end
     @test maxabsdif(Va, C) ≤ atol
 
     let w = 0:2, x = 1:3, y = 2:4, z = -1:5
-        @test (@assert_same_indices) === nothing
-        @test (@assert_same_indices w) === nothing
-        @test (@assert_same_indices w x) === nothing
-        @test (@assert_same_indices w x y) === nothing
-        @test_throws DimensionMismatch (@assert_same_indices w x y z)
+        @test (@assert_same_axes) === nothing
+        @test (@assert_same_axes w) === nothing
+        @test (@assert_same_axes w x) === nothing
+        @test (@assert_same_axes w x y) === nothing
+        @test_throws DimensionMismatch (@assert_same_axes w x y z)
     end
 end
 

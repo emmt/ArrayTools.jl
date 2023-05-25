@@ -49,7 +49,7 @@ export
     to_fast_array,
     is_fast_array,
     # Macros:
-    @assert_same_indices
+    @assert_same_axes
 
 using Base: OneTo, axes1, tail
 import Base: dotview, getindex, setindex!, to_indices

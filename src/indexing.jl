@@ -5,17 +5,17 @@
 #
 
 """
-    @assert_same_indices A B ...
+    @assert_same_axes A B ...
 
 throws a `DimensionMismatch` exception if arrays `A`, `B`, etc. do not have the
 same indices.
 
 """
-macro assert_same_indices(syms::Symbol...)
-    esc(_assert_same_indices(syms))
+macro assert_same_axes(syms::Symbol...)
+    esc(_assert_same_axes(syms))
 end
 
-function _assert_same_indices(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{Symbol}})
+function _assert_same_axes(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{Symbol}})
     if (n = length(syms)) < 2
         return :(Base.nothing)
     else
