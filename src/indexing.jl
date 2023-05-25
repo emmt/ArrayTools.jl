@@ -17,7 +17,7 @@ end
 
 function _assert_same_indices(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{Symbol}})
     if (n = length(syms)) < 2
-        return :nothing
+        return :(Base.nothing)
     else
         buf = IOBuffer()
         write(buf, "arrays")
@@ -34,7 +34,7 @@ function _assert_same_indices(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{S
             write(buf, sep, sym, '`')
         end
         write(buf, " must have the same indices")
-        return :($ex ? nothing : Base.throw(Base.DimensionMismatch($(String(take!(buf))))))
+        return :($ex ? Base.nothing : Base.throw(Base.DimensionMismatch($(String(take!(buf))))))
     end
 end
 
