@@ -108,6 +108,12 @@ atol = 1e-6
     @test to_size((2,3,4,)) === (2,3,4,)
     @test isa(to_size(Int16(5)), Tuple{Int})
     @test standard_size(A) === size(A)
+    @test same_standard_size(A) === size(A)
+    @test same_standard_size(A, similar(A)) === size(A)
+    @test_throws DimensionMismatch same_standard_size(A, V)
+    @test same_size(A) === size(A)
+    @test same_size(A, similar(A)) === size(A)
+    @test_throws DimensionMismatch same_size(A, V)
     @test to_size(dims) === dims
     @test to_size(dims...) === dims
     @test to_size(UInt16(dims[1]), dims[2:end]...) === dims
@@ -256,7 +262,7 @@ end
     I4 = CartesianIndex(1,2,3,2)
     I5 = CartesianIndex(1,2,3,2,4)
     @test_throws ArgumentError colons(-1)
-    for d ∈ 0:12
+    @testset "$d colon(s)" for d ∈ 0:15
         tup = ntuple(x -> Colon(), d)
         @test colons(d) === tup
         @test colons(Val(d)) === tup
