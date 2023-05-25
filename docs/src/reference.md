@@ -30,6 +30,7 @@ same_size
 same_standard_size
 standard_size
 same_axes
+@assert_same_indices
 all_indices
 cartesian_indices
 common_indices

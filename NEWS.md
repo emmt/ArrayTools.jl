@@ -1,5 +1,9 @@
 # User visible changes in `ArrayTools` package
 
+## Version 0.2.6
+
+- New macro `@assert_same_indices` to ensure that arrays have the same indices.
+
 ## Version 0.2.5
 
 -  Relax signature of `reversemap`.

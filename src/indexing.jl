@@ -5,6 +5,40 @@
 #
 
 """
+    @assert_same_indices A B ...
+
+throws a `DimensionMismatch` exception if arrays `A`, `B`, etc. do not have the
+same indices.
+
+"""
+macro assert_same_indices(syms::Symbol...)
+    esc(_assert_same_indices(syms))
+end
+
+function _assert_same_indices(syms::Union{Tuple{Vararg{Symbol}},AbstractVector{Symbol}})
+    if (n = length(syms)) < 2
+        return :nothing
+    else
+        buf = IOBuffer()
+        write(buf, "arrays")
+        ex = Expr(:comparison)
+        resize!(ex.args, 2*n - 1)
+        i = 0
+        for sym in syms
+            if i > 0
+                ex.args[2i] = :(==)
+            end
+            ex.args[2i+1] = :(Base.axes($sym))
+            i += 1
+            sep = i == 1 ? " `" : i < n ? ", `" : n == 2 ? " and `" : ", and `"
+            write(buf, sep, sym, '`')
+        end
+        write(buf, " must have the same indices")
+        return :($ex ? nothing : Base.throw(Base.DimensionMismatch($(String(take!(buf))))))
+    end
+end
+
+"""
     ArraySize
 
 is the union of types eligible to define array size.  Calling

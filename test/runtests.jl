@@ -373,6 +373,13 @@ end
     @test samevalues(A, to_fast_array(A))
     @test maxabsdif(A, B) ≤ atol
     @test maxabsdif(Va, C) ≤ atol
+
+    let w = 0:2, x = 1:3, y = 2:4, z = -1:5
+        @test (@assert_same_indices w) === nothing
+        @test (@assert_same_indices w x) === nothing
+        @test (@assert_same_indices w x y) === nothing
+        @test_throws DimensionMismatch (@assert_same_indices w x y z)
+    end
 end
 
 @testset "Broadcasting  " begin

@@ -47,7 +47,9 @@ export
     FastIndexing,
     AnyIndexing,
     to_fast_array,
-    is_fast_array
+    is_fast_array,
+    # Macros:
+    @assert_same_indices
 
 using Base: OneTo, axes1, tail
 import Base: dotview, getindex, setindex!, to_indices
