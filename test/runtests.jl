@@ -79,6 +79,24 @@ atol = 1e-6
     @test to_type(Float32, 3) === Float32(3)
     @test to_type(Vector{Float32}, [1,2,3]) == Float32[1,2,3]
     @test isa(to_type(Vector{Float32}, [1,2,3]), Vector{Float32})
+    @test to_int(2) === 2
+    @test to_int(0x03) === 3
+    @test to_int(Base.OneTo(5)) === Base.OneTo(5)
+    @test to_int(Base.OneTo{Int16}(5)) === Base.OneTo(5)
+    @test to_int(-1:5) === -1:5
+    @test to_int(0x00:0x5) === 0:5
+    @test to_int(-1:2:7) === -1:2:7
+    @test to_int(0x00:0x02:0x09) === 0:2:8
+    @test to_int(Int8(9):Int8(-3):Int8(-1)) === 9:-3:0
+    let A = [1, -2, 11]
+        @test to_int(A) === A
+        @test to_int(Int16.(A)) == A
+    end
+    let A = (1, -2, 11)
+        @test to_int(A) === A
+        @test to_int(Int16.(A)) == A
+    end
+
     # Dimensions.
     @test_throws MethodError to_size(π)
     @test_throws MethodError to_size((π,))

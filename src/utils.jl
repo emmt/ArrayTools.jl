@@ -24,6 +24,8 @@ already of the correct type.
 to_int(x::Integer) = to_type(Int, x)
 to_int(I::AbstractUnitRange{Int}) = I
 to_int(I::AbstractUnitRange{<:Integer}) = to_int(first(I)):to_int(last(I))
+to_int(I::Base.OneTo{Int}) = I
+to_int(I::Base.OneTo{<:Integer}) = Base.OneTo{Int}(length(I))
 to_int(I::StepRange{Int,Int}) = I
 to_int(I::StepRange{<:Integer,<:Integer}) =
     to_int(first(I)):to_int(step(I)):to_int(last(I))
