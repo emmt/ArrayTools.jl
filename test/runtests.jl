@@ -234,6 +234,16 @@ atol = 1e-6
     #
     @test reversemap(x -> x^2, dims) === reverse(map(x -> x^2, dims))
     @test_throws ArgumentError ArrayTools.throw_non_standard_indexing()
+    let A = rand(Float32, (2,3,4)),
+        B = Array{Float32}(undef, size(A)),
+        C = Array{Float32}(undef, map(d -> d + 1, size(A)))
+        @test strictmap!(-, B, A) === B
+        @test B == map(-, A)
+        @test strictmap!(B, -, A) === B
+        @test B == map(-, A)
+        @test_throws DimensionMismatch strictmap!(-, C, A)
+        @test_throws ArgumentError strictmap!(A, B, C)
+    end
 end
 
 #

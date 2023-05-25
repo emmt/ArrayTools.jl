@@ -177,6 +177,7 @@ reversemap(f, args::NTuple{N,Any}) where {N} =
     ntuple(i -> f(args[(N + 1) - i]), Val(N))
 
 """
+    strictmap!(f, dst, src) -> dst
     strictmap!(dst, f, src) -> dst
 
 does `dst[i] = f(src[i])` for all indices `i` and returns `dst`. Arguments
@@ -186,10 +187,22 @@ Except for the strict condition on the axes, this method is similar to
 `map!(f,dst,src)`.
 
 """
-function strictmap!(dst::AbstractArray{<:Any,N}, f,
+function strictmap!(f::Any,
+                    dst::AbstractArray{<:Any,N},
                     src::AbstractArray{<:Any,N}) where {N}
     @inbounds @simd for i in all_indices(dst, src)
         dst[i] = f(src[i])
     end
     return dst
+end
+function strictmap!(dst::AbstractArray{<:Any,N}, f::Any,
+                    src::AbstractArray{<:Any,N}) where {N}
+    return strictmap!(f, dst, src)
+end
+
+# catch errors
+function strictmap!(::AbstractArray{<:Any,N},
+                    ::AbstractArray{<:Any,N},
+                    ::AbstractArray{<:Any,N}) where {N}
+    throw(ArgumentError("first or second argument must be callable"))
 end
