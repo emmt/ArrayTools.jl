@@ -17,7 +17,7 @@ These are useful to implement methods to process arrays in a generic way.
 ## Rubber indices
 
 The constants `..` and `…` (type `\dots` and hit the `tab` key) can be used in
-array indexation to left or right justify the other indices.  For instance,
+array indexation to left or right justify the other indices. For instance,
 assuming `A` is a `3×4×5×6` array, then all the following equalities hold:
 
 ```julia
@@ -31,10 +31,10 @@ A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
 
 As can be seen, the advantage of the *rubber index* `..` is that it
 automatically expands as the list of colons needed to have the correct number
-of indices.  The expressions are also more readable.  The idea comes from the
+of indices. The expressions are also more readable. The idea comes from the
 [`Yorick`](http://github.com/LLNL/yorick/) language by Dave Munro.
 
-The rubber index may also be used for setting values.  For instance:
+The rubber index may also be used for setting values. For instance:
 
 ```julia
 A[..] .= 1         # to fill A with ones
@@ -47,17 +47,17 @@ A[..,2:4,5] .= 7   # to set all elements in A[:,:,2:4,5] to 7
 Leading/trailing indices may also be specified as Cartesian indices (of type
 `CartesianIndex`).
 
-Technically, the constant `..` is defined as `RubberIndex()` where `RubberIndex`
-is the singleton type that represents any number of indices.
+Technically, the constant `..` is defined as `RubberIndex()` where
+`RubberIndex` is the singleton type that represents any number of indices.
 
-Call `colons(n)` if you need a `n`-tuple of colons `:`.  When `n` is known at
+Call `colons(n)` if you need a `n`-tuple of colons `:`. When `n` is known at
 compile time, it is faster to call `colons(Val(n))`.
 
 :warning: **Warning.** A current limitation of the rubber index is that it will
 confuse the interpretation of the `end` token appearing in the same index list
-*after* the rubber index.  This is beacuse the parser wrongly assumes that the
-rubber index counts for a single dimension.  The `end` token may however
-appears *before* the rubber index.  Example:
+*after* the rubber index. This is beacuse the parser wrongly assumes that the
+rubber index counts for a single dimension. The `end` token may however appears
+*before* the rubber index. Example:
 
 ```.julia
 A = rand(5,10,4,3);
@@ -72,7 +72,7 @@ A[..,5:end,:] == A[:,:,5:end,:] # throws a BoundsError
 
 Julia array interface is very powerful and flexible, it is therefore tempting
 to define custom array-like types, that is Julia types that behave like arrays,
-without sacrificing efficiency.  The `ArrayTools` package provides simple means
+without sacrificing efficiency. The `ArrayTools` package provides simple means
 to define such array-like types if the values to be accessed as if in an array
 are stored in an array (of any concrete type) embedded in the object instance.
 
@@ -101,18 +101,18 @@ end
 
 As a result, instances of your `CustomArray{T,N}` will be also seen as
 instances of `AbstractArray{T,N}` and will behave as if they implement linear
-indexing.  Apart from the needs to extend the `Base.parent` method, the
+indexing. Apart from the needs to extend the `Base.parent` method, the
 interface to `LinearArray{T,N}` should provide any necessary methods for
 indexation, getting the dimensions, the element type, *etc.* for the derived
-custom type.  You may however override these definitions by more optimized or
+custom type. You may however override these definitions by more optimized or
 more suitable methods specialized for your custom array-like type.
 
 If your custom array-like type is based on an array whose index style is
 `IndexCartesian()` (instead of `IndexLinear()` in the above example), just make
 your custom type derived from `CartesianArray{T,N}` (instead of
-`LinearArray{T,N}`).  For such array-like object, index checking requires an
+`LinearArray{T,N}`). For such array-like object, index checking requires an
 efficient implementation of the `Base.axes()` method which you may have to
-specialize.  The default implementation is:
+specialize. The default implementation is:
 
 ```julia
 @inline Base.axes(A::CartesianArray) = axes(parent(A))
@@ -140,11 +140,11 @@ B = AnnotatedArray{T}(undef, dims, units = "µm", Δx = 0.10, Δy = 0.20)
 
 Here the initial properties of `A` and `B` are specified by the keywords in the
 call to the constructor; their properties will have symbolic names with any
-kind of value.  The array contents of `A` is an array of zeros, while the array
-contents of `B` is created by the constructor with undefined values.  Indexing
+kind of value. The array contents of `A` is an array of zeros, while the array
+contents of `B` is created by the constructor with undefined values. Indexing
 `A` or `B` with integers of Cartesian indices is the same as accessing the
 values of their array contents while indexing `A` or `B` by symbols is the same
-as accessing their properties.  For example:
+as accessing their properties. For example:
 
 ```julia
 A.Δx             # yields 0.2
@@ -169,14 +169,14 @@ B = AnnotatedArray{T}(init, dims, prop)
 where `arr` is an existing array or an expression whose result is an array,
 `prop` specifies the initial properties (more on this below), `T` is the type
 of array element, `init` is usually `undef` and `dims` is a tuple of array
-dimensions.  If `arr` is an existing array, the object `A` created above will
+dimensions. If `arr` is an existing array, the object `A` created above will
 reference this array and hence share its contents with the caller (call
-`copy(arr)` to avoid that).  The same applies if the initial properties are
+`copy(arr)` to avoid that). The same applies if the initial properties are
 specified by a dictionary.
 
 The properties `prop` can be specified by keywords, by key-value pairs, as a
-dictionary or as a named tuple.  To avoid ambiguities, these different styles
-cannot be mixed.  Below are a few examples:
+dictionary or as a named tuple. To avoid ambiguities, these different styles
+cannot be mixed. Below are a few examples:
 
 ```julia
 using ArrayTools.AnnotatedArrays
@@ -188,23 +188,23 @@ D = AnnotatedArray(arr, (units  =  "µm",  Δx  =  0.1,  Δy  =  0.2))
 ```
 
 The two first examples (`A` and `B`) both yield an annotated array whose
-properties have symbolic keys and can have any type of value.  The third
-example (`C`) yields an annotated array whose properties have string keys and
-can have any type of value.  The properties of `A`, `B` and `C` are *dynamic*:
-they can be modified, deleted and new properties can be inserted.  The fourth
-example (`D`) yields an annotated array whose properties are stored by a *named
-tuple*, they are *immutable* and have symbolic keys.
+properties have symbolic keys and can have any type of value. The third example
+(`C`) yields an annotated array whose properties have string keys and can have
+any type of value. The properties of `A`, `B` and `C` are *dynamic*: they can
+be modified, deleted and new properties can be inserted. The fourth example
+(`D`) yields an annotated array whose properties are stored by a *named tuple*,
+they are *immutable* and have symbolic keys.
 
 Accessing a property is possible via the syntax `obj[key]` or, for symbolic and
-textual keys, via the syntax `obj.key`.  Accessing *immutable* properties is
-the fastest while accessing textual properties as `obj.key` is the slowest
-(because it involves converting a symbol into a string).
+textual keys, via the syntax `obj.key`. Accessing *immutable* properties is the
+fastest while accessing textual properties as `obj.key` is the slowest (because
+it involves converting a symbol into a string).
 
 When initially specified by keywords or as key-value pairs, the properties are
 stored in a dictionary whose key type is specialized if possible (for
-efficiency) but with value type `Any` (for flexibility).  If one wants specific
+efficiency) but with value type `Any` (for flexibility). If one wants specific
 properties key and value types, it is always possible to explicitly specify a
-dictionary in the call to `AnnotatedArray`.  For instance:
+dictionary in the call to `AnnotatedArray`. For instance:
 
 ```julia
 E = AnnotatedArray(arr, Dict{Symbol,Int32}(:a => 1, :b => 2))
@@ -222,9 +222,9 @@ If the dictionary is unspecified, the properties are stored in a, initially
 empty, dictionary with symbolic keys and value of any type, *i.e.*
 `Dict{Symbol,Any}()`.
 
-Iterating on an annotated array is iterating on its array values.  To iterate
-on its properties, call the `properties` method which returns the object
-storing the properties:
+Iterating on an annotated array is iterating on its array values. To iterate on
+its properties, call the `properties` method which returns the object storing
+the properties:
 
 ```julia
 dims = (100, 50)
@@ -247,10 +247,10 @@ Similar types are provided by
 ### Array indexing
 
 The `all_indices` method takes any number of array arguments and yields an
-efficient iterator for visiting all indices each index of the arguments.  Its
+efficient iterator for visiting all indices each index of the arguments. Its
 behavior is similar to that of `eachindex` method except that `all_indices`
-throws a `DimensionMismatch` exception if the arrays have different axes.  It
-is always safe to specify `@inbounds` (and `@simd`) for a loop like:
+throws a `DimensionMismatch` exception if the arrays have different axes. It is
+always safe to specify `@inbounds` (and `@simd`) for a loop like:
 
 ```julia
 for i in all_indices(A, B, C, D)
@@ -332,7 +332,7 @@ array form.
 
   If `IndexStyle(A) === IndexLinear()`, then array `A` can be efficiently
   indexed by one integer (even if `A` is multidimensional) and column-major
-  ordering is used to access the elements of `A`.  The only (known) other
+  ordering is used to access the elements of `A`. The only (known) other
   possibility is `IndexStyle(A) === IndexCartesian()`.
 
   If `IndexingTrait(A) === FastIndexing()`, then `IndexStyle(A) ===
@@ -340,17 +340,17 @@ array form.
   indices.
 
 * What is the difference between `Base.has_offset_axes` (provided by Julia) and
-  `has_standard_indexing` (provided by  `ArrayTools`)?
+  `has_standard_indexing` (provided by `ArrayTools`)?
 
   For the caller, `has_standard_indexing(args...)` yields the opposite result
-  as `Base.has_offset_axes(args...)`.  Furthermore, `has_standard_indexing` is
-  a bit faster.
+  as `Base.has_offset_axes(args...)`. Furthermore, `has_standard_indexing` is a
+  bit faster.
 
 
 ## Installation
 
 `ArrayTools` is an [official Julia package][julia-pkgs-url] and is easy to
-install.  In Julia, hit the `]` key to switch to the package manager REPL (you
+install. In Julia, hit the `]` key to switch to the package manager REPL (you
 should get a `... pkg>` prompt) and type:
 
 ```julia

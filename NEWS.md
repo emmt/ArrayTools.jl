@@ -17,10 +17,10 @@
 
 - New aliases `ArrayAxis` to `AbstractUnitRange{Int}` and `MaybeArrayAxis` to
   `AbstractUnitRange{Integer}` to represent an argument that is a valid array
-  axis or eligible to be an array axis.  Similarly `ArrayAxes` and
+  axis or eligible to be an array axis. Similarly `ArrayAxes` and
   `MaybeArrayAxes` are aliases to tuples of `ArrayAxis` and `MaybeArrayAxis` to
   represent an argument that is a valid tuple of array axes or eligible to be a
-  tuple of array axes.  New methods `to_axis` and `to_axes` are provided to
+  tuple of array axes. New methods `to_axis` and `to_axes` are provided to
   respectively convert their argument(s) to instances of `ArrayAxis` and
   `ArrayAxes`.
 
@@ -37,7 +37,7 @@
 ## Version 0.2.1
 
 - `isfastarray` and `isflatarray` deprecated in favor of `is_fast_array` and
-  `is_flat_array` which are more readable and thus less confusing.  `fastarray`
+  `is_flat_array` which are more readable and thus less confusing. `fastarray`
   and `flatarray` deprecated in favor of `to_fast_array` and `to_flat_array`
   which are more clear about their purpose.
 
@@ -53,7 +53,7 @@
 
 - `dimensions(A::AbstractArray)` has been deprecated in favor of
   `standard_size(A)` while `dimensions` has been deprecated in favor of
-  `to_size` for other types of arguments.  Union `Dimensions` has been
+  `to_size` for other types of arguments. Union `Dimensions` has been
   deprecated favor of `ArraySize`.
 
 - New method `to_int` for quick conversion of values to `Int`.
