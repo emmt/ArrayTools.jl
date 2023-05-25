@@ -251,14 +251,6 @@ function check_size(siz::NTuple{N,Integer}) where {N}
 end
 
 """
-    nonnegative(x) -> bool
-
-yields whether `x` is greater or equal zero.
-
-"""
-nonnegative(x) = x ≥ zero(x)
-
-"""
     has_standard_indexing(A)
 
 return `true` if the indices of `A` start with 1 along all axes. Can be called
