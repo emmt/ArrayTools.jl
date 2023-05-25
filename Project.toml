@@ -1,7 +1,7 @@
 name = "ArrayTools"
 uuid = "1dc0ca97-c5ce-4e77-ac6d-c576ac9d7f27"
 authors = ["Éric Thiébaut <https://github.com/emmt>"]
-version = "0.2.5"
+version = "0.2.6"
 
 [compat]
 julia = "1.0"
