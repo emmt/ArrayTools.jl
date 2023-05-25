@@ -14,14 +14,14 @@ When `n` is known at compile time, it is faster to call:
     colons(Val(n))
 
 This method is suitable to extract sub-arrays of build views when some kind of
-rubber index is needed.  For instance:
+rubber index is needed. For instance:
 
     slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
         A[colons(Val(N-1))..., i]
 
 defines a function that returns the `i`-th slice of `A` assuming index `i`
-refers the last index of `A`.  Using the rubber-index `..`, a shorter
-definition is:
+refers the last index of `A`. Using the rubber-index `..`, a shorter definition
+is:
 
     slice(A::AbstractArray, i) = A[.., i]
 
@@ -60,10 +60,10 @@ colon(x) = Colon()
 
 """
 
-`RubberIndex` is the singleron type that represents any number of indices.  The
+`RubberIndex` is the singleron type that represents any number of indices. The
 constant `..` is defined as `RubberIndex()` and can be used in array indexation
-to left and/or right justify the other indices.  For instance, assuming `A` is
-a `3×4×5×6` array, then all the following equalities hold:
+to left and/or right justify the other indices. For instance, assuming `A` is a
+`3×4×5×6` array, then all the following equalities hold:
 
     A[..]           == A[:,:,:,:]
     A[..,3]         == A[:,:,:,3]
@@ -75,7 +75,7 @@ As you can see, the advantage of the rubber index `..` is that it automatically
 expands as the number of colons needed to have the correct number of indices.
 The expressions are also more readable.
 
-The rubber index may also be used for setting values.  For instance:
+The rubber index may also be used for setting values. For instance:
 
     A[..] .= 1         # to fill A with ones
     A[..,3] = A[..,2]  # to copy A[:,:,:,2] in A[:,:,:,3]
@@ -89,10 +89,10 @@ Leading/trailing indices may be specified as Cartesian indices (of type
 !!! warning
     There are two known limitations:
     1. The `end` reserved word can only be used in intervals specified *before*
-       the rubber index but not *after*.  This limitation is due to the Julia
+       the rubber index but not *after*. This limitation is due to the Julia
        parser cannot be avoided.
-    2. At most 9 indices can be specified before the rubber index.  This
-       can be extended by editing the source code.
+    2. At most 9 indices can be specified before the rubber index. This can be
+       extended by editing the source code.
 
 See also: [`colons`](@ref).
 
@@ -123,11 +123,10 @@ to_tuple(I::CartesianIndex) = I.I
     throw(ArgumentError("more than one rubber index specified"))
 
 @inline function to_indices(A, inds, I::Tuple{RubberIndex, Vararg})
-    # Align the remaining indices to the tail of the `inds`.  First
-    # `growcolons` is called to build a tuple of as many as colons as the
-    # number of remaining axes. Second, `dropcolons` is used to drop as
-    # many colons as the number of specified indices (taking into account
-    # Cartesian indices).
+    # Align the remaining indices to the tail of the `inds`. First `growcolons`
+    # is called to build a tuple of as many as colons as the number of
+    # remaining axes. Second, `dropcolons` is used to drop as many colons as
+    # the number of specified indices (taking into account Cartesian indices).
     colons = dropcolons(growcolons((), inds), tail(I))
     to_indices(A, inds, (colons..., tail(I)...))
 end

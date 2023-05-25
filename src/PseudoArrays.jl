@@ -17,13 +17,13 @@ import Base: getindex, setindex!, checkbounds
 """
 
 Abstract type `PseudoArray{T,N,S}` is to be derived by types that want to
-provide an array-like interface.  Parameter `T` is the element type, parameter
+provide an array-like interface. Parameter `T` is the element type, parameter
 `N` is the number of dimensions and parameter `S` is the index style:
 `IndexCartesian` or `IndexLinear`.
 
 !!! note
     The indexing style must be part of the signature because it must be
-    possible to call `IndexStyle()` on the data type not the instance.  Another
+    possible to call `IndexStyle()` on the data type not the instance. Another
     possibility would have been to have the type of the embedded array be part
     of the signature but this is more restrictive.
 
@@ -41,18 +41,18 @@ Usage can be as simple as:
     @inline Base.parent(A::CustomArray) = A.arr
 
 As a result, instances of `CustomArray{T,N}` will be seen as instances of
-`AbstractArray{T,N}` and behave as if they implement linear indexing.  Apart
+`AbstractArray{T,N}` and behave as if they implement linear indexing. Apart
 from the needs to extend the `Base.parent` method, the interface to
 `LinearArray{T,N}` should provide any necessary methods for indexation, getting
-the dimensions, the element type, *etc.* for the derived custom type.  You may
+the dimensions, the element type, *etc.* for the derived custom type. You may
 however override these definitions by more optimized or more suitable methods
 specialized for your custom array-like type.
 
 Similarly, alias `CartesianArray{T,N}` is an abstract type that can be derived
 by types that want to provide an array-like interface with array values stored
-in an array whose index style is Cartesian.  For such array-like object, index
+in an array whose index style is Cartesian. For such array-like object, index
 checking requires an efficient implementation of the `Base.axes()` method which
-you may have to specialize.  The default implementation is:
+you may have to specialize. The default implementation is:
 
     @inline Base.axes(A::PseudoArray) = axes(parent(A))
 

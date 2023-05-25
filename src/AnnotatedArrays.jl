@@ -22,8 +22,8 @@ end
 """
 
 `AnnotatedArrays.Properties` is the union of allowed types to store the
-properties of `AnnotatedArray` instances.  It can be a `NamedTuple`, a
-dictionary with symbolic keys or a dictionary indexed by strings.  The former
+properties of `AnnotatedArray` instances. It can be a `NamedTuple`, a
+dictionary with symbolic keys or a dictionary indexed by strings. The former
 case provides the fastest access to properties but they are immutable, the
 latter case provides the slowest access to properties.
 
@@ -50,7 +50,7 @@ Two useful aliases are defined:
   value type `V`.
 
 - `StaticallyAnnotatedArray{T,N,S}` for annotated arrays which have immutable
-  properties (because they are stored in a named tuple).  To build such
+  properties (because they are stored in a named tuple). To build such
   annotated arrays, provide a named tuple as the last argument of the
   `AnnotatedArray` constructor:
 
@@ -64,8 +64,8 @@ Two useful aliases are defined:
 
 The abstract type `AbstractAnnotatedArray{T,N,P,S}` is defined (but not
 exported by `AnnotatedArrays`) so that other types than `AnnotatedArray` can be
-derived with similar behavior.  For derived types, say `CustomType`, two
-methods should be specialized:
+derived with similar behavior. For derived types, say `CustomType`, two methods
+should be specialized:
 
 ```julia
 using ArrayTools.AnnotatedArrays
@@ -118,7 +118,7 @@ function AnnotatedArray(data::A, prop::P) where {T,N,P<:Properties,
     return AnnotatedArray{T,N,P,A,S}(data, prop)
 end
 
-# Get rid of matching type-parameter when initial array is specified.  The
+# Get rid of matching type-parameter when initial array is specified. The
 # pairs of definitions are needed to disentangle ambiguities.
 AnnotatedArray{T,N}(data::AbstractArray{T,N}, args...; kwds...) where {T,N} =
     AnnotatedArray(data, args...; kwds...)
@@ -134,9 +134,9 @@ AnnotatedArray(data::AbstractArray; kwds...) =
     AnnotatedArray(data, Dict{Symbol,Any}(kwds...))
 
 # Constructors with initial array and initial properties specified as key-value
-# pairs.  When initial properties are specified as key-value pairs, we want to
+# pairs. When initial properties are specified as key-value pairs, we want to
 # have a dictionary whose key type is specialized if possible (for efficiency)
-# but avoid having value type specialized (for flexibility).  If one wants
+# but avoid having value type specialized (for flexibility). If one wants
 # specific properties key and value types, it is always possible to explicitly
 # specify a dictionary.
 AnnotatedArray(data::AbstractArray, args::Pair{K,<:Any}...) where {K} =
@@ -149,7 +149,7 @@ AnnotatedArray(data::AbstractArray, args::Pair...) =
 _initialproperties(prop::Dict{K,Any}) where {K} = prop
 _initialproperties(prop::Dict{K}) where {K} = convert(Dict{K,Any}, prop)
 
-# Constructors that allocate the initial array.  If only keywords are
+# Constructors that allocate the initial array. If only keywords are
 # specified, the dimensions of the array may be provided by integer arguments.
 AnnotatedArray{T,N}(init, dims::Integer...; kwds...) where {T,N} =
     AnnotatedArray{T,N}(init, dims; kwds...)
@@ -231,7 +231,7 @@ Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) =
 #
 # Notes:
 #
-# * keytype() and valtype() do not take NamedTuple as argument.  So to avoid
+# * keytype() and valtype() do not take NamedTuple as argument. So to avoid
 #   type-piracy, we define our own keytype() and keytype() methods and just
 #   override Base.keytype() and Base.valtype() for AbstractAnnotatedArray.
 #

@@ -7,7 +7,7 @@
 """
     StorageType(A)
 
-yields the type of storage of the elements of argument `A`.  If `A` is a *flat*
+yields the type of storage of the elements of argument `A`. If `A` is a *flat*
 array, that is an array with contiguous elements in column-major order and
 first element at index 1, the singleton `FlatStorage()` is returned; otherwise,
 the singleton `AnyStorage()` is returned.
@@ -24,7 +24,7 @@ abstract type StorageType end
 """
     FlatStorage()
 
-yields the storage type of *flat* arrays.  See [`StorageType`](@ref).
+yields the storage type of *flat* arrays. See [`StorageType`](@ref).
 
 """ FlatStorage
 
@@ -33,11 +33,11 @@ struct FlatStorage <: StorageType end
 """
     AnyStorage()
 
-yields the storage type of a *non-flat* arrays.  See [`StorageType`](@ref).
+yields the storage type of a *non-flat* arrays. See [`StorageType`](@ref).
 
 """ AnyStorage
 
-struct  AnyStorage <: StorageType end
+struct AnyStorage <: StorageType end
 
 StorageType(::Array) = FlatStorage()
 StorageType(::Any) = AnyStorage()
@@ -117,8 +117,8 @@ _is_flat_array(::StorageType) = false
     to_flat_array([T=eltype(A),] A)
 
 lazily yields a *flat* array based on `A`, that is an array with contiguous
-elements in column-major order and first element at index 1.  Optional argument
-`T` is to specify the element type of the result.  Argument `A` is returned if
+elements in column-major order and first element at index 1. Optional argument
+`T` is to specify the element type of the result. Argument `A` is returned if
 it is already a flat array with the requested element type; otherwise,
 `convert` method is called to produce the result (an `Array{T}` in that case).
 
@@ -155,7 +155,7 @@ abstract type IndexingType end
 """
     FastIndexing()
 
-yields the indexing type of *fast* arrays.  See [`IndexingType`](@ref).
+yields the indexing type of *fast* arrays. See [`IndexingType`](@ref).
 
 """ FastIndexing
 
@@ -164,11 +164,11 @@ struct FastIndexing <: IndexingType end
 """
     AnyIndexing()
 
-yields the indexing type of *non-fast* arrays.  See [`IndexingType`](@ref).
+yields the indexing type of *non-fast* arrays. See [`IndexingType`](@ref).
 
 """ AnyIndexing
 
-struct  AnyIndexing <: IndexingType end
+struct AnyIndexing <: IndexingType end
 
 IndexingType(::Array) = FastIndexing()
 IndexingType(::Any) = AnyIndexing()
@@ -203,9 +203,9 @@ _is_fast_array(::AnyIndexing) = false
 """
     to_fast_array([T=eltype(A),] A)
 
-lazily yields a *fast array* equivalent to `A` with element type `T`.  A *fast
+lazily yields a *fast array* equivalent to `A` with element type `T`. A *fast
 array* has standard 1-based indices and is efficiently indexed by linear
-indices.  If `A` is already a *fast array* with element type `T`, `A` is
+indices. If `A` is already a *fast array* with element type `T`, `A` is
 returned; otherwise, `A` is converted into an `Array` which is returned.
 
 See also [`is_fast_array`](@ref), [`IndexingType`](@ref),

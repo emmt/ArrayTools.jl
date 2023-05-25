@@ -16,8 +16,8 @@ to_type(::Type{T}, x::Any) where {T} = convert(T, x)::T
 """
     to_int(x)
 
-converts `x` to a similar object whose values are all of type `Int`.  Argument
-`x` can be a scalar, an array, a tuple or a range.  Argument `x` is returned if
+converts `x` to a similar object whose values are all of type `Int`. Argument
+`x` can be a scalar, an array, a tuple or a range. Argument `x` is returned if
 already of the correct type.
 
 """
@@ -35,7 +35,7 @@ to_int(x::Tuple{Vararg{Integer}}) = map(to_int, x)
 """
     UndefinedType
 
-is a type used to represent undefined type in `promote_type`.  It is an
+is a type used to represent undefined type in `promote_type`. It is an
 abstract type so that `isbitstype(UndefinedType)` is false.
 
 """
@@ -44,7 +44,7 @@ abstract type UndefinedType end
 """
     promote_eltype(args...)
 
-yields the promoted element type of its arguments.  Arguments `args...` may be
+yields the promoted element type of its arguments. Arguments `args...` may be
 anything implementing the `eltype` method.
 
 """
@@ -60,7 +60,7 @@ Base.promote_type(::Type{UndefinedType}, ::Type{UndefinedType}) = UndefinedType
     all_match(val, f, args...) -> bool
 
 yields as soon as possible (short-circuit) whether `f(arg) == val` for each
-argument `arg` in `args...`.  The returned value is `true` if there are no
+argument `arg` in `args...`. The returned value is `true` if there are no
 arguments after `f`.
 
 """
@@ -78,14 +78,14 @@ checks whether predicate function `f` returns `true` for all arguments in
     allof(args...) -> Bool
 
 checks whether all arguments `args...` are `true`, returning `false` as soon as
-possible (short-circuiting).  Arguments can be booleans or arrays of booleans.
+possible (short-circuiting). Arguments can be booleans or arrays of booleans.
 The latter are considered as `true` if all their elements are `true` and are
 considered as `false` otherwise (if any of their elements are `false`).
 Arguments can also be iterables to check whether all their values are `true`.
 An empty iterable is considered as `true`.
 
 This method can be much faster than `all(f, args)` or `all(args)` because its
-result may be determined at compile time.  However, `missing` values are not
+result may be determined at compile time. However, `missing` values are not
 considered as special.
 
 See also `all`, [`anyof`](@ref), [`noneof`](@ref).
@@ -117,14 +117,14 @@ checks whether predicate function `f` returns `true` for any argument
     anyof(args...) -> bool
 
 checks whether all arguments `args...` are `true`, returning `false` as soon as
-possible (short-circuiting).  Arguments can be booleans or arrays of booleans.
+possible (short-circuiting). Arguments can be booleans or arrays of booleans.
 The latter are considered as `true` if any of their elements are `true` and are
-considered as `false` otherwise (if all their elements are `false`).  Arguments
-can also be iterables to check whether any of their values are `true`.  An
-empty iterable is considered as `false`.
+considered as `false` otherwise (if all their elements are `false`). Arguments
+can also be iterables to check whether any of their values are `true`. An empty
+iterable is considered as `false`.
 
 This method can be much faster than `any(f, args)` or `any(args)` because its
-result may be determined at compile time.  However, `missing` values are not
+result may be determined at compile time. However, `missing` values are not
 considered as special.
 
 See also `any`, [`allof`](@ref), [`noneof`](@ref).
@@ -177,7 +177,7 @@ reversemap(f, args::NTuple{N,Any}) where {N} =
 """
     strictmap!(dst, f, src) -> dst
 
-does `dst[i] = f(src[i])` for all indices `i` and returns `dst`.  Arguments
+does `dst[i] = f(src[i])` for all indices `i` and returns `dst`. Arguments
 `dst` and `src` must have the same axes.
 
 Except for the strict condition on the axes, this method is similar to
