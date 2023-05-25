@@ -8,7 +8,7 @@
     @assert_same_axes A B ...
 
 throws a `DimensionMismatch` exception if arrays `A`, `B`, etc. do not have the
-same indices.
+same axes.
 
 """
 macro assert_same_axes(syms::Symbol...)

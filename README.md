@@ -260,7 +260,7 @@ end
 
 An alternative is to call the `@assert_same_axes` macro which throws a
 `DimensionMismatch` exception if the provided arguments are not arrays with the
-same indices. For example:
+same axes. For example:
 
 ```julia
 @assert_same_axes A B C D
@@ -270,6 +270,7 @@ end
 ```
 
 where the macro call amounts to:
+
 ```julia
 axes(A) == axes(B) == axes(C) == axes(D) ? nothing : throw(DimensionMismatch("..."))
 ```
