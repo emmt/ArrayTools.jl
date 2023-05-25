@@ -1,5 +1,14 @@
 # User visible changes in `ArrayTools` package
 
+## Version 0.2.5
+
+-  Relax signature of `reversemap`.
+
+## Version 0.2.4
+
+- Extend `promote_eltype` to any arguments extending the `eltype` method.
+- Replace TravisCI by GitHub actions.
+
 ## Version 0.2.3
 
 - New aliases `ArrayAxis` to `AbstractUnitRange{Int}` and `MaybeArrayAxis` to
