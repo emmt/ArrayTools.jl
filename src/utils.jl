@@ -5,15 +5,6 @@
 #
 
 """
-    to_type(T, x)
-
-yields `x` converted to type `T`, the result is asserted to be of type `T`.
-
-"""
-to_type(::Type{T}, x::T) where {T} = x
-to_type(::Type{T}, x::Any) where {T} = convert(T, x)::T
-
-"""
     to_int(x)
 
 converts `x` to a similar object whose values are all of type `Int`. Argument
@@ -21,7 +12,7 @@ converts `x` to a similar object whose values are all of type `Int`. Argument
 already of the correct type.
 
 """
-to_int(x::Integer) = to_type(Int, x)
+to_int(x::Integer) = as(Int, x)
 to_int(I::AbstractUnitRange{Int}) = I
 to_int(I::AbstractUnitRange{<:Integer}) = to_int(first(I)):to_int(last(I))
 to_int(I::Base.OneTo{Int}) = I
@@ -33,30 +24,6 @@ to_int(A::AbstractArray{Int,N}) where {N} = A
 to_int(A::AbstractArray{<:Integer,N}) where {N} = map(to_int, A)
 to_int(x::Tuple{Vararg{Int}}) = x
 to_int(x::Tuple{Vararg{Integer}}) = map(to_int, x)
-
-"""
-    UndefinedType
-
-is a type used to represent undefined type in `promote_type`. It is an
-abstract type so that `isbitstype(UndefinedType)` is false.
-
-"""
-abstract type UndefinedType end
-
-"""
-    promote_eltype(args...)
-
-yields the promoted element type of its arguments. Arguments `args...` may be
-anything implementing the `eltype` method.
-
-"""
-promote_eltype(arg) = eltype(arg)
-promote_eltype(args...) = promote_type(map(eltype, args)...)
-promote_eltype() = UndefinedType
-
-Base.promote_type(T::Type, ::Type{UndefinedType}) = T
-Base.promote_type(::Type{UndefinedType}, T::Type) = T
-Base.promote_type(::Type{UndefinedType}, ::Type{UndefinedType}) = UndefinedType
 
 """
     all_match(val, f, args...) -> bool

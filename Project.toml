@@ -1,14 +1,18 @@
 name = "ArrayTools"
 uuid = "1dc0ca97-c5ce-4e77-ac6d-c576ac9d7f27"
 authors = ["Éric Thiébaut <https://github.com/emmt>"]
-version = "0.2.7"
+version = "0.3.0"
+
+[deps]
+TypeUtils = "c3b1956e-8857-4d84-9b79-890df85b1e67"
 
 [compat]
+TypeUtils = "≥0.2.2"
 julia = "1.0"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "Random"]

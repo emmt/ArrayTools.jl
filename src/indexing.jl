@@ -111,9 +111,9 @@ sub-type of [`ArrayAxis`](@ref) which is an alias to `AbstractUnitRange{Int}`.
 
 """
 to_axis(ind::ArrayAxis) = ind
-to_axis(ind::AbstractUnitRange{<:Integer}) = to_type(ArrayAxis, ind)
+to_axis(ind::AbstractUnitRange{<:Integer}) = as(ArrayAxis, ind)
 to_axis(ind::Int) = Base.OneTo(ind)
-to_axis(ind::Integer) = to_axis(to_type(Int, ind))
+to_axis(ind::Integer) = to_axis(as(Int, ind))
 
 """
     ArrayAxes{N}

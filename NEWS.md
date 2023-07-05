@@ -1,5 +1,16 @@
 # User visible changes in `ArrayTools` package
 
+## Version 0.3.0
+
+- Use package `TypeUtils` and re-export some of its methods: `as`, `as_eltype`,
+  `convert_eltype`, and `promote_eltype`.
+
+- Method `to_type(T,x)` has been deprecated in favor of `as(T,x)` found in
+  package `TypeUtils`.
+
+- `promote_eltype()` with no arguments returns the same result as
+  `promote_type()` and `UndefinedType` has been deleted.
+
 ## Version 0.2.7
 
 - Rename `@assert_same_indices` as `@assert_same_axes` which is more specific
@@ -37,7 +48,6 @@
 - Documentation has been improved.
 
 - Some code ahs been simplified.
-
 
 ## Version 0.2.1
 
