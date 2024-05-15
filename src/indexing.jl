@@ -103,17 +103,17 @@ alias is identical to [`MaybeArrayAxis`](@ref) but has a different purpose.
 const IndexRange = Union{Integer,AbstractUnitRange{<:Integer}}
 
 """
-    to_axis(ind)
+    to_axis(x)
 
-yields `ind` converted into an array axis. Argument `ind` can be a dimension
-length or an integer valued unit range. The type of the result inherits is a
-sub-type of [`ArrayAxis`](@ref) which is an alias to `AbstractUnitRange{Int}`.
+yields `x` converted into an array axis. Argument can be a dimension length or
+an integer-valued unit range. The type of the result inherits is a sub-type of
+[`ArrayAxis`](@ref) which is an alias to `AbstractUnitRange{Int}`.
 
 """
-to_axis(ind::ArrayAxis) = ind
-to_axis(ind::AbstractUnitRange{<:Integer}) = as(ArrayAxis, ind)
-to_axis(ind::Int) = Base.OneTo(ind)
-to_axis(ind::Integer) = to_axis(as(Int, ind))
+to_axis(rng::ArrayAxis) = rng
+to_axis(rng::AbstractUnitRange{<:Integer}) = as(ArrayAxis, rng)
+to_axis(dim::Int) = Base.OneTo(dim)
+to_axis(dim::Integer) = to_axis(as(Int, dim))
 
 """
     ArrayAxes{N}
@@ -136,9 +136,9 @@ of `ArrayAxes{N}`.
 const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
 
 """
-    to_axes(inds)
+    to_axes(rngs)
 
-yields `inds` converted in a proper list of array axes, that is a tuple of
+yields `rngs` converted in a proper list of array axes, that is a tuple of
 [`ArrayAxis`](@ref) instances. This method may also be called as:
 
     to_axes(ind1, ind2, ...)
@@ -146,8 +146,8 @@ yields `inds` converted in a proper list of array axes, that is a tuple of
 to let `to_axes` deal with a variable number of arguments.
 
 """
-to_axes(inds::Tuple{Vararg{ArrayAxis}}) = inds
-to_axes(inds::MaybeArrayAxis...) = to_axes(inds)
+to_axes(rngs::ArrayAxes) = rngs
+to_axes(rngs::MaybeArrayAxis...) = to_axes(rngs)
 to_axes(inds::Tuple{Vararg{MaybeArrayAxis}}) = map(to_axis, inds)
 
 # Types for the sign of an offset.
@@ -184,9 +184,9 @@ See also [`standard_size`](@ref), [`has_standard_indexing`](@ref).
 """
 same_standard_size(A::AbstractArray) = standard_size(A)
 @inline function same_standard_size(A::AbstractArray, B::AbstractArray...)
-    siz = standard_size(A)
-    all_match(siz, standard_size, B...) || throw_not_same_size()
-    return siz
+    dims = standard_size(A)
+    all_match(dims, standard_size, B...) || throw_not_same_size()
+    return dims
 end
 
 """
@@ -200,9 +200,9 @@ See also [`same_standard_size`](@ref), [`same_axes`](@ref).
 """
 same_size(A::AbstractArray) = size(A)
 @inline function same_size(A::AbstractArray, B::AbstractArray...)
-    siz = size(A)
-    all_match(siz, size, B...) || throw_not_same_size()
-    return siz
+    dims = size(A)
+    all_match(dims, size, B...) || throw_not_same_size()
+    return dims
 end
 
 @noinline throw_not_same_size() =
@@ -219,32 +219,32 @@ See also [`same_size`](@ref), [`all_indices`](@ref).
 """
 same_axes(A::AbstractArray) = axes(A)
 @inline function same_axes(A::AbstractArray, B::AbstractArray...)
-    inds = axes(A)
-    all_match(inds, axes, B...) || throw_not_same_axes()
-    return inds
+    rngs = axes(A)
+    all_match(rngs, axes, B...) || throw_not_same_axes()
+    return rngs
 end
 
 @noinline throw_not_same_axes() =
     throw(DimensionMismatch("arrays must have same indices"))
 
 """
-     check_size(siz) -> len
+     check_size(dims) -> len
 
-checks the validity of the array size `siz` and yields the corresponding number
+checks the validity of the array size `dims` and yields the corresponding number
 of elements (throwing an `ArgumentError` exception if this is not the case). To
-be a valid array size, the values of `siz` must all be nonnegative.
+be a valid array size, the values of `dims` must all be nonnegative.
 
 See also [`to_size`](@ref).
 
 """
-check_size(siz::Integer) =
-    siz ≥ 0 ? to_int(siz) : throw(ArgumentError("invalid dimension"))
+check_size(dim::Integer) =
+    dim ≥ zero(dim) ? to_int(dim) : throw(ArgumentError("dimension must be ≥ 0, got $dim"))
 
-function check_size(siz::NTuple{N,Integer}) where {N}
+function check_size(dims::NTuple{N,Integer}) where {N}
     len = 1
     @inbounds for i in 1:N
-        dim = to_int(siz[i])
-        dim ≥ 0 || throw(ArgumentError("invalid dimension(s)"))
+        dim = to_int(dims[i])
+        dim ≥ 0 || throw(ArgumentError("dimension must be ≥ 0, got $dim"))
         len *= dim
     end
     return len
