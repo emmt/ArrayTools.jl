@@ -1,5 +1,9 @@
 # User visible changes in `ArrayTools` package
 
+## Version 0.3.2
+
+- Update compatibility for `TypeUtils`.
+
 ## Version 0.3.0
 
 - Use package `TypeUtils` and re-export some of its methods: `as`, `as_eltype`,
