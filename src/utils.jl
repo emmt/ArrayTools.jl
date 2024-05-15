@@ -36,7 +36,7 @@ arguments after `f`.
 all_match(val, f::Function) = true
 all_match(val, f::Function, A) = f(A) == val
 @inline all_match(val, f::Function, A, B...) =
-    all_match(val, f, A) && all_match(val, f::Function, B...)
+    all_match(val, f, A) && all_match(val, f, B...)
 
 """
     allof(f, args...) -> Bool
