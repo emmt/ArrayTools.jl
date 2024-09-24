@@ -96,15 +96,7 @@ atol = 1e-6
     end
 
     # Dimensions.
-    @test_throws MethodError to_size(π)
-    @test_throws MethodError to_size((π,))
-    @test to_size(()) === ()
-    @test to_size(5) === (5,)
-    @test to_size(Int16(5)) === (5,)
-    @test to_size((Int8(2),UInt16(3),Int32(4))...) === (2,3,4,)
-    @test to_size((Int8(2),UInt16(3),Int32(4))) === (2,3,4,)
-    @test to_size((2,3,4,)) === (2,3,4,)
-    @test isa(to_size(Int16(5)), Tuple{Int})
+    @test_deprecated to_size(3) == (3,)
     @test standard_size(A) === size(A)
     @test same_standard_size(A) === size(A)
     @test same_standard_size(A, similar(A)) === size(A)
@@ -112,10 +104,6 @@ atol = 1e-6
     @test same_size(A) === size(A)
     @test same_size(A, similar(A)) === size(A)
     @test_throws DimensionMismatch same_size(A, V)
-    @test to_size(dims) === dims
-    @test to_size(dims...) === dims
-    @test to_size(UInt16(dims[1]), dims[2:end]...) === dims
-    @test to_size((UInt16(dims[1]), dims[2:end]...)) === dims
     @test check_size(()) == 1
     @test check_size((1,0,2)) == 0
     @test check_size((1,2,3)) == 6
@@ -123,15 +111,9 @@ atol = 1e-6
     @test_throws ArgumentError check_size((1,0,-1))
     @test_throws ArgumentError check_size(-1)
     # Axis and axes.
-    @test to_axis(1:3) === 1:3
-    @test to_axis(UInt16(1):UInt16(3)) === 1:3
-    @test to_axis(5) === Base.OneTo(5)
-    @test to_axis(UInt16(5)) === Base.OneTo(5)
-    @test to_axes(()) === ()
-    @test to_axes((Base.OneTo(3), 0:4)) === (Base.OneTo(3), 0:4)
-    @test to_axes(5) === (to_axis(5),)
-    @test to_axes(2,UInt16(3),0:4) === (to_axis(2),to_axis(3),to_axis(0:4),)
-    @test to_axes((2,UInt16(3),0:4)) === (to_axis(2),to_axis(3),to_axis(0:4),)
+    @test_deprecated to_axis(1:3) === 1:3
+    @test_deprecated to_axes(1:3) === (1:3,)
+    @test_deprecated to_axes(2:3,7) === (2:3,Base.OneTo(7))
     #
     # Tests for `allof`, `anyof` and `noneof`.
     #

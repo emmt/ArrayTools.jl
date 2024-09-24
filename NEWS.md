@@ -2,6 +2,12 @@
 
 ## Version 0.3.2
 
+- Methods `to_axis`, `to_axes`, and `to_size` have been deprecated in favor of,
+  respectively, `as_array_axis`, `as_array_axes`, and `as_array_size` for the
+  `TypeUtils` (version ≥ 1.3) package.
+
+## Version 0.3.1
+
 - Update compatibility for `TypeUtils`.
 
 ## Version 0.3.0

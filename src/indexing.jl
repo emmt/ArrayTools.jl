@@ -42,43 +42,24 @@ end
     ArraySize
 
 is the union of types eligible to define array size. Calling
-`[to_size](@ref)(dims)` on any argument `dims` such that `isa(dims,ArraySize)`
-is true yields an array size in canonical form, that is an instance of
-`Dims{N}` which is an alias for an `N`-tuple of `Int`.
+`as_array_size(dims)` on any argument `dims` such that `isa(dims,ArraySize)` is
+true yields an array size in canonical form, that is an instance of `Dims{N}`
+which is an alias for an `N`-tuple of `Int`.
 
 """
 const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
 
 """
-    to_size(dims)
+    to_size(args)
 
-converts `dims` to an instance of `Dims{N}` which is an alias for an `N`-tuple
-of `Int`. Argument `dims` can be a scalar integer or a tuple of integers.
-Argument `dims` is returned if already of the correct type. This method may
-also be called as:
+yields `args` converted in a canonic list of array dimension lengths.
 
-    to_size(dim1, dim2, ...)
-
-to let `to_size` deal with a variable number of arguments.
-
-The union [`ArraySize`](@ref) matches the types of acceptable argument(s) for
-`to_size(arg)`: scalar integers and tuples of integers.
-
-This method is intended for fast conversion, call `check_size(dims)` to verify
-that all dimensions in `dims` are nonnegative.
+!!! warning
+    This function has been deprecated, use `as_array_size` instead.
 
 """
-to_size(dims::Dims) = dims
-to_size(dims::Integer...) = to_size(dims)
-to_size(dims::Tuple{Vararg{Integer}}) = to_int(dims)
-
-"""
-    ArrayAxis
-
-is the super-type of an array axis, it is an alias to `AbstractUnitRange{Int}`.
-
-"""
-const ArrayAxis = AbstractUnitRange{Int}
+function to_size end
+@deprecate to_size as_array_size
 
 """
     MaybeArrayAxis
@@ -86,7 +67,7 @@ const ArrayAxis = AbstractUnitRange{Int}
 is the union of types of arguments eligible to define an array axis. This alias
 is identical to [`IndexRange`](@ref) but has a different purpose.
 
-Calling [`to_axis(x::MaybeArrayAxis)`](@ref) is guaranteed to yield an instance
+Calling `as_array_axis(x::MaybeArrayAxis)` is guaranteed to yield an instance
 of `ArrayAxis`.
 
 """
@@ -103,25 +84,16 @@ alias is identical to [`MaybeArrayAxis`](@ref) but has a different purpose.
 const IndexRange = Union{Integer,AbstractUnitRange{<:Integer}}
 
 """
-    to_axis(x)
+    to_axis(arg)
 
-yields `x` converted into an array axis. Argument can be a dimension length or
-an integer-valued unit range. The type of the result inherits is a sub-type of
-[`ArrayAxis`](@ref) which is an alias to `AbstractUnitRange{Int}`.
+yields `arg` converted into an array axis.
 
-"""
-to_axis(rng::ArrayAxis) = rng
-to_axis(rng::AbstractUnitRange{<:Integer}) = as(ArrayAxis, rng)
-to_axis(dim::Int) = Base.OneTo(dim)
-to_axis(dim::Integer) = to_axis(as(Int, dim))
+!!! warning
+    This function has been deprecated, use `as_array_axis` instead.
 
 """
-    ArrayAxes{N}
-
-is the type of array axes, that is an `N`-tuple of [`ArrayAxis`](@ref).
-
-"""
-const ArrayAxes{N} = NTuple{N,ArrayAxis}
+function to_axis end
+@deprecate to_axis as_array_axis
 
 """
     MaybeArrayAxes{N}
@@ -129,26 +101,23 @@ const ArrayAxes{N} = NTuple{N,ArrayAxis}
 is the type of arguments eligible to specify array axes, that is an `N`-tuple
 of `MaybeArrayAxis`.
 
-Calling `to_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance
+Calling `as_array_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance
 of `ArrayAxes{N}`.
 
 """
 const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
 
 """
-    to_axes(rngs)
+    to_axes(args)
 
-yields `rngs` converted in a proper list of array axes, that is a tuple of
-[`ArrayAxis`](@ref) instances. This method may also be called as:
+yields `args` converted in a canonic list of array axes.
 
-    to_axes(ind1, ind2, ...)
-
-to let `to_axes` deal with a variable number of arguments.
+!!! warning
+    This function has been deprecated, use `as_array_axes` instead.
 
 """
-to_axes(rngs::ArrayAxes) = rngs
-to_axes(rngs::MaybeArrayAxis...) = to_axes(rngs)
-to_axes(inds::Tuple{Vararg{MaybeArrayAxis}}) = map(to_axis, inds)
+function to_axes end
+@deprecate to_axes as_array_axes
 
 # Types for the sign of an offset.
 const PlusMinus = Union{typeof(+),typeof(-)}
@@ -234,8 +203,6 @@ checks the validity of the array size `dims` and yields the corresponding number
 of elements (throwing an `ArgumentError` exception if this is not the case). To
 be a valid array size, the values of `dims` must all be nonnegative.
 
-See also [`to_size`](@ref).
-
 """
 check_size(dim::Integer) =
     dim ≥ zero(dim) ? to_int(dim) : throw(ArgumentError("dimension must be ≥ 0, got $dim"))
@@ -294,7 +261,7 @@ cartesian_indices(R::CartesianIndices) = R
     CartesianIndices(map((i,j) -> i:j, start.I, stop.I))
 end
 cartesian_indices(inds::MaybeArrayAxis...) = cartesian_indices(inds)
-cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(to_axes(inds))
+cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(as_array_axes(inds))
 
 # The following, would yield an `AbstractUnitRange` if a single argument is
 # provided that is an integer or a range (not a tuple). This lead to

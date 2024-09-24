@@ -2,8 +2,6 @@ module ArrayTools
 
 export
     ..,
-    ArrayAxes,
-    ArrayAxis,
     ArraySize,
     MaybeArrayAxes,
     MaybeArrayAxis,
@@ -29,14 +27,18 @@ export
     split_interval,
     standard_size,
     strictmap!,
-    to_axes,
-    to_axis,
     to_int,
-    to_size,
     # to_type, # FIXME: deprecated, use `as(T,x)` instead
 
     # Re-exports from TypeUtils:
+    ArrayAxes,
+    ArrayAxis,
+    ArrayShape,
     as,
+    as_array_axes,
+    as_array_axis,
+    as_array_dim,
+    as_array_size,
     as_eltype,
     convert_eltype,
     promote_eltype,
