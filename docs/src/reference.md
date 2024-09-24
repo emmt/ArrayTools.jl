@@ -24,7 +24,6 @@ FastIndexing
 AnyIndexing
 is_fast_array
 to_fast_array
-to_size
 check_size
 same_size
 same_standard_size
