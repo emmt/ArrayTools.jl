@@ -8,3 +8,5 @@ temp/
 devel.jl
 work.jl
 temp.jl
+/.Manifest-*.toml
+/Manifest.toml
