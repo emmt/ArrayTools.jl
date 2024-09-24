@@ -55,7 +55,7 @@ compile time, it is faster to call `colons(Val(n))`.
 
 :warning: **Warning.** A current limitation of the rubber index is that it will
 confuse the interpretation of the `end` token appearing in the same index list
-*after* the rubber index. This is beacuse the parser wrongly assumes that the
+*after* the rubber index. This is because the parser wrongly assumes that the
 rubber index counts for a single dimension. The `end` token may however appears
 *before* the rubber index. Example:
 
