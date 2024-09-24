@@ -4,7 +4,7 @@
 
 - Methods `to_axis`, `to_axes`, and `to_size` have been deprecated in favor of,
   respectively, `as_array_axis`, `as_array_axes`, and `as_array_size` from the
-  `TypeUtils` (version ≥ 1.3) package.
+  [`TypeUtils`](https://github.com/emmt/TypeUtils.jl) (version ≥ 1.3) package.
 
 ## Version 0.3.1
 
