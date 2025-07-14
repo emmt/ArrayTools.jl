@@ -154,7 +154,7 @@ See also [`standard_size`](@ref), [`has_standard_indexing`](@ref).
 same_standard_size(A::AbstractArray) = standard_size(A)
 @inline function same_standard_size(A::AbstractArray, B::AbstractArray...)
     dims = standard_size(A)
-    all_match(dims, standard_size, B...) || throw_not_same_size()
+    all_match(standard_size, dims, B...) || throw_not_same_size()
     return dims
 end
 
@@ -170,7 +170,7 @@ See also [`same_standard_size`](@ref), [`same_axes`](@ref).
 same_size(A::AbstractArray) = size(A)
 @inline function same_size(A::AbstractArray, B::AbstractArray...)
     dims = size(A)
-    all_match(dims, size, B...) || throw_not_same_size()
+    all_match(size, dims, B...) || throw_not_same_size()
     return dims
 end
 
@@ -189,7 +189,7 @@ See also [`same_size`](@ref), [`all_indices`](@ref).
 same_axes(A::AbstractArray) = axes(A)
 @inline function same_axes(A::AbstractArray, B::AbstractArray...)
     rngs = axes(A)
-    all_match(rngs, axes, B...) || throw_not_same_axes()
+    all_match(axes, rngs, B...) || throw_not_same_axes()
     return rngs
 end
 
@@ -487,7 +487,7 @@ same number of elements, not the same shape).
 
 @inline function all_indices(::IndexLinear, A::AbstractArray,
                              B::AbstractArray...)
-    all_match(axes(A), axes, B...) ||
+    all_match(axes, axes(A), B...) ||
         throw_indices_mismatch(IndexLinear(), A, B...)
     return eachindex(IndexLinear(), A)
 end
@@ -495,7 +495,7 @@ end
 @inline function all_indices(::IndexCartesian, A::AbstractArray,
                              B::AbstractArray...)
     inds = axes(A)
-    all_match(inds, axes, B...) ||
+    all_match(axes, inds, B...) ||
         throw_indices_mismatch(IndexCartesian(), A, B...)
     # The following is the same as `eachindex(IndexCartesian(),A)` which yields
     # `CartesianIndices(axes(A))`.

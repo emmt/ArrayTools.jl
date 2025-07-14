@@ -183,9 +183,10 @@ atol = 1e-6
     #
     # Tests for `all_match`.
     #
-    @test all_match(nothing, identity)
-    @test all_match(1, length, π)
-    @test all_match(1, length, π, 2, "e")
+    @test all_match(identity, nothing)
+    @test all_match(length, 1, π)
+    @test all_match(length, 1, π, 2, "e")
+    @test_deprecated all_match(1, length, π)
     #
     # Tests for `same_axes`.
     #
