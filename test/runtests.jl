@@ -818,9 +818,6 @@ Base.parent(A::DummyArray) = A.arr
     @test axes(F) == axes(G) == inds
     @test ntuple(d -> axes(F,d), N) == ntuple(d -> axes(G,d), N) == inds
     @test Base.axes1(F) == Base.axes1(G) == inds[1]
-    @test Base.elsize(F) == Base.elsize(G) == Base.elsize(parent(F))
-    @test Base.elsize(R) == Base.elsize(typeof(R)) == Base.elsize(Va)
-    @test sizeof(F) == sizeof(G) == sizeof(parent(F))
     @test IndexStyle(F) == IndexStyle(G) == IndexStyle(parent(F))
     @test_throws ErrorException parent(Q)
     @test IndexStyle(R) == IndexStyle(parent(R)) == IndexCartesian()

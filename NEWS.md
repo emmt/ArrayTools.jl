@@ -1,5 +1,13 @@
 # User visible changes in `ArrayTools` package
 
+## Unreleased
+
+### Breaking changes
+
+- For pseudo-arrays, `Base.elsize(::Type{<:PseudoArray})` and
+  `Base.sizeof(A::PseudoArray)` are no longer supported, call these methods on
+  the parent type or parent object instead.
+
 ## Version 0.3.2
 
 - Methods `to_axis`, `to_axes`, and `to_size` have been deprecated in favor of,

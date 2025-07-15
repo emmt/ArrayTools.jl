@@ -79,7 +79,7 @@ is an alias to pseudo-arrays with linear indexing.
 """
 const LinearArray{T,N} = PseudoArray{T,N,IndexLinear}
 
-# Make PseudoArray instances behave like arrays (indexing is considered later).
+# Implement abstract array API (indexing is done elsewhere) for `PseudoArray`.
 @inline Base.length(A::PseudoArray) = length(parent(A))
 @inline Base.size(A::PseudoArray) = size(parent(A))
 Base.size(A::PseudoArray, d) = size(parent(A), d)
@@ -89,10 +89,6 @@ Base.axes(A::PseudoArray, d) = axes(parent(A), d)
 @inline Base.IndexStyle(::Type{<:PseudoArray{T,N,S}}) where {T,N,S} = S()
 Base.parent(A::T) where {T<:PseudoArray} =
     error("method `parent(A::T)` must be extended for instances of `$T`")
-Base.elsize(::Type{<:PseudoArray{T,N}}) where {T,N} = Base.elsize(Array{T,N})
-Base.sizeof(A::PseudoArray) = sizeof(parent(A))
-Base.pairs(S::IndexCartesian, A::PseudoArray) = pairs(S, parent(A))
-Base.pairs(S::IndexLinear, A::PseudoArray) = pairs(S, parent(A))
 
 # Make LinearArray instances efficient iterators.
 @inline Base.iterate(A::LinearArray, i=1) =
