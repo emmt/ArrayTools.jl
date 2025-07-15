@@ -87,48 +87,40 @@ Leading/trailing indices may be specified as Cartesian indices (of type
 `CartesianIndex`).
 
 !!! warning
-    There are two known limitations:
-    1. The `end` reserved word can only be used in intervals specified *before*
-       the rubber index but not *after*. This limitation is due to the Julia
-       parser cannot be avoided.
-    2. At most 9 indices can be specified before the rubber index. This can be
-       extended by editing the source code.
+    The `end` reserved word can only be used in intervals specified *before*
+    the rubber index but not *after*. This limitation is due to the Julia
+    parser and cannot be avoided.
 
 See also: [`colons`](@ref).
 
-""" RubberIndex
-
+"""
 struct RubberIndex end
 
 const .. = RubberIndex()
 const … = .. # FIXME: should be deprecated
 
-# Quickly get the tuple inside a Cartesian index.
-to_tuple(I::CartesianIndex) = I.I
-
-# Grow tuple of colons until tuple of axes is empty.
-@inline growcolons(colons, inds::Tuple{}) = colons
-@inline growcolons(colons, inds::Tuple) = growcolons((colons..., :), tail(inds))
-
-# Drop as many colons as there are specified indices.
-@inline dropcolons(colons, I::Tuple{}) = colons
-@inline dropcolons(colons::Tuple{}, ::Tuple{}) = ()
-@noinline dropcolons(colons::Tuple{}, I::Tuple) =
-    throw(ArgumentError("too many indices specifed"))
-@inline dropcolons(colons, I::Tuple) =
-    dropcolons(tail(colons), tail(I))
-@inline dropcolons(colons, I::Tuple{CartesianIndex, Vararg}) =
-    dropcolons(dropcolons(colons, to_tuple(I[1])), tail(I))
-@noinline dropcolons(colons, I::Tuple{RubberIndex, Vararg}) =
+# Yield the number of indices specified in one of the entries of `I` in
+# `Base.to_indices(A,inds,I)` given its type.
+index_count(::Type{<:CartesianIndex{N}}) where {N} = N
+index_count(::Type{<:Any}) = 1
+index_count(::Type{<:RubberIndex}) =
     throw(ArgumentError("more than one rubber index specified"))
 
-@inline function to_indices(A, inds, I::Tuple{RubberIndex, Vararg})
-    # Align the remaining indices to the tail of the `inds`. First `growcolons`
-    # is called to build a tuple of as many as colons as the number of
-    # remaining axes. Second, `dropcolons` is used to drop as many colons as
-    # the number of specified indices (taking into account Cartesian indices).
-    colons = dropcolons(growcolons((), inds), tail(I))
-    to_indices(A, inds, (colons..., tail(I)...))
+@generated function Base.to_indices(A, inds, I::Tuple{RubberIndex,Vararg})
+    # Th number of colons `n` to insert in place of the rubber index is equal
+    # to the number of indices in `inds` minus the number of indices specified
+    # in `I`.
+    n = length(inds.types)
+    types = I.types
+    for i in (firstindex(types) + 1):lastindex(types)
+        n -= index_count(types[i])
+    end
+    n ≥ 0 || throw(ArgumentError("too many indices specified"))
+    c = ntuple(i -> Colon(), Val(n))
+    return quote
+        $(Expr(:meta, :inline))
+        return Base.to_indices(A, inds, ($(c...), Base.tail(I)...,))
+    end
 end
 
 # avoid copying if indexing with .. alone, see
