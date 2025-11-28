@@ -60,7 +60,7 @@ colon(x) = Colon()
 
 """
 
-`RubberIndex` is the singleron type that represents any number of indices. The
+`RubberIndex` is the singleton type that represents any number of indices. The
 constant `..` is defined as `RubberIndex()` and can be used in array indexation
 to left and/or right justify the other indices. For instance, assuming `A` is a
 `3×4×5×6` array, then all the following equalities hold:
@@ -107,7 +107,7 @@ index_count(::Type{<:RubberIndex}) =
     throw(ArgumentError("more than one rubber index specified"))
 
 @generated function Base.to_indices(A, inds, I::Tuple{RubberIndex,Vararg})
-    # Th number of colons `n` to insert in place of the rubber index is equal
+    # The number of colons `n` to insert in place of the rubber index is equal
     # to the number of indices in `inds` minus the number of indices specified
     # in `I`.
     n = length(inds.types)

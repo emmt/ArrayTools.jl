@@ -33,7 +33,7 @@ struct FlatStorage <: StorageType end
 """
     AnyStorage()
 
-yields the storage type of a *non-flat* arrays. See [`StorageType`](@ref).
+yields the storage type of *non-flat* arrays. See [`StorageType`](@ref).
 
 """ AnyStorage
 

@@ -80,7 +80,7 @@ function allof(itr)
 end
 
 """
-    anyof(f, args...) -> bool
+    anyof(f::Function, args...) -> bool
 
 checks whether predicate function `f` returns `true` for any argument
 `args...`, returning `true` as soon as possible (short-circuiting).
@@ -91,7 +91,7 @@ checks whether all arguments `args...` are `true`, returning `false` as soon as
 possible (short-circuiting). Arguments can be booleans or arrays of booleans.
 The latter are considered as `true` if any of their elements are `true` and are
 considered as `false` otherwise (if all their elements are `false`). Arguments
-can also be iterables to check whether any of their values are `true`. An empty
+can also be iterators to check whether any of their values are `true`. An empty
 iterable is considered as `false`.
 
 This method can be much faster than `any(f, args)` or `any(args)` because its
@@ -119,7 +119,7 @@ function anyof(itr)
 end
 
 """
-    noneof(f, args...) -> bool
+    noneof(f::Function, args...) -> bool
 
 checks whether predicate `f` returns `false` for all argument `args...`, while
 
