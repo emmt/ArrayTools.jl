@@ -8,6 +8,15 @@
   `Base.sizeof(A::PseudoArray)` are no longer supported, call these methods on
   the parent type or parent object instead.
 
+- `all_match(val, f, args...)` is replaced by `all_match(f, val, args...)` which is suitable
+  for `do`-block syntax. In this method, comparison is done by `isequal` instead of `==`.
+
+
+### Changed
+
+- `all_match(val, f, args...)` is deprecated in favor of `all_match(f, val, args...)` which
+  is suitable for `do`-block syntax.
+
 ### Added
 
 - `properties(typeof(A))` yields the type of the property object associated with an

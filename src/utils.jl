@@ -38,7 +38,9 @@ all_match(f::Function, val, A) = f(A) == val
 @inline all_match(f::Function, val, A, B...) =
     all_match(f, val, A) && all_match(f, val, B...)
 
-@deprecate all_match(val, f::Function, args...) all_match(f, val, args...) false
+@deprecate(all_match(val, f, args...),
+           (f isa Function ? all_match(f, val, args...) :
+               throw(ArgumentError("1st or 2nd argument must be a function"))), false)
 
 """
     allof(f, args...) -> Bool
