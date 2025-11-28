@@ -8,6 +8,12 @@
   `Base.sizeof(A::PseudoArray)` are no longer supported, call these methods on
   the parent type or parent object instead.
 
+### Added
+
+- `properties(typeof(A))` yields the type of the property object associated with an
+  annotated array `A`.
+
+
 ## Version 0.3.2
 
 - Methods `to_axis`, `to_axes`, and `to_size` have been deprecated in favor of,

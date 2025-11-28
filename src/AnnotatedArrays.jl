@@ -167,15 +167,21 @@ AnnotatedArray(::UndefInitializer, dims::Tuple{Vararg{Integer}}, args...; kwds..
     throw_missing_type_parameter()
 
 """
+    properties(A::AnnotatedArray)
 
-```julia
-properties(A)
-```
-
-yields the properties associated with `A`, an instance of `AnnotatedArray`.
+Return the object storing the properties associated with `A`.
 
 """
-@inline properties(A::AnnotatedArray) = Base.getfield(A, :prop)
+properties(A::AnnotatedArray) = Base.getfield(A, :prop)
+
+"""
+    properties(A::Type{<:AnnotatedArray})
+
+Return the type of the property object associated with an annotated array of
+type `A`.
+
+"""
+properties(::Type{A}) where {T,N,P,A<:AnnotatedArray{T,N,P}} = P
 
 """
 
