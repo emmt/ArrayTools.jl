@@ -19,7 +19,7 @@ Making a copy of `A` is avoided by [`bcastlazy`](@ref) (hence its name), and
 `A` or a view on `A` is returned if `A` is already an array with the correct
 element type and dimensions or if it can be reshaped (by the `reshape` method)
 to match the constraints. This means that the result may share the same
-contents as `A`. If an array that does not share its contents with `A` is
+content as `A`. If an array that does not share its content with `A` is
 needed, then call:
 
 ```julia

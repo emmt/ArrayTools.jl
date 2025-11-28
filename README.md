@@ -140,10 +140,10 @@ B = AnnotatedArray{T}(undef, dims, units = "µm", Δx = 0.10, Δy = 0.20)
 
 Here the initial properties of `A` and `B` are specified by the keywords in the
 call to the constructor; their properties will have symbolic names with any
-kind of value. The array contents of `A` is an array of zeros, while the array
-contents of `B` is created by the constructor with undefined values. Indexing
+kind of value. The array part of `A` is an array of zeros, while the array
+part of `B` is created by the constructor with undefined values. Indexing
 `A` or `B` with integers of Cartesian indices is the same as accessing the
-values of their array contents while indexing `A` or `B` by symbols is the same
+values of their array part while indexing `A` or `B` by symbols is the same
 as accessing their properties. For example:
 
 ```julia
@@ -151,7 +151,7 @@ A.Δx             # yields 0.2
 A[:Δx]           # idem
 A.units          # yields "photons"
 A[:units]        # idem
-A[:,3] .= 3.14   # set some values in the array contents of A
+A[:,3] .= 3.14   # set some values in the array part of A
 sum(A)           # yields the sum of the values of A
 A[:gizmo] = π    # set a property
 A.gizmo = π      # idem
@@ -170,7 +170,7 @@ where `arr` is an existing array or an expression whose result is an array,
 `prop` specifies the initial properties (more on this below), `T` is the type
 of array element, `init` is usually `undef` and `dims` is a tuple of array
 dimensions. If `arr` is an existing array, the object `A` created above will
-reference this array and hence share its contents with the caller (call
+reference this array and hence share its content with the caller (call
 `copy(arr)` to avoid that). The same applies if the initial properties are
 specified by a dictionary.
 
@@ -216,7 +216,7 @@ values of type `Int32`.
 Property key types are not limited to `Symbol` or `String`, but, to avoid
 ambiguities, key types must be more specialized than `Any` and must not inherit
 from types like `Integer` or `CartesianIndex` which are reserved for indexing
-the array contents of annotated arrays.
+the array part of annotated arrays.
 
 If the dictionary is unspecified, the properties are stored in a, initially
 empty, dictionary with symbolic keys and value of any type, *i.e.*
@@ -287,7 +287,7 @@ to_fast_array(A)
 
 which checks whether array `A` is suitable for fast indexing (by a single
 integer starting at 1); if it does, `A` is returned to the caller; otherwise,
-the contents of `A` is converted to a suitable array type implementing fast
+the content of `A` is converted to a suitable array type implementing fast
 indexing and is returned to the caller.
 
 To just check whether array `A` is suitable for fast indexing, call:

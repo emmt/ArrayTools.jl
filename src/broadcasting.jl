@@ -10,7 +10,7 @@
 yields a new array of element type `T` and dimensions `dims` whose values are
 given by `A` according to type conversion and broadcasting rules (like for the
 `broadcast` method). Compared to [`bcastlazy`](@ref), it is guaranteed that the
-returned array does not share its contents with `A`.
+returned array does not share its content with `A`.
 
 Argument `A` can be a scalar value or an array.
 
@@ -43,7 +43,7 @@ by `A` according to type conversion and broadcasting rules (see `broadcast`
 method). Compared to [`bcastcopy`](@ref), making a copy of `A` is avoided if it
 is already an array with the correct type of elements and dimensions or if it
 can be reshaped (by the `reshape` method) to the correct type and dimensions.
-This means that the result may share the same contents as `A`. Argument `A` can
+This means that the result may share the same content as `A`. Argument `A` can
 be a scalar or an array with 1-based indices. The result has 1-based indices
 and contiguous elements which is suitable for fast linear indexing.
 
