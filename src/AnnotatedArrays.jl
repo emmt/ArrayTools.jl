@@ -151,13 +151,13 @@ _initialproperties(prop::Dict{K}) where {K} = convert(Dict{K,Any}, prop)
 
 # Constructors that allocate the initial array. If only keywords are
 # specified, the dimensions of the array may be provided by integer arguments.
-AnnotatedArray{T,N}(init, dims::Integer...; kwds...) where {T,N} =
+AnnotatedArray{T,N}(init::UndefInitializer, dims::Integer...; kwds...) where {T,N} =
     AnnotatedArray{T,N}(init, dims; kwds...)
-AnnotatedArray{T}(init, dims::Integer...; kwds...) where {T} =
+AnnotatedArray{T}(init::UndefInitializer, dims::Integer...; kwds...) where {T} =
     AnnotatedArray{T}(init, dims; kwds...)
-AnnotatedArray{T,N}(init, dims::NTuple{N,Integer}, args...; kwds...) where {T,N} =
+AnnotatedArray{T,N}(init::UndefInitializer, dims::NTuple{N,Integer}, args...; kwds...) where {T,N} =
     AnnotatedArray(Array{T,N}(init, dims), args...; kwds...)
-AnnotatedArray{T}(init, dims::Tuple{Vararg{Integer}}, args...; kwds...) where {T} =
+AnnotatedArray{T}(init::UndefInitializer, dims::Tuple{Vararg{Integer}}, args...; kwds...) where {T} =
     AnnotatedArray(Array{T}(init, dims), args...; kwds...)
 
 # The following ones are to avoid common errors.
