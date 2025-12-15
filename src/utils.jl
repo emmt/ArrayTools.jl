@@ -7,9 +7,9 @@
 """
     to_int(x)
 
-converts `x` to a similar object whose values are all of type `Int`. Argument
-`x` can be a scalar, an array, a tuple or a range. Argument `x` is returned if
-already of the correct type.
+Convert `x` to a similar object whose values are all of type `Int`. Argument `x` can be a
+scalar, an array, a tuple or a range. Argument `x` is returned if already of the correct
+type.
 
 """
 to_int(x::Integer) = as(Int, x)
@@ -28,9 +28,8 @@ to_int(x::Tuple{Vararg{Integer}}) = map(to_int, x)
 """
     all_match(f, val, args...) -> bool
 
-yields as soon as possible (short-circuit) whether `f(arg) == val` holds for
-each argument `arg` in `args...`. The returned value is `true` if there are no
-arguments after `f`.
+Return as soon as possible (short-circuit) whether `f(arg) == val` holds for each argument
+`arg` in `args...`. The returned value is `true` if there are no arguments after `f`.
 
 """
 all_match(f::Function, val) = true
@@ -45,21 +44,19 @@ all_match(f::Function, val, A) = f(A) == val
 """
     allof(f, args...) -> Bool
 
-checks whether predicate function `f` returns `true` for all arguments in
-`args...`, returning `false` as soon as possible (short-circuiting).
+Check whether predicate function `f` returns `true` for all arguments in `args...`,
+returning `false` as soon as possible (short-circuiting).
 
     allof(args...) -> Bool
 
-checks whether all arguments `args...` are `true`, returning `false` as soon as
-possible (short-circuiting). Arguments can be booleans or arrays of booleans.
-The latter are considered as `true` if all their elements are `true` and are
-considered as `false` otherwise (if any of their elements are `false`).
-Arguments can also be iterables to check whether all their values are `true`.
-An empty iterable is considered as `true`.
+Check whether all arguments `args...` are `true`, returning `false` as soon as possible
+(short-circuiting). Arguments can be booleans or arrays of booleans. The latter are
+considered as `true` if all their elements are `true` and are considered as `false`
+otherwise (if any of their elements are `false`). Arguments can also be iterators to check
+whether all their values are `true`. An empty iterable is considered as `true`.
 
-This method can be much faster than `all(f, args)` or `all(args)` because its
-result may be determined at compile time. However, `missing` values are not
-considered as special.
+This method can be much faster than `all(f, args)` or `all(args)` because its result may be
+determined at compile time. However, `missing` values are not considered as special.
 
 See also `all`, [`anyof`](@ref), [`noneof`](@ref).
 
@@ -84,21 +81,19 @@ end
 """
     anyof(f::Function, args...) -> bool
 
-checks whether predicate function `f` returns `true` for any argument
-`args...`, returning `true` as soon as possible (short-circuiting).
+Check whether predicate function `f` returns `true` for any argument `args...`, returning
+`true` as soon as possible (short-circuiting).
 
     anyof(args...) -> bool
 
-checks whether all arguments `args...` are `true`, returning `false` as soon as
-possible (short-circuiting). Arguments can be booleans or arrays of booleans.
-The latter are considered as `true` if any of their elements are `true` and are
-considered as `false` otherwise (if all their elements are `false`). Arguments
-can also be iterators to check whether any of their values are `true`. An empty
-iterable is considered as `false`.
+Check whether all arguments `args...` are `true`, returning `false` as soon as possible
+(short-circuiting). Arguments can be booleans or arrays of booleans. The latter are
+considered as `true` if any of their elements are `true` and are considered as `false`
+otherwise (if all their elements are `false`). Arguments can also be iterators to check
+whether any of their values are `true`. An empty iterable is considered as `false`.
 
-This method can be much faster than `any(f, args)` or `any(args)` because its
-result may be determined at compile time. However, `missing` values are not
-considered as special.
+This method can be much faster than `any(f, args)` or `any(args)` because its result may be
+determined at compile time. However, `missing` values are not considered as special.
 
 See also `any`, [`allof`](@ref), [`noneof`](@ref).
 
@@ -123,11 +118,11 @@ end
 """
     noneof(f::Function, args...) -> bool
 
-checks whether predicate `f` returns `false` for all argument `args...`, while
+Check whether predicate `f` returns `false` for all argument `args...`, while
 
     noneof(args...) -> bool
 
-checks whether all argument `args...` are false.
+Check whether all argument `args...` are false.
 
 See also `any`, [`allof`](@ref), [`noneof`](@ref).
 
@@ -137,9 +132,9 @@ See also `any`, [`allof`](@ref), [`noneof`](@ref).
 """
     reversemap(f, args)
 
-applies the function `f` to arguments `args` in reverse order and return the
-result. For now, the arguments `args` must be in the form of a simple tuple and
-the result is the tuple: `(f(args[end]),f(args[end-1]),...,f(args[1])`.
+Apply the function `f` to arguments `args` in reverse order and return the result. For now,
+the arguments `args` must be in the form of a simple tuple and the result is the tuple:
+`(f(args[end]),f(args[end-1]),...,f(args[1])`.
 
 Also see: `map`, `ntuple`.
 
@@ -151,11 +146,10 @@ reversemap(f, args::NTuple{N,Any}) where {N} =
     strictmap!(f, dst, src) -> dst
     strictmap!(dst, f, src) -> dst
 
-does `dst[i] = f(src[i])` for all indices `i` and returns `dst`. Arguments
-`dst` and `src` must have the same axes.
+Do `dst[i] = f(src[i])` for all indices `i` and returns `dst`. Arguments `dst` and `src`
+must have the same axes.
 
-Except for the strict condition on the axes, this method is similar to
-`map!(f,dst,src)`.
+Except for the strict condition on the axes, this method is similar to `map!(f,dst,src)`.
 
 """
 function strictmap!(f::Any,

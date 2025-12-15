@@ -7,10 +7,10 @@
 """
     bcastcopy(A, [T=eltype(A),] dims...)
 
-yields a new array of element type `T` and dimensions `dims` whose values are
-given by `A` according to type conversion and broadcasting rules (like for the
-`broadcast` method). Compared to [`bcastlazy`](@ref), it is guaranteed that the
-returned array does not share its content with `A`.
+Return a new array of element type `T` and dimensions `dims` whose values are given by `A`
+according to type conversion and broadcasting rules (like for the `broadcast` method).
+Compared to [`bcastlazy`](@ref), it is guaranteed that the returned array does not share its
+content with `A`.
 
 Argument `A` can be a scalar value or an array.
 
@@ -38,14 +38,13 @@ bcastcopy(A, dims::Integer...) =
 """
     bcastlazy(A, [T=eltype(A),] dims...)
 
-yields a *flat* array of type `T` and dimensions `dims` whose values are given
-by `A` according to type conversion and broadcasting rules (see `broadcast`
-method). Compared to [`bcastcopy`](@ref), making a copy of `A` is avoided if it
-is already an array with the correct type of elements and dimensions or if it
-can be reshaped (by the `reshape` method) to the correct type and dimensions.
-This means that the result may share the same content as `A`. Argument `A` can
-be a scalar or an array with 1-based indices. The result has 1-based indices
-and contiguous elements which is suitable for fast linear indexing.
+Return a *flat* array of type `T` and dimensions `dims` whose values are given by `A`
+according to type conversion and broadcasting rules (see `broadcast` method). Compared to
+[`bcastcopy`](@ref), making a copy of `A` is avoided if it is already an array with the
+correct type of elements and dimensions or if it can be reshaped (by the `reshape` method)
+to the correct type and dimensions. This means that the result may share the same content as
+`A`. Argument `A` can be a scalar or an array with 1-based indices. The result has 1-based
+indices and contiguous elements which is suitable for fast linear indexing.
 
 See also [`bcastcopy`](@ref), [`bcastsize`](@ref).
 
@@ -78,21 +77,20 @@ bcastlazy(A, dims::Integer...) =
     bcastlazy(A, dims)
 
 """
-    bcastsize(size(A), size(B), ...) -> siz
+    bcastsize(size(A), size(B), ...) -> dims
 
-yields the size `siz` of the array that would result from applying broadcasting
-rules (see `broadcast` method) to arguments `A`, `B`, etc. The result is a
-tuple of integers (of type `Int`). Call [`check_size`](@ref) if you want to
-also make sure that the result is a list of valid dimensions.
+Return the size `dims` of the array that would result from applying broadcasting rules (see
+`broadcast` method) to arguments `A`, `B`, etc. The result is a tuple of integers (of type
+`Int`). Call [`check_size`](@ref) if you want to also make sure that the result is a list of
+valid dimensions.
 
 The method can also be applied to a single dimension:
 
     bcastsize(a, b) -> c
 
-to yield the dimension `c` gievn by broadcasting dimensions `a` and `b`
-throwing an exception if dimensions are not compatible according to
-broadcasting rules. This is the same as `Base.Broadcasting._bcs1` but it takes
-care of converting to `Int`.
+to yield the dimension `c` given by broadcasting dimensions `a` and `b` throwing an
+exception if dimensions are not compatible according to broadcasting rules. This is the same
+as `Base.Broadcasting._bcs1` but it takes care of converting to `Int`.
 
 See also [`standard_size`](@ref), [`check_size`](@ref), [`bcastcopy`](@ref),
 [`bcastlazy`](@ref).

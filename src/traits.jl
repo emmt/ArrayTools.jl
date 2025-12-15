@@ -7,13 +7,11 @@
 """
     StorageType(A)
 
-yields the type of storage of the elements of argument `A`. If `A` is a *flat*
-array, that is an array with contiguous elements in column-major order and
-first element at index 1, the singleton `FlatStorage()` is returned; otherwise,
-the singleton `AnyStorage()` is returned.
+Return the type of storage of the elements of argument `A`. If `A` is a *flat* array, that
+is an array with contiguous elements in column-major order and first element at index 1, the
+singleton `FlatStorage()` is returned; otherwise, the singleton `AnyStorage()` is returned.
 
-This method can be extended for custom array types to quickly return the
-correct answer.
+This method can be extended for custom array types to quickly return the correct answer.
 
 See also [`is_flat_array`](@ref), [`to_flat_array`](@ref).
 
@@ -24,7 +22,7 @@ abstract type StorageType end
 """
     FlatStorage()
 
-yields the storage type of *flat* arrays. See [`StorageType`](@ref).
+Return the storage type of *flat* arrays. See [`StorageType`](@ref).
 
 """ FlatStorage
 
@@ -33,7 +31,7 @@ struct FlatStorage <: StorageType end
 """
     AnyStorage()
 
-yields the storage type of *non-flat* arrays. See [`StorageType`](@ref).
+Return the storage type of *non-flat* arrays. See [`StorageType`](@ref).
 
 """ AnyStorage
 
@@ -81,9 +79,9 @@ end
 """
     is_flat_array(A) -> boolean
 
-yields whether array `A` can be indexed as a *flat* array, that is an array
-with contiguous elements in column-major order and first element at index 1.
-This also means that `A` has 1-based indices along all its dimensions.
+Return whether array `A` can be indexed as a *flat* array, that is an array with contiguous
+elements in column-major order and first element at index 1. This also means that `A` has
+1-based indices along all its dimensions.
 
 Several arguments can be checked in a single call:
 
@@ -93,8 +91,8 @@ is the same as:
 
     is_flat_array(A) && is_flat_array(B) && is_flat_array(C) && ...
 
-See also [`StorageType`](@ref), [`to_flat_array`](@ref),
-[`is_fast_array`](@ref), [`has_standard_indexing`](@ref).
+See also [`StorageType`](@ref), [`to_flat_array`](@ref), [`is_fast_array`](@ref),
+[`has_standard_indexing`](@ref).
 
 """
 is_flat_array() = false
@@ -107,20 +105,19 @@ _is_flat_array(::StorageType) = false
 #
 #     is_flat_array(args...) = all(is_flat_array, args)
 #
-# but using `all(is_flat_array, A, x, y)` for `A`, `x` and `y` flat arrays of
-# sizes (3,4,5,6), (5,6) and (3,4) takes 9.0ns with Julia 1.0 (29.1ns with
-# Julia 0.6) while using `allof` takes 0.02ns (i.e. is eliminated by the
-# compiler).
+# but using `all(is_flat_array, A, x, y)` for `A`, `x` and `y` flat arrays of sizes
+# (3,4,5,6), (5,6) and (3,4) takes 9.0ns with Julia 1.0 (29.1ns with Julia 0.6) while using
+# `allof` takes 0.02ns (i.e. is eliminated by the compiler).
 #
 
 """
     to_flat_array([T=eltype(A),] A)
 
-lazily yields a *flat* array based on `A`, that is an array with contiguous
-elements in column-major order and first element at index 1. Optional argument
-`T` is to specify the element type of the result. Argument `A` is returned if
-it is already a flat array with the requested element type; otherwise,
-`convert` method is called to produce the result (an `Array{T}` in that case).
+Lazily yields a *flat* array based on `A`, that is an array with contiguous elements in
+column-major order and first element at index 1. Optional argument `T` is to specify the
+element type of the result. Argument `A` is returned if it is already a flat array with the
+requested element type; otherwise, `convert` method is called to produce the result (an
+`Array{T}` in that case).
 
 See also [`is_flat_array`](@ref), [`to_fast_array`](@ref).
 
@@ -138,13 +135,11 @@ _to_flat_array(::StorageType, ::Type{T}, A::AbstractArray{<:Any,N}) where {T,N} 
 """
     IndexingType(A)
 
-yields one of the singletons `FastIndexing()` or `AnyIndexing()` to indicate
-whether or not array `A` has standard 1-based indices and can be efficiently
-indexed by one integer (even if `A` is multidimensional) and column-major
-ordering is used to access the elements of `A`.
+Return one of the singletons `FastIndexing()` or `AnyIndexing()` to indicate whether or not
+array `A` has standard 1-based indices and can be efficiently indexed by one integer (even
+if `A` is multidimensional) and column-major ordering is used to access the elements of `A`.
 
-This method can be extended for custom array types to quickly return the
-correct answer.
+This method can be extended for custom array types to quickly return the correct answer.
 
 See also [`is_fast_array`](@ref), [`to_fast_array`](@ref).
 
@@ -155,7 +150,7 @@ abstract type IndexingType end
 """
     FastIndexing()
 
-yields the indexing type of *fast* arrays. See [`IndexingType`](@ref).
+Return the indexing type of *fast* arrays. See [`IndexingType`](@ref).
 
 """ FastIndexing
 
@@ -164,7 +159,7 @@ struct FastIndexing <: IndexingType end
 """
     AnyIndexing()
 
-yields the indexing type of *non-fast* arrays. See [`IndexingType`](@ref).
+Return the indexing type of *non-fast* arrays. See [`IndexingType`](@ref).
 
 """ AnyIndexing
 
@@ -179,8 +174,8 @@ IndexingType(A::AbstractArray) =
 """
     is_fast_array(A)
 
-yields whether array `A` has standard 1-based indices and is efficiently
-indexed by linear indices.
+Return whether array `A` has standard 1-based indices and is efficiently indexed by linear
+indices.
 
 Several arguments can be checked in a single call:
 
@@ -190,8 +185,7 @@ is the same as:
 
     is_fast_array(A) && is_fast_array(B) && is_fast_array(C) && ...
 
-See also [`IndexingType`](@ref), [`to_fast_array`](@ref),
-[`is_flat_array`](@ref).
+See also [`IndexingType`](@ref), [`to_fast_array`](@ref), [`is_flat_array`](@ref).
 
 """
 is_fast_array() = false
@@ -203,13 +197,12 @@ _is_fast_array(::AnyIndexing) = false
 """
     to_fast_array([T=eltype(A),] A)
 
-lazily yields a *fast array* equivalent to `A` with element type `T`. A *fast
-array* has standard 1-based indices and is efficiently indexed by linear
-indices. If `A` is already a *fast array* with element type `T`, `A` is
-returned; otherwise, `A` is converted into an `Array` which is returned.
+Lazily yields a *fast array* equivalent to `A` with element type `T`. A *fast array* has
+standard 1-based indices and is efficiently indexed by linear indices. If `A` is already a
+*fast array* with element type `T`, `A` is returned; otherwise, `A` is converted into an
+`Array` which is returned.
 
-See also [`is_fast_array`](@ref), [`IndexingType`](@ref),
-[`to_flat_array`](@ref).
+See also [`is_fast_array`](@ref), [`IndexingType`](@ref), [`to_flat_array`](@ref).
 
 """
 to_fast_array(A::AbstractArray) = to_fast_array(eltype(A), A)

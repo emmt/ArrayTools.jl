@@ -14,10 +14,10 @@ export
 """
     PseudoArray{T,N,S}
 
-is the type abstract to be derived by types that wrap a *parent* array-like
-object and extend the abstract array API to access this object. Parameter `T`
-is the element type, parameter `N` is the number of dimensions and parameter
-`S` is the index style: `IndexCartesian` or `IndexLinear`.
+Abstract type inherited by types that wrap a *parent* array-like object and extend the
+abstract array API to access this object. Parameter `T` is the element type, parameter `N`
+is the number of dimensions and parameter `S` is the index style: `IndexCartesian` or
+`IndexLinear`.
 
 Usage can be as simple as:
 
@@ -29,15 +29,13 @@ Usage can be as simple as:
     @inline Base.parent(A::CustomArray) = A.arr
 
 As a result, instances of `CustomArray{T,N}` will be seen as instances of
-`AbstractArray{T,N}` and behave as if they implement linear indexing. Apart
-from the needs to extend the `Base.parent` method, the interface to
-`LinearArray{T,N}` should provide any necessary methods for indexation, getting
-the dimensions, the element type, *etc.* for the derived custom type. You may
-however override these definitions by more optimized or more suitable methods
-specialized for your custom array-like type.
+`AbstractArray{T,N}` and behave as if they implement linear indexing. Apart from the needs
+to extend the `Base.parent` method, the interface to `LinearArray{T,N}` should provide any
+necessary methods for indexation, getting the dimensions, the element type, *etc.* for the
+derived custom type. You may however override these definitions by more optimized or more
+suitable methods specialized for your custom array-like type.
 
-The following base methods are extended for pseudo-arrays `A` of type
-`PseudoArray{T,N,S}`:
+The following base methods are extended for pseudo-arrays `A` of type `PseudoArray{T,N,S}`:
 
 - `Base.length(A)`, `Base.size(A[,d])`, `Base.axes(A[,d])`, and `Base.axes1(A)`.
 

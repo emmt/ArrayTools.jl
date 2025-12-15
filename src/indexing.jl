@@ -7,8 +7,7 @@
 """
     @assert_same_axes A B ...
 
-throws a `DimensionMismatch` exception if arrays `A`, `B`, etc. do not have the
-same axes.
+Throw a `DimensionMismatch` exception if arrays `A`, `B`, etc. do not have the same axes.
 
 """
 macro assert_same_axes(syms::Symbol...)
@@ -41,10 +40,9 @@ end
 """
     ArraySize
 
-is the union of types eligible to define array size. Calling
-`as_array_size(dims)` on any argument `dims` such that `isa(dims,ArraySize)` is
-true yields an array size in canonical form, that is an instance of `Dims{N}`
-which is an alias for an `N`-tuple of `Int`.
+Union of types eligible to define array size. Calling `as_array_size(dims)` on any argument
+`dims` such that `isa(dims,ArraySize)` is true yields an array size in canonical form, that
+is an instance of `Dims{N}` which is an alias for an `N`-tuple of `Int`.
 
 """
 const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
@@ -52,7 +50,7 @@ const ArraySize = Union{Integer,Tuple{Vararg{Integer}}}
 """
     to_size(args)
 
-yields `args` converted in a canonic list of array dimension lengths.
+Return `args` converted in a canonical list of array dimension lengths.
 
 !!! warning
     This function has been deprecated, use `as_array_size` instead.
@@ -64,11 +62,11 @@ function to_size end
 """
     MaybeArrayAxis
 
-is the union of types of arguments eligible to define an array axis. This alias
-is identical to [`IndexRange`](@ref) but has a different purpose.
+Union of types of arguments eligible to define an array axis. This alias is identical to
+[`IndexRange`](@ref) but has a different purpose.
 
-Calling `as_array_axis(x::MaybeArrayAxis)` is guaranteed to yield an instance
-of `ArrayAxis`.
+Calling `as_array_axis(x::MaybeArrayAxis)` is guaranteed to yield an instance of
+`ArrayAxis`.
 
 """
 const MaybeArrayAxis = Union{Integer,AbstractUnitRange{<:Integer}}
@@ -76,9 +74,9 @@ const MaybeArrayAxis = Union{Integer,AbstractUnitRange{<:Integer}}
 """
     IndexRange
 
-is the union of types that can define a range of indices along a single
-dimension of an array, that is integers and integer-valued unit ranges. This
-alias is identical to [`MaybeArrayAxis`](@ref) but has a different purpose.
+Union of types that can define a range of indices along a single dimension of an array, that
+is integers and integer-valued unit ranges. This alias is identical to
+[`MaybeArrayAxis`](@ref) but has a different purpose.
 
 """
 const IndexRange = Union{Integer,AbstractUnitRange{<:Integer}}
@@ -86,7 +84,7 @@ const IndexRange = Union{Integer,AbstractUnitRange{<:Integer}}
 """
     to_axis(arg)
 
-yields `arg` converted into an array axis.
+Return `arg` converted into an array axis.
 
 !!! warning
     This function has been deprecated, use `as_array_axis` instead.
@@ -98,11 +96,10 @@ function to_axis end
 """
     MaybeArrayAxes{N}
 
-is the type of arguments eligible to specify array axes, that is an `N`-tuple
-of `MaybeArrayAxis`.
+Type of arguments eligible to specify array axes, that is an `N`-tuple of `MaybeArrayAxis`.
 
-Calling `as_array_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance
-of `ArrayAxes{N}`.
+Calling `as_array_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance of
+`ArrayAxes{N}`.
 
 """
 const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
@@ -110,7 +107,7 @@ const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
 """
     to_axes(args)
 
-yields `args` converted in a canonic list of array axes.
+Return `args` converted in a canonical list of array axes.
 
 !!! warning
     This function has been deprecated, use `as_array_axes` instead.
@@ -125,8 +122,8 @@ const PlusMinus = Union{typeof(+),typeof(-)}
 """
     standard_size(A) -> size(A)
 
-yields the list of dimensions of `A`, that is `size(A)`, throwing an
-`ArgmentError` exception if `A` does not have standard 1-based indices.
+Return the list of dimensions of `A`, that is `size(A)`, throwing an `ArgumentError`
+exception if `A` does not have standard 1-based indices.
 
 See also [`has_standard_indexing`](@ref), [`same_standard_size`](@ref).
 
@@ -142,11 +139,10 @@ end
 """
     same_standard_size(A, B...) -> size(A)
 
-checks whether arrays `A`, `B`, etc., all have standard indexing and the same
-size which is returned. If array sizes are not all identical, a
-`DimensionMismatch` exception is thrown. If arrays have non-standard indexing
-(that is indices not starting at index one), an `ArgumentError` exception is
-thrown.
+Check whether arrays `A`, `B`, etc., all have standard indexing and the same size which is
+returned. If array sizes are not all identical, a `DimensionMismatch` exception is thrown.
+If arrays have non-standard indexing (that is indices not starting at index one), an
+`ArgumentError` exception is thrown.
 
 See also [`standard_size`](@ref), [`has_standard_indexing`](@ref).
 
@@ -161,8 +157,8 @@ end
 """
     same_size(A, B...) -> size(A)
 
-checks whether arrays `A`, `B`, etc., all have the same size which is returned.
-A `DimensionMismatch` exception is thrown if array sizes are not all identical.
+Check whether arrays `A`, `B`, etc., all have the same size which is returned. A
+`DimensionMismatch` exception is thrown if array sizes are not all identical.
 
 See also [`same_standard_size`](@ref), [`same_axes`](@ref).
 
@@ -180,7 +176,7 @@ end
 """
     same_axes(A, B...) -> axes(A)
 
-checks whether arrays `A`, `B`, etc., have the same axes and returns them. A
+Check whether arrays `A`, `B`, etc., have the same axes and returns them. A
 `DimensionMismatch` exception is thrown if axes are not all identical.
 
 See also [`same_size`](@ref), [`all_indices`](@ref).
@@ -197,11 +193,11 @@ end
     throw(DimensionMismatch("arrays must have same indices"))
 
 """
-     check_size(dims) -> len
+    check_size(dims) -> len
 
-checks the validity of the array size `dims` and yields the corresponding number
-of elements (throwing an `ArgumentError` exception if this is not the case). To
-be a valid array size, the values of `dims` must all be nonnegative.
+Checks the validity of the array size `dims` and yields the corresponding number of elements
+(throwing an `ArgumentError` exception if this is not the case). To be a valid array size,
+the values of `dims` must all be nonnegative.
 
 """
 check_size(dim::Integer) =
@@ -218,10 +214,10 @@ function check_size(dims::NTuple{N,Integer}) where {N}
 end
 
 """
-    has_standard_indexing(A)
+    has_standard_indexing(A) -> bool
 
-return `true` if the indices of `A` start with 1 along all axes. Can be called
-with multiple arguments:
+Return whether the indices of `A` start with 1 along all axes. Can be called with multiple
+arguments:
 
     has_standard_indexing(A, B, ...)
 
@@ -229,8 +225,8 @@ is equivalent to:
 
     has_standard_indexing(A) && has_standard_indexing(B) && ...
 
-Opposite of `Base.has_offset_axes` which is not available in version of Julia
-older than 0.7.
+Opposite of `Base.has_offset_axes` which is not available in version of Julia older than
+0.7.
 
 """
 has_standard_indexing(arg) = allof(x -> first(x) == 1, axes(arg)...)
@@ -247,11 +243,10 @@ has_standard_indexing(::Tuple) = true
     cartesian_indices(CartesianIndex(i1, i2, ...), CartesianIndex(j1, j2, ...))
     cartesian_indices(R)
 
-all yield an instance of `CartesianIndices` suitable for multi-dimensional
-indexing of respectively: all the indices of array `A`, a multi-dimensional
-array of dimensions `(n1,n2,...)`, a multi-dimensional region whose first and
-last indices are `(i1,i2,...)` and `(j1,j2,...)` or a Cartesian region defined
-by `R`, an instance of `CartesianIndices`.
+Return an instance of `CartesianIndices` suitable for multi-dimensional indexing of
+respectively: all the indices of array `A`, a multi-dimensional array of dimensions
+`(n1,n2,...)`, a multi-dimensional region whose first and last indices are `(i1,i2,...)` and
+`(j1,j2,...)` or a Cartesian region defined by `R`, an instance of `CartesianIndices`.
 
 """
 cartesian_indices(A::AbstractArray) = cartesian_indices(axes(A))
@@ -263,12 +258,11 @@ end
 cartesian_indices(inds::MaybeArrayAxis...) = cartesian_indices(inds)
 cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(as_array_axes(inds))
 
-# The following, would yield an `AbstractUnitRange` if a single argument is
-# provided that is an integer or a range (not a tuple). This lead to
-# ambiguities so it is has been disabled. The rules are that (i) an array
-# argument (including a range) yields the indices for this array, (ii) a tuple
-# of dimensions, a tuple of unit ranges or a pair of `CartesianIndices` yields
-# the indices of the Cartesian region defined by these arguments.
+# The following, would yield an `AbstractUnitRange` if a single argument is provided that is
+# an integer or a range (not a tuple). This lead to ambiguities so it is has been disabled.
+# The rules are that (i) an array argument (including a range) yields the indices for this
+# array, (ii) a tuple of dimensions, a tuple of unit ranges or a pair of `CartesianIndices`
+# yields the indices of the Cartesian region defined by these arguments.
 #
 #cartesian_indices(dim::Int) = Base.OneTo(dim)
 #cartesian_indices(dim::Integer) = Base.OneTo(to_int(dim))
@@ -278,10 +272,9 @@ cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(as_array_axes(inds))
 """
     axis_limits(I) = (i0,i1)
 
-yields the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and
-such that `i0:i1` represents the same indices as `I` (although not in the same
-order if `step(I) < 0`). If `step(I)` is not equal to ±1, an `ArgumentError`
-exception is thrown.
+Return the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and such that
+`i0:i1` represents the same indices as `I` (although not in the same order if `step(I) <
+0`). If `step(I)` is not equal to ±1, an `ArgumentError` exception is thrown.
 
 """
 axis_limits(I::AbstractUnitRange{<:Integer}) =
@@ -300,31 +293,30 @@ Assuming `A` and `B` are arrays with `N` dimensions:
 
     common_indices(A, B) -> inds
 
-yields the set of all the indices that are valid for both `A` and `B`. The
-result is similar to `axes(A)` or `axes(B)`, that is an `N`-tuple of integer
-valued unit ranges.
+yields the set of all the indices that are valid for both `A` and `B`. The result is similar
+to `axes(A)` or `axes(B)`, that is an `N`-tuple of integer valued unit ranges.
 
 An offset `k` with a sign may be specified:
 
     common_indices(A, B, ±, k)
 
-to obtain the set of all indices `i` such that `A[i]` and `B[i ± k]` are valid
-and where here and above `±` is either `+` or `-`. Offset `k` can be a tuple of
-integers or a Cartesian index.
+to obtain the set of all indices `i` such that `A[i]` and `B[i ± k]` are valid and where
+here and above `±` is either `+` or `-`. Offset `k` can be a tuple of integers or a
+Cartesian index.
 
-Arguments `A` and `B` may be both tuples of indices or index ranges or both
-scalar or index range which specify the size or the axes of the arrays to be
-indexed. This is used in the following example, where we want to do `A[i] =
-B[i]*C[i + k]` given the offset `k` and for all valid indices `i`:
+Arguments `A` and `B` may be both tuples of indices or index ranges or both scalar or index
+range which specify the size or the axes of the arrays to be indexed. This is used in the
+following example, where we want to do `A[i] = B[i]*C[i + k]` given the offset `k` and for
+all valid indices `i`:
 
     I = common_indices(same_axes(A, B), axes(C), +, k)
     @inbounds @simd for i in CartesianIndices(I)
        A[i] = B[i]*C[i + k]
     end
 
-Note that `same_axes(A,B)` is called to get the axes of `A` and `B` while
-asserting that they are the same, as a result no bound checking is necessary
-and the loop can be optimized for vectorization.
+Note that `same_axes(A,B)` is called to get the axes of `A` and `B` while asserting that
+they are the same, as a result no bound checking is necessary and the loop can be optimized
+for vectorization.
 
 """ common_indices
 
@@ -453,17 +445,16 @@ end
 """
     all_indices(A...)
 
-yields an iterable object for visiting each index of array(s) `A` in an
-efficient manner. For array types that have opted into fast linear indexing
-(like `Array`), this is simply the range `1:length(A)`. For other array types,
-return a specialized Cartesian range to efficiently index into the array(s)
-with indices specified for every dimension.
+yields an iterable object for visiting each index of array(s) `A` in an efficient manner.
+For array types that have opted into fast linear indexing (like `Array`), this is simply the
+range `1:length(A)`. For other array types, return a specialized Cartesian range to
+efficiently index into the array(s) with indices specified for every dimension.
 
-If more than one `AbstractArray` argument are supplied, `all_indices` will
-create an iterable object that is fast for all arguments (a `UnitRange` if all
-inputs have fast linear indexing, a `CartesianIndices` otherwise). A
-`DimensionMismatch` exception is thrown if the arrays have different axes so
-that it is always safe to use `@inbounds` in front of a loop like:
+If more than one `AbstractArray` argument are supplied, `all_indices` will create an
+iterable object that is fast for all arguments (a `UnitRange` if all inputs have fast linear
+indexing, a `CartesianIndices` otherwise). A `DimensionMismatch` exception is thrown if the
+arrays have different axes so that it is always safe to use `@inbounds` in front of a loop
+like:
 
    for i in all_indices(A, B, C, D)
        A[i] = B[i]*C[i] + D[i]
@@ -471,10 +462,10 @@ that it is always safe to use `@inbounds` in front of a loop like:
 
 when `A`, `B` etc. are all (abstract) arrays.
 
-This method is similar to `eachindex` except that a `DimensionMismatch`
-exception is thrown if arrays have different axes. For linearly indexed arrays,
-`eachindex` only checks that they have the same linear index range (that is the
-same number of elements, not the same shape).
+This method is similar to `eachindex` except that a `DimensionMismatch` exception is thrown
+if arrays have different axes. For linearly indexed arrays, `eachindex` only checks that
+they have the same linear index range (that is the same number of elements, not the same
+shape).
 
 """ all_indices
 

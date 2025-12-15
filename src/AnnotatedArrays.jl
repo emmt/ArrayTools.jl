@@ -1,8 +1,8 @@
 #
 # AnnotatedArrays.jl -
 #
-# Objects that combine values stored in an array and properties stored in a
-# dictionary or a named tuple.
+# Objects that combine values stored in an array and properties stored in a dictionary or a
+# named tuple.
 #
 
 module AnnotatedArrays
@@ -21,17 +21,16 @@ end
 
 """
 
-`AnnotatedArrays.Properties` is the union of allowed types to store the
-properties of `AnnotatedArray` instances. It can be a `NamedTuple`, a
-dictionary with symbolic keys or a dictionary indexed by strings. The former
-case provides the fastest access to properties but they are immutable, the
-latter case provides the slowest access to properties.
+`AnnotatedArrays.Properties` is the union of allowed types to store the properties of
+`AnnotatedArray` instances. It can be a `NamedTuple`, a dictionary with symbolic keys, or a
+dictionary indexed by strings. The former case provides the fastest access to properties but
+they are immutable, the latter case provides the slowest access to properties.
 
-If other types that symbols or strings are allowed, they must be restricted to
-avoid ambiguities with array indices (and ranges, etc.).
+If other types that symbols or strings are allowed, they must be restricted to avoid
+ambiguities with array indices (and ranges, etc.).
 
-For symbolic properties names (stored by a `NamedTuple` or an
-`AbstractDict{Symbol}`), the properties can be accessed like ordinary fields.
+For symbolic properties names (stored by a `NamedTuple` or an `AbstractDict{Symbol}`), the
+properties can be accessed like ordinary fields.
 
 """
 const Properties = Union{AbstractDict,NamedTuple}
@@ -39,33 +38,30 @@ const SymbolicProperties = Union{AbstractDict{Symbol},NamedTuple}
 
 """
 
-`AbstractAnnotatedArray{T,N,P,S}` is the super-type of annotated arrays which
-store values of type `T` as in a `N`-dimensional array with indexing style `S`
-and properties in an object of type `P` (a dictionary or a named tuple).
+`AbstractAnnotatedArray{T,N,P,S}` is the super-type of annotated arrays which store values
+of type `T` as in a `N`-dimensional array with indexing style `S` and properties in an
+object of type `P` (a dictionary or a named tuple).
 
 Two useful aliases are defined:
 
-- `DynamicallyAnnotatedArray{T,N,K,V,S}` for annotated arrays whose properties
-  can be modified because they are stored in a dictionary with key type `K` and
-  value type `V`.
+- `DynamicallyAnnotatedArray{T,N,K,V,S}` for annotated arrays whose properties can be
+  modified because they are stored in a dictionary with key type `K` and value type `V`.
 
-- `StaticallyAnnotatedArray{T,N,S}` for annotated arrays which have immutable
-  properties (because they are stored in a named tuple). To build such
-  annotated arrays, provide a named tuple as the last argument of the
-  `AnnotatedArray` constructor:
+- `StaticallyAnnotatedArray{T,N,S}` for annotated arrays which have immutable properties
+  (because they are stored in a named tuple). To build such annotated arrays, provide a
+  named tuple as the last argument of the `AnnotatedArray` constructor:
 
   ```julia
   A = AnnotatedArray(arr, (key=val,))
   B = AnnotatedArray{T}(undef, (dim1, dim2, ...), (key1=val1, key2=val2, ...))
   ```
 
-  Do not forget to have a trailing comma if the named tuple has a single
-  element (as for `A` in the above example).
+  Do not forget to have a trailing comma if the named tuple has a single element (as for `A`
+  in the above example).
 
-The abstract type `AbstractAnnotatedArray{T,N,P,S}` is defined (but not
-exported by `AnnotatedArrays`) so that other types than `AnnotatedArray` can be
-derived with similar behavior. For derived types, say `CustomType`, two methods
-should be specialized:
+The abstract type `AbstractAnnotatedArray{T,N,P,S}` is defined (but not exported by
+`AnnotatedArrays`) so that other types than `AnnotatedArray` can be derived with similar
+behavior. For derived types, say `CustomType`, two methods should be specialized:
 
 ```julia
 using ArrayTools.AnnotatedArrays
@@ -107,8 +103,8 @@ struct AnnotatedArray{T,N,P<:Properties,
     end
 end
 
-# As expected by the PseudoArray interface, extend Base.parent() to return the
-# array backing the storage of values.
+# As expected by the PseudoArray interface, extend Base.parent() to return the array backing
+# the storage of values.
 @inline Base.parent(A::AnnotatedArray) = Base.getfield(A, :data)
 
 # Generic outer constructor with given data and properties.
@@ -118,8 +114,8 @@ function AnnotatedArray(data::A, prop::P) where {T,N,P<:Properties,
     return AnnotatedArray{T,N,P,A,S}(data, prop)
 end
 
-# Get rid of matching type-parameter when initial array is specified. The
-# pairs of definitions are needed to disentangle ambiguities.
+# Get rid of matching type-parameter when initial array is specified. The pairs of
+# definitions are needed to disentangle ambiguities.
 AnnotatedArray{T,N}(data::AbstractArray{T,N}, args...; kwds...) where {T,N} =
     AnnotatedArray(data, args...; kwds...)
 AnnotatedArray{T,N}(data::AbstractArray{T,N}; kwds...) where {T,N} =
@@ -133,12 +129,11 @@ AnnotatedArray{T}(data::AbstractArray{T}; kwds...) where {T} =
 AnnotatedArray(data::AbstractArray; kwds...) =
     AnnotatedArray(data, Dict{Symbol,Any}(kwds...))
 
-# Constructors with initial array and initial properties specified as key-value
-# pairs. When initial properties are specified as key-value pairs, we want to
-# have a dictionary whose key type is specialized if possible (for efficiency)
-# but avoid having value type specialized (for flexibility). If one wants
-# specific properties key and value types, it is always possible to explicitly
-# specify a dictionary.
+# Constructors with initial array and initial properties specified as key-value pairs. When
+# initial properties are specified as key-value pairs, we want to have a dictionary whose
+# key type is specialized if possible (for efficiency) but avoid having value type
+# specialized (for flexibility). If one wants specific properties key and value types, it is
+# always possible to explicitly specify a dictionary.
 AnnotatedArray(data::AbstractArray, args::Pair{K,<:Any}...) where {K} =
     AnnotatedArray(data, Dict{K,Any}(args...))
 AnnotatedArray(data::AbstractArray, args::Pair{<:AbstractString,<:Any}...) =
@@ -149,8 +144,8 @@ AnnotatedArray(data::AbstractArray, args::Pair...) =
 _initialproperties(prop::Dict{K,Any}) where {K} = prop
 _initialproperties(prop::Dict{K}) where {K} = convert(Dict{K,Any}, prop)
 
-# Constructors that allocate the initial array. If only keywords are
-# specified, the dimensions of the array may be provided by integer arguments.
+# Constructors that allocate the initial array. If only keywords are specified, the
+# dimensions of the array may be provided by integer arguments.
 AnnotatedArray{T,N}(init::UndefInitializer, dims::Integer...; kwds...) where {T,N} =
     AnnotatedArray{T,N}(init, dims; kwds...)
 AnnotatedArray{T}(init::UndefInitializer, dims::Integer...; kwds...) where {T} =
@@ -177,8 +172,7 @@ properties(A::AnnotatedArray) = Base.getfield(A, :prop)
 """
     properties(A::Type{<:AnnotatedArray})
 
-Return the type of the property object associated with an annotated array of
-type `A`.
+Return the type of the property object associated with an annotated array of type `A`.
 
 """
 properties(::Type{A}) where {T,N,P,A<:AnnotatedArray{T,N,P}} = P
@@ -189,9 +183,9 @@ properties(::Type{A}) where {T,N,P,A<:AnnotatedArray{T,N,P}} = P
 propertyname(T, sym)
 ```
 
-converts symbol `sym` to a suitable key for an instance of an annotated array
-of type `T` (a sub-type of `AbstractAnnotatedArray`), throwing an error if this
-conversion is not supported.
+converts symbol `sym` to a suitable key for an instance of an annotated array of type `T` (a
+sub-type of `AbstractAnnotatedArray`), throwing an error if this conversion is not
+supported.
 
 """
 propertyname(::Type{<:DynamicallyAnnotatedArray{<:Any,<:Any,Symbol}}, sym::Symbol) = sym
@@ -201,8 +195,8 @@ propertyname(::Type{<:DynamicallyAnnotatedArray{<:Any,<:Any,String}}, sym::Symbo
 @noinline propertyname(::Type{T}, sym::Symbol) where {T<:AbstractAnnotatedArray} =
     error(string("converting symbolic key to ", keytype(T), " is not supported"))
 
-# FIXME: The following specialized method extensions are omitted because
-#        `obj.key` is much slower than `obj[key]`
+# FIXME: The following specialized method extensions are omitted because `obj.key` is much
+#        slower than `obj[key]`
 #
 #propertyname(::Type{<:DynamicallyAnnotatedArray{<:Any,<:Any,String}}, sym::Symbol) =
 #    String(sym)
@@ -228,23 +222,21 @@ Base.propertynames(A::StaticallyAnnotatedArray, private::Bool=false) =
     propertynames(properties(A), private)
 
 # FIXME: Should return `Tuple(keys(properties(A)))` to conform to the doc. of
-#        `propertynames` but this is slower and for most purposes, an iterable
-#        is usually needed.
+#        `propertynames` but this is slower and for most purposes, an iterable is usually
+#        needed.
 Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) =
     keys(properties(A))
-
 
 #
 # Notes:
 #
-# * keytype() and valtype() do not take NamedTuple as argument. So to avoid
-#   type-piracy, we define our own keytype() and keytype() methods and just
-#   override Base.keytype() and Base.valtype() for AbstractAnnotatedArray.
+# * keytype() and valtype() do not take NamedTuple as argument. So to avoid type-piracy, we
+#   define our own keytype() and keytype() methods and just override Base.keytype() and
+#   Base.valtype() for AbstractAnnotatedArray.
 #
-# * The following methods to determine the result of valtype() for a named
-#   tuple should cover most of the needs. Maybe we should use the same
-#   algorithm as the one used by dictionary constructors to determine the value
-#   type.
+# * The following methods to determine the result of valtype() for a named tuple should
+#   cover most of the needs. Maybe we should use the same algorithm as the one used by
+#   dictionary constructors to determine the value type.
 #
 keytype(x) = Base.keytype(x) # use Base definition by default
 
@@ -271,13 +263,10 @@ Base.valtype(::T) where {T<:AbstractAnnotatedArray} = valtype(T)
 Base.valtype(::Type{T}) where {T<:AbstractAnnotatedArray} = valtype(T)
 
 """
+    nkeys(A)
 
-```julia
-nkeys(A)
-```
-
-yields the number of keys in the dictionary `A` or in the dictionary associated
-with `A` if it is an instance of `AttributeArray`.
+Return the number of keys in the dictionary `A` or in the dictionary associated with `A` if
+it is an instance of `AttributeArray`.
 
 """
 nkeys(A::AbstractAnnotatedArray) = nkeys(properties(A))
