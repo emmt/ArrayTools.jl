@@ -270,6 +270,13 @@ Base.getkey(A::DynamicallyAnnotatedArray, key, def) = getkey(properties(A), key,
 Base.getkey(A::StaticallyAnnotatedArray, key::Symbol, def) = (haskey(A, key) ? key : def)
 Base.getkey(A::StaticallyAnnotatedArray, key, def) = def
 
+for T in (:CartesianIndex, :Integer, :(Tuple{}), :(Tuple{Vararg{Int}}), :AbstractRange,
+          :(Union{Tuple{Vararg{Union{AbstractVector{Int}, AbstractRange}}},AbstractVector{<:AbstractVector{Int}}}))
+    @eval begin
+        Base.get(A::DynamicallyAnnotatedArray, key::$T, def) = get(parent(A), key, def)
+        Base.get(A::StaticallyAnnotatedArray, key::$T, def) = get(parent(A), key, def)
+    end
+end
 Base.get(A::DynamicallyAnnotatedArray, key, def) = get(properties(A), key, def)
 Base.get(A::StaticallyAnnotatedArray, key::Symbol, def) = get(properties(A), key, def)
 Base.get(A::StaticallyAnnotatedArray, key, def) = def
