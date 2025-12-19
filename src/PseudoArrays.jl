@@ -39,11 +39,11 @@ The following base methods are extended for pseudo-arrays `A` of type `PseudoArr
 
 - `Base.length(A)`, `Base.size(A[,d])`, `Base.axes(A[,d])`, and `Base.axes1(A)`.
 
-- `Base.getindex(A,i)` and `Base.setindex!(A,i)` for `i` of type `Int` if
-  `S` is `IndexLinear`, of type `Vararg{Int,N}` otherwise.
+- `Base.getindex(A,i)` and `Base.setindex!(A,i)` for `i` of type `Int` if `S` is
+  `IndexLinear`, of type `Vararg{Int,N}` otherwise.
 
-- `Base.iterate(A,state)` if `S` is `IndexLinear`; otherwise the default
-  definition of `Base.iterate` is used.
+- `Base.iterate(A,state)` if `S` is `IndexLinear`; otherwise the default definition of
+  `Base.iterate` is used.
 
 
 # See also
@@ -56,7 +56,7 @@ abstract type PseudoArray{T,N,S<:IndexStyle} <: AbstractArray{T,N} end
 """
     const CartesianArray{T,N} = PseudoArray{T,N,IndexCartesian}
 
-is an alias to pseudo-arrays with Cartesian indexing.
+Alias to pseudo-arrays with Cartesian indexing.
 
 # See also
 
@@ -68,7 +68,7 @@ const CartesianArray{T,N} = PseudoArray{T,N,IndexCartesian}
 """
     const LinearArray{T,N} = PseudoArray{T,N,IndexLinear}
 
-is an alias to pseudo-arrays with linear indexing.
+Alias to pseudo-arrays with linear indexing.
 
 # See also
 
@@ -86,10 +86,10 @@ Base.axes(A::PseudoArray, d) = axes(parent(A), d)
 @inline Base.axes1(A::PseudoArray) = Base.axes1(parent(A))
 @inline Base.IndexStyle(::Type{<:PseudoArray{T,N,S}}) where {T,N,S} = S()
 Base.parent(A::T) where {T<:PseudoArray} =
-    error("method `parent(A::T)` must be extended for instances of `$T`")
+    error("method `parent(A)` must be extended for instances `A` of type `$T`")
 
 # Make LinearArray instances efficient iterators.
-@inline Base.iterate(A::LinearArray, i=1) =
+@inline Base.iterate(A::LinearArray, i::Int = 1) =
     ((i % UInt) - 1 < length(A) ? (@inbounds A[i], i + 1) : nothing)
 
 @inline function Base.getindex(A::LinearArray{T,N}, i::Int) where {T,N}

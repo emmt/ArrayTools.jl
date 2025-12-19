@@ -20,27 +20,34 @@ if isdefined(Base, :hasproperty)
 end
 
 """
+    AnnotatedArrays.Properties
 
-`AnnotatedArrays.Properties` is the union of allowed types to store the properties of
-`AnnotatedArray` instances. It can be a `NamedTuple`, a dictionary with symbolic keys, or a
-dictionary indexed by strings. The former case provides the fastest access to properties but
-they are immutable, the latter case provides the slowest access to properties.
+Union of allowed types to store the properties of `AnnotatedArray` instances. It can be a
+`NamedTuple` or a dictionary. A named tuple provides the fastest access to properties but
+these properties are immutable, a dictionary is more flexible but slower.
 
-If other types that symbols or strings are allowed, they must be restricted to avoid
-ambiguities with array indices (and ranges, etc.).
-
-For symbolic properties names (stored by a `NamedTuple` or an `AbstractDict{Symbol}`), the
-properties can be accessed like ordinary fields.
+With a dictionary of properties, keys are preferably symbols or strings. At least, they must
+not be of a type (integer, ranges, Cartesian index, etc.) that could be interpreted as array
+indices.
 
 """
 const Properties = Union{AbstractDict,NamedTuple}
+
+"""
+    AnnotatedArrays.SymbolicProperties
+
+Union of types to store the properties of `AnnotatedArray` instances with symbolic keys.
+With such key types, the properties can be accessed like ordinary fields.
+
+"""
 const SymbolicProperties = Union{AbstractDict{Symbol},NamedTuple}
 
 """
+    AbstractAnnotatedArray{T,N,P,S}
 
-`AbstractAnnotatedArray{T,N,P,S}` is the super-type of annotated arrays which store values
-of type `T` as in a `N`-dimensional array with indexing style `S` and properties in an
-object of type `P` (a dictionary or a named tuple).
+Abstract super-type of annotated arrays which store values of type `T` as in a
+`N`-dimensional array with indexing style `S` and properties in an object of type `P` (a
+dictionary or a named tuple).
 
 Two useful aliases are defined:
 
@@ -103,7 +110,7 @@ struct AnnotatedArray{T,N,P<:Properties,
     end
 end
 
-# As expected by the PseudoArray interface, extend Base.parent() to return the array backing
+# As required by the PseudoArray interface, extend Base.parent() to return the array backing
 # the storage of values.
 @inline Base.parent(A::AnnotatedArray) = Base.getfield(A, :data)
 
@@ -170,20 +177,17 @@ Return the object storing the properties associated with `A`.
 properties(A::AnnotatedArray) = Base.getfield(A, :prop)
 
 """
-    properties(A::Type{<:AnnotatedArray})
+    properties(T::Type{<:AnnotatedArray})
 
-Return the type of the property object associated with an annotated array of type `A`.
+Return the type of the property object associated with an annotated array of type `T`.
 
 """
 properties(::Type{A}) where {T,N,P,A<:AnnotatedArray{T,N,P}} = P
 
 """
+    propertyname(T, sym)
 
-```julia
-propertyname(T, sym)
-```
-
-converts symbol `sym` to a suitable key for an instance of an annotated array of type `T` (a
+Converts symbol `sym` to a suitable key for an instance of an annotated array of type `T` (a
 sub-type of `AbstractAnnotatedArray`), throwing an error if this conversion is not
 supported.
 
@@ -228,17 +232,9 @@ Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) =
     keys(properties(A))
 
 #
-# Notes:
-#
-# * keytype() and valtype() do not take NamedTuple as argument. So to avoid type-piracy, we
-#   define our own keytype() and keytype() methods and just override Base.keytype() and
-#   Base.valtype() for AbstractAnnotatedArray.
-#
-# * The following methods to determine the result of valtype() for a named tuple should
-#   cover most of the needs. Maybe we should use the same algorithm as the one used by
-#   dictionary constructors to determine the value type.
-#
-keytype(x) = Base.keytype(x) # use Base definition by default
+# NOTE In old Julia versions, keytype() and valtype() do not take NamedTuple as argument. So
+#      to avoid type-piracy, we define our own keytype() and keytype() methods and just
+#      override Base.keytype() and Base.valtype() for AbstractAnnotatedArray.
 
 keytype(::NamedTuple) = Symbol
 keytype(::Type{<:NamedTuple}) = Symbol
@@ -302,7 +298,7 @@ Base.getindex(A::StaticallyAnnotatedArray, key::Symbol) =
 @inline function Base.setindex!(A::DynamicallyAnnotatedArray{<:Any,<:Any,K},
                                 val, key::K) where {K}
     properties(A)[key] = val
-    A
+    return A
 end
 
 Base.setindex!(A::StaticallyAnnotatedArray, val, key::Symbol) =
