@@ -86,26 +86,24 @@ const StaticallyAnnotatedArray{T,N,S} = AbstractAnnotatedArray{T,N,<:NamedTuple,
 @doc @doc(AbstractAnnotatedArray) StaticallyAnnotatedArray
 
 struct AnnotatedArray{T,N,P<:Properties,
-                      A<:AbstractArray{T,N},
-                      S} <: AbstractAnnotatedArray{T,N,P,S}
+                      A<:AbstractArray{T,N},S} <: AbstractAnnotatedArray{T,N,P,S}
     data::A
     prop::P
-    function AnnotatedArray{T,N,P,A,S}(data::A,
-                                       prop::P) where {T,N,P<:NamedTuple,
-                                                       A<:AbstractArray{T,N},S}
-        @assert IndexStyle(data) === S()
+    function AnnotatedArray(data::A, prop::P) where {T,N,
+                                                     P<:NamedTuple,
+                                                     A<:AbstractArray{T,N}}
+        S = typeof(IndexStyle(data))
         return new{T,N,P,A,S}(data, prop)
     end
-    function AnnotatedArray{T,N,P,A,S}(data::A,
-                                       prop::P) where {T,N,K,V,
-                                                       P<:AbstractDict{K,V},
-                                                       A<:AbstractArray{T,N},S}
-        @assert IndexStyle(data) === S()
+    function AnnotatedArray(data::A, prop::P) where {T,N,K,V,
+                                                     P<:AbstractDict{K,V},
+                                                     A<:AbstractArray{T,N}}
         K === Any && error("key type must be more specialized than `Any`")
         K <: Integer && error("key type must not be an integer")
         K <: CartesianIndex && error("key type must not be a Cartesian index")
         K <: AbstractRange{<:Integer} && error("key type must not be an integer range")
         K <: Colon && error("key type must not be a colon")
+        S = typeof(IndexStyle(data))
         return new{T,N,P,A,S}(data, prop)
     end
 end
@@ -113,13 +111,6 @@ end
 # As required by the PseudoArray interface, extend Base.parent() to return the array backing
 # the storage of values.
 @inline Base.parent(A::AnnotatedArray) = Base.getfield(A, :data)
-
-# Generic outer constructor with given data and properties.
-function AnnotatedArray(data::A, prop::P) where {T,N,P<:Properties,
-                                                 A<:AbstractArray{T,N}}
-    S = typeof(IndexStyle(data))
-    return AnnotatedArray{T,N,P,A,S}(data, prop)
-end
 
 # Get rid of matching type-parameter when initial array is specified. The pairs of
 # definitions are needed to disentangle ambiguities.
