@@ -227,27 +227,22 @@ Base.propertynames(A::DynamicallyAnnotatedArray, private::Bool=false) =
 #      to avoid type-piracy, we define our own keytype() and keytype() methods and just
 #      override Base.keytype() and Base.valtype() for AbstractAnnotatedArray.
 
-keytype(::NamedTuple) = Symbol
-keytype(::Type{<:NamedTuple}) = Symbol
+for f in (:keytype, :valtype)
+    @eval begin
+        $f(x) = Base.$f(x) # use Base definition by default
+        $f(x::NamedTuple) = $f(typeof(x))
+        $f(x::AbstractAnnotatedArray) = $f(typeof(x))
+        # NOTE the following is deprecated.
+        # Base.$f(x::AbstractAnnotatedArray) = $f(x)
+        # Base.$f(::Type{T}) where {T<:AbstractAnnotatedArray} = $f(T)
+    end
+end
 
-keytype(::T) where {T<:AbstractAnnotatedArray} = keytype(T)
+keytype(::Type{T}) where {T<:NamedTuple} = Symbol
+valtype(::Type{T}) where {T<:NamedTuple} = eltype(T)
+
 keytype(::Type{<:AbstractAnnotatedArray{<:Any,<:Any,P}}) where {P} = keytype(P)
-
-Base.keytype(::T) where {T<:AbstractAnnotatedArray} = keytype(T)
-Base.keytype(::Type{T}) where {T<:AbstractAnnotatedArray} = keytype(T)
-
-valtype(x) = Base.valtype(x) # use Base definition by default
-
-valtype(::T) where {T<:NamedTuple} = valtype(T)
-valtype(::Type{<:NamedTuple{<:Any,T}}) where {T} = _eltype(T)
-_eltype(::Type{<:Tuple{Vararg{T}}}) where {T} = T
-_eltype(::Type{<:Tuple}) = Any
-
-valtype(::T) where {T<:AbstractAnnotatedArray} = valtype(T)
 valtype(::Type{<:AbstractAnnotatedArray{<:Any,<:Any,P}}) where {P} = valtype(P)
-
-Base.valtype(::T) where {T<:AbstractAnnotatedArray} = valtype(T)
-Base.valtype(::Type{T}) where {T<:AbstractAnnotatedArray} = valtype(T)
 
 """
     nkeys(A)

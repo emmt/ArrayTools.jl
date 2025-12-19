@@ -4,9 +4,13 @@
 
 ### Breaking changes
 
-- For pseudo-arrays, `Base.elsize(::Type{<:PseudoArray})` and
-  `Base.sizeof(A::PseudoArray)` are no longer supported, call these methods on
-  the parent type or parent object instead.
+- For `A` an `AnnotatedArray` instance or type, `valtype(A)` and `keytype(A)` behave as for
+  other abstract arrays and no longer return the value and key types of the associated
+  object (dictionary or named tuple) storing the properties of `A`. These expressions can be
+  replaced by `valtype(properties(A))` and `keytype(properties(A))`.
+
+- For pseudo-arrays, `Base.elsize(::Type{<:PseudoArray})` and `Base.sizeof(A::PseudoArray)`
+  are no longer supported, call these methods on the parent type or parent object instead.
 
 - `all_match(val, f, args...)` is replaced by `all_match(f, val, args...)` which is suitable
   for `do`-block syntax. In this method, comparison is done by `isequal` instead of `==`.
