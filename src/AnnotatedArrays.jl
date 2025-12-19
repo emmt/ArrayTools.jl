@@ -173,7 +173,7 @@ properties(A::AnnotatedArray) = Base.getfield(A, :prop)
 Return the type of the property object associated with an annotated array of type `T`.
 
 """
-properties(::Type{A}) where {T,N,P,A<:AnnotatedArray{T,N,P}} = P
+properties(::Type{<:AnnotatedArray{T,N,P}}) where {T,N,P} = P
 
 """
     propertyname(T, sym)
