@@ -269,9 +269,7 @@ Return the number of keys in the dictionary `A` or in the dictionary associated 
 it is an instance of `AttributeArray`.
 
 """
-nkeys(A::AbstractAnnotatedArray) = nkeys(properties(A))
-nkeys(A::NamedTuple) = length(A)
-nkeys(A::AbstractDict) = length(A)
+nkeys(A::AbstractAnnotatedArray) = length(properties(A))
 
 # Extend methods to access an instance of `AttributeArray` like a dictionary.
 Base.haskey(A::DynamicallyAnnotatedArray, key) = haskey(properties(A), key)
