@@ -124,5 +124,5 @@ end
 @inline Base.getindex(A::AbstractArray, ::RubberIndex) = A
 
 # The following is needed to allow for statements like `A[..] .+= expr` to work properly.
-dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
-    dotview(A, ntuple(colon, Val{N}())...)
+Base.Broadcast.dotview(A::AbstractArray{T,N}, ::RubberIndex) where {T,N} =
+    Base.Broadcast.dotview(A, ntuple(colon, Val{N}())...)

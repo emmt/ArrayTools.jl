@@ -63,7 +63,7 @@ export
 using TypeUtils
 
 using Base: OneTo, axes1, tail
-import Base: dotview, getindex, setindex!, to_indices
+import Base: getindex, setindex!, to_indices
 
 @deprecate to_type(T, x) as(T, x) true
 
