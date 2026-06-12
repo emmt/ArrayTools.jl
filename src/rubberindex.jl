@@ -13,8 +13,8 @@ When `n` is known at compile time, it is faster to call:
 
     colons(Val(n))
 
-This method is suitable to extract sub-arrays of build views when some kind of rubber index
-is needed. For instance:
+This method is suitable to extract sub-arrays or to build views when some kind of rubber
+index is needed. For instance:
 
     slice(A::AbstractArray{T,N}, i::Integer) where {T,N} =
         A[colons(Val(N-1))..., i]
@@ -57,9 +57,10 @@ colons(v::Val{N}) where {N} = ntuple(colon, v)
 colon(x) = Colon()
 
 """
-    RubberIndex
+    ..
+    RubberIndex()
 
-Ssingleton type that represents any number of indices. The constant `..` is defined as
+Singleton that represents any number of indices. The constant `..` is defined as
 `RubberIndex()` and can be used in array indexation to left and/or right justify the other
 indices. For instance, assuming `A` is a `3×4×5×6` array, then all the following equalities
 hold:

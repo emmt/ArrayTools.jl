@@ -7,9 +7,10 @@
 """
     StorageType(A)
 
-Return the type of storage of the elements of argument `A`. If `A` is a *flat* array, that
-is an array with contiguous elements in column-major order and first element at index 1, the
-singleton `FlatStorage()` is returned; otherwise, the singleton `AnyStorage()` is returned.
+Return a singleton representing the type of storage of the elements of argument `A`. If `A`
+is a *flat* array, that is an array with contiguous elements in column-major order and first
+element at index 1, the singleton `FlatStorage()` is returned; otherwise, the singleton
+`AnyStorage()` is returned.
 
 This method can be extended for custom array types to quickly return the correct answer.
 
@@ -22,7 +23,8 @@ abstract type StorageType end
 """
     FlatStorage()
 
-Return the storage type of *flat* arrays. See [`StorageType`](@ref).
+Return a singleton representing the storage type of *flat* arrays. See
+[`StorageType`](@ref).
 
 """ FlatStorage
 
@@ -31,7 +33,8 @@ struct FlatStorage <: StorageType end
 """
     AnyStorage()
 
-Return the storage type of *non-flat* arrays. See [`StorageType`](@ref).
+Return a singleton representing the storage type of *non-flat* arrays. See
+[`StorageType`](@ref).
 
 """ AnyStorage
 

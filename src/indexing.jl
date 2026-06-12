@@ -65,8 +65,7 @@ function to_size end
 Union of types of arguments eligible to define an array axis. This alias is identical to
 [`IndexRange`](@ref) but has a different purpose.
 
-Calling `as_array_axis(x::MaybeArrayAxis)` is guaranteed to yield an instance of
-`ArrayAxis`.
+`as_array_axis(x::MaybeArrayAxis)` is guaranteed to yield an instance of `ArrayAxis`.
 
 """
 const MaybeArrayAxis = Union{Integer,AbstractUnitRange{<:Integer}}
@@ -98,8 +97,7 @@ function to_axis end
 
 Type of arguments eligible to specify array axes, that is an `N`-tuple of `MaybeArrayAxis`.
 
-Calling `as_array_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance of
-`ArrayAxes{N}`.
+`as_array_axes(x::MaybeArrayAxes{N})` is guaranteed to yield an instance of `ArrayAxes{N}`.
 
 """
 const MaybeArrayAxes{N} = NTuple{N,MaybeArrayAxis}
@@ -270,7 +268,7 @@ cartesian_indices(inds::MaybeArrayAxes) = CartesianIndices(as_array_axes(inds))
 #cartesian_indices(rng::AbstractUnitRange{<:Integer}) = convert(UnitRange{Int}, rng)
 
 """
-    axis_limits(I) = (i0,i1)
+    axis_limits(I::AbstractRange{<:Integer}) = (i0,i1)::Tuple{Int,Int}
 
 Return the limits `i0` and `i1` of index range `I` as a 2-tuple of `Int`'s and such that
 `i0:i1` represents the same indices as `I` (although not in the same order if `step(I) <
@@ -425,8 +423,8 @@ end
 @inline function split_interval(imin::Int, imax::Int,
                                 jmin::Int, jmax::Int, ::typeof(+), k::Int)
     #
-    # Intervals for different conditions: (a) below lower bound, (b) within
-    # bounds or (c) beyond upper bound.
+    # Intervals for different conditions: (a) below lower bound, (b) within bounds or (c)
+    # beyond upper bound.
     #
     # (a)  i ∈ imin:imax  and  j = i + k < jmin
     #
@@ -445,7 +443,7 @@ end
 """
     all_indices(A...)
 
-yields an iterable object for visiting each index of array(s) `A` in an efficient manner.
+Return an iterable object for visiting each index of array(s) `A` in an efficient manner.
 For array types that have opted into fast linear indexing (like `Array`), this is simply the
 range `1:length(A)`. For other array types, return a specialized Cartesian range to
 efficiently index into the array(s) with indices specified for every dimension.
@@ -476,25 +474,21 @@ shape).
 @inline all_indices(A::AbstractArray, B::AbstractArray...) =
     all_indices(IndexStyle(A, B...), A, B...)
 
-@inline function all_indices(::IndexLinear, A::AbstractArray,
-                             B::AbstractArray...)
+@inline function all_indices(::IndexLinear, A::AbstractArray, B::AbstractArray...)
     all_match(axes, axes(A), B...) ||
         throw_indices_mismatch(IndexLinear(), A, B...)
     return eachindex(IndexLinear(), A)
 end
 
-@inline function all_indices(::IndexCartesian, A::AbstractArray,
-                             B::AbstractArray...)
+@inline function all_indices(::IndexCartesian, A::AbstractArray, B::AbstractArray...)
     inds = axes(A)
-    all_match(axes, inds, B...) ||
-        throw_indices_mismatch(IndexCartesian(), A, B...)
+    all_match(axes, inds, B...) || throw_indices_mismatch(IndexCartesian(), A, B...)
     # The following is the same as `eachindex(IndexCartesian(),A)` which yields
     # `CartesianIndices(axes(A))`.
     return CartesianIndices(inds)
 end
 
-@noinline function throw_indices_mismatch(::IndexLinear,
-                                          A::AbstractArray...)
+@noinline function throw_indices_mismatch(::IndexLinear, A::AbstractArray...)
     io = IOBuffer()
     write(io, "all arguments of `all_indices` must have the same shape, got ")
     m = length(A)
@@ -511,8 +505,7 @@ end
     throw(DimensionMismatch(String(take!(io))))
 end
 
-@noinline function throw_indices_mismatch(::IndexCartesian,
-                                          A::AbstractArray...)
+@noinline function throw_indices_mismatch(::IndexCartesian, A::AbstractArray...)
     io = IOBuffer()
     write(io, "all arguments of `all_indices` must have the same axes, got ")
     m = length(A)

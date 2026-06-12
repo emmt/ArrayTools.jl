@@ -44,13 +44,13 @@ all_match(f::Function, val, A) = f(A) == val
 """
     allof(f, args...) -> Bool
 
-Check whether predicate function `f` returns `true` for all arguments in `args...`,
-returning `false` as soon as possible (short-circuiting).
+Check whether predicate function `f` returns `true` for all arguments `args...`, returning
+`false` as soon as possible (short-circuiting).
 
     allof(args...) -> Bool
 
 Check whether all arguments `args...` are `true`, returning `false` as soon as possible
-(short-circuiting). Arguments can be booleans or arrays of booleans. The latter are
+(short-circuiting). Arguments can be Booleans or arrays of Booleans. The latter are
 considered as `true` if all their elements are `true` and are considered as `false`
 otherwise (if any of their elements are `false`). Arguments can also be iterators to check
 whether all their values are `true`. An empty iterable is considered as `true`.
@@ -87,7 +87,7 @@ Check whether predicate function `f` returns `true` for any argument `args...`, 
     anyof(args...) -> bool
 
 Check whether all arguments `args...` are `true`, returning `false` as soon as possible
-(short-circuiting). Arguments can be booleans or arrays of booleans. The latter are
+(short-circuiting). Arguments can be Booleans or arrays of Booleans. The latter are
 considered as `true` if any of their elements are `true` and are considered as `false`
 otherwise (if all their elements are `false`). Arguments can also be iterators to check
 whether any of their values are `true`. An empty iterable is considered as `false`.
@@ -118,11 +118,11 @@ end
 """
     noneof(f::Function, args...) -> bool
 
-Check whether predicate `f` returns `false` for all argument `args...`, while
+Check whether predicate `f` returns `false` for all arguments `args...`, while
 
     noneof(args...) -> bool
 
-Check whether all argument `args...` are false.
+Check whether all arguments `args...` are false.
 
 See also `any`, [`allof`](@ref), [`noneof`](@ref).
 
