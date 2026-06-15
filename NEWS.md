@@ -20,6 +20,8 @@
 - `all_match(val, f, args...)` is deprecated in favor of `all_match(f, val, args...)` which
   is suitable for `do`-block syntax.
 
+- `master` branch has been renamed as `main`.
+
 ### Added
 
 - `properties(typeof(A))` yields the type of the property object associated with an
