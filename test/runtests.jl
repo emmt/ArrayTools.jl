@@ -186,6 +186,7 @@ atol = 1e-6
     @test all_match(identity, nothing)
     @test all_match(length, 1, π)
     @test all_match(length, 1, π, 2, "e")
+    @test all_match(NaN, :w, 1, π) do _; NaN; end
     @test_deprecated all_match(1, length, π)
     #
     # Tests for `same_axes`.

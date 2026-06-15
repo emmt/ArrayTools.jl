@@ -28,14 +28,14 @@ to_int(x::Tuple{Vararg{Integer}}) = map(to_int, x)
 """
     all_match(f, val, args...) -> bool
 
-Return as soon as possible (short-circuit) whether `f(arg) == val` holds for each argument
-`arg` in `args...`. The returned value is `true` if there are no arguments after `f`.
+Return as soon as possible (short-circuit) whether `isequal(f(arg), val)` holds for each
+argument `arg` in `args...`. The returned value is `true` if there are no arguments after
+`f`.
 
 """
 all_match(f::Function, val) = true
-all_match(f::Function, val, A) = f(A) == val
-@inline all_match(f::Function, val, A, B...) =
-    all_match(f, val, A) && all_match(f, val, B...)
+all_match(f::Function, val, A) = isequal(f(A), val)
+@inline all_match(f::Function, val, A, B...) = all_match(f, val, A) && all_match(f, val, B...)
 
 @deprecate(all_match(val, f, args...),
            (f isa Function ? all_match(f, val, args...) :
