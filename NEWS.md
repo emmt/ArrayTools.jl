@@ -15,7 +15,6 @@
 - `all_match(val, f, args...)` is replaced by `all_match(f, val, args...)` which is suitable
   for `do`-block syntax. In this method, comparison is done by `isequal` instead of `==`.
 
-
 ### Changed
 
 - `all_match(val, f, args...)` is deprecated in favor of `all_match(f, val, args...)` which
@@ -25,6 +24,10 @@
 
 - `properties(typeof(A))` yields the type of the property object associated with an
   annotated array `A`.
+
+### Fixed
+
+- Bump compatibility for `TypeUtils` version 2.
 
 
 ## Version 0.3.2
