@@ -511,8 +511,12 @@ Base.parent(A::DummyArray) = A.arr
     @test @inferred(values(Z)) isa Array{T,N}
     @test @inferred(properties(Z)) === props
     # Test `keytype` and `valtype`.
-    @test @inferred(keytype(X)) === @inferred(keytype(typeof(X))) === keytype(A)
-    @test @inferred(valtype(X)) === @inferred(valtype(typeof(X))) === valtype(A)
+    if VERSION ≥ v"1.2.0" # `keytype` and `valtype` for arrays require Julia ≥ 1.2
+        @test @inferred(keytype(X)) === keytype(A)
+        @test @inferred(keytype(typeof(X))) === keytype(A)
+        @test @inferred(valtype(X)) === valtype(A)
+        @test @inferred(valtype(typeof(X))) === valtype(A)
+    end
     @test @inferred(AnnotatedArrays.keytype(properties(X))) === Symbol
     @test @inferred(AnnotatedArrays.keytype(properties(typeof(X)))) === Symbol
     @test @inferred(AnnotatedArrays.valtype(properties(X))) === Int
@@ -527,7 +531,9 @@ Base.parent(A::DummyArray) = A.arr
     @test @inferred(lastindex(X)) === lastindex(A)
     @test @inferred(CartesianIndices(X)) == CartesianIndices(A)
     @test @inferred(IndexStyle(X)) === IndexStyle(A)
-    @test mapreduce(isequal, &, X, A)
+    if VERSION ≥ v"1.2.0" # `mapreduce` with multiple iterators requires Julia ≥ 1.2
+        @test mapreduce(isequal, &, X, A)
+    end
     @test @inferred(pairs(X)) === pairs(A)
     @test X == A # only compare values (FIXME?)
     @test @inferred(copyto!(Y, 1:length(Y))) === Y
@@ -571,10 +577,12 @@ Base.parent(A::DummyArray) = A.arr
     @test get(X, firstindex(X) - 1, undef) === undef
     @test get(X, lastindex(X), undef) === last(A)
     @test get(X, lastindex(X) + 1, undef) === undef
-    @test get(X, I_start, undef) === first(A)
-    @test get(X, I_start - I_step, undef) === undef
-    @test get(X, I_stop, undef) === last(A)
-    @test get(X, I_stop + I_step, undef) === undef
+    if VERSION ≥ v"1.1.0" # `get` for Cartesian indices requires Julia ≥ 1.1
+        @test get(X, I_start, undef) === first(A)
+        @test get(X, I_start - I_step, undef) === undef
+        @test get(X, I_stop, undef) === last(A)
+        @test get(X, I_stop + I_step, undef) === undef
+    end
     @test_throws Exception delete!(X, :a) # NOTE X properties are immutable
     @test_throws Exception get!(X, :x, 1)
     @test_throws Exception pop!(X, :a)
@@ -672,10 +680,12 @@ Base.parent(A::DummyArray) = A.arr
     @test get(X, firstindex(X) - 1, undef) === undef
     @test get(X, lastindex(X), undef) === last(A)
     @test get(X, lastindex(X) + 1, undef) === undef
-    @test get(X, I_start, undef) === first(A)
-    @test get(X, I_start - I_step, undef) === undef
-    @test get(X, I_stop, undef) === last(A)
-    @test get(X, I_stop + I_step, undef) === undef
+    if VERSION ≥ v"1.1.0" # `get` for Cartesian indices requires Julia ≥ 1.1
+        @test get(X, I_start, undef) === first(A)
+        @test get(X, I_start - I_step, undef) === undef
+        @test get(X, I_stop, undef) === last(A)
+        @test get(X, I_stop + I_step, undef) === undef
+    end
     delete!(X, :a)
     @test !haskey(X, :a)
     @test :a ∉ propertynames(X)
