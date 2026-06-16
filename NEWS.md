@@ -1,5 +1,9 @@
 # User visible changes in `ArrayTools` package
 
+## Unreleased
+
+- Update compatibility for `TypeUtils` 1 and 2.
+
 ## Version 0.3.2
 
 - Methods `to_axis`, `to_axes`, and `to_size` have been deprecated in favor of,
