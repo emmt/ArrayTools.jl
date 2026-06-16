@@ -3,6 +3,16 @@
 Module `AnnotatedArrays` implements annotated arrays which combine values stored in an array
 and properties stored in a dictionary or a named tuple.
 
+# Exported symbols
+
+- `AnnotatedArray`: constructor for annotated arrays.
+- `properties`: retrieve the properties of an annotated array.
+
+# Non-exported public symbols
+
+- `AbstractAnnotatedArray`: abstract super-type of annotated arrays.
+- `is_key`: check whether an index can be considered as a property name.
+
 """
 module AnnotatedArrays
 
@@ -183,13 +193,13 @@ Return the type of the property object associated with an annotated array of typ
 """
 properties(::Type{<:AnnotatedArray{T,N,P}}) where {T,N,P} = P
 
-# Implement syntax `obj.key` for annotated arrays.
+# Implement syntax `obj.key` for annotated arrays with symbolic key.
 function Base.getproperty(A::AbstractAnnotatedArray{<:Any,<:Any,<:SymbolicProperties},
                           key::Symbol)
     return getindex(properties(A), key)
 end
 
-# Implement syntax `obj.key = val` for annotated arrays.
+# Implement syntax `obj.key = val` for annotated arrays with symbolic key.
 function Base.setproperty!(A::AbstractAnnotatedArray{<:Any,<:Any,<:SymbolicProperties},
                            key::Symbol, val)
     setindex!(properties(A), val, key)

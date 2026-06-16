@@ -116,11 +116,10 @@ to specialize. The default implementation is:
 
 ### Array-like objects with properties
 
-As a working example of custom array-like objects, the `ArrayTools.AnnotatedArrays` module
-provides `AnnotatedArray{T,N,P}` objects which store values like arrays but also have
-properties stored in a dictionary or a named tuple (of type `P`). Here the parameters are
-the element type `T` of the values in the array part, the number `N` of dimensions of the
-array part and the type `P` of the object storing the properties.
+The `ArrayTools.AnnotatedArrays` module provides `AnnotatedArray{T,N,P}` objects which store
+values like arrays but also have properties stored in a dictionary or a named tuple. The
+parameters are the element type `T` of the values in the array part, the number `N` of
+dimensions of the array part and the type `P` of the object storing the properties.
 
 Building annotated arrays is easy:
 
@@ -186,10 +185,9 @@ array whose properties have string keys and can have any type of value. The prop
 inserted. The fourth example (`D`) yields an annotated array whose properties are stored by
 a *named tuple*, they are *immutable* and have symbolic keys.
 
-Accessing a property is possible via the syntax `obj[key]` or, for symbolic and textual
-keys, via the syntax `obj.key`. Accessing *immutable* properties is the fastest while
-accessing textual properties as `obj.key` is the slowest (because it involves converting a
-symbol into a string).
+Accessing a property is possible via the syntax `obj[key]` or, for symbolic keys, via the
+syntax `obj.key`. Accessing *immutable* properties is the fastest while accessing *mutable*
+is the slower because such properties are stored in a dictionary.
 
 When initially specified by keywords or as key-value pairs, the properties are stored in a
 dictionary whose key type is specialized if possible (for efficiency) but with value type
