@@ -28,12 +28,12 @@ export
     standard_size,
     strictmap!,
     to_int,
-    # to_type, # FIXME: deprecated, use `as(T,x)` instead
 
     # Re-exports from TypeUtils:
     ArrayAxes,
     ArrayAxis,
     ArrayShape,
+    RelaxedArrayShape,
     as,
     as_array_axes,
     as_array_axis,
