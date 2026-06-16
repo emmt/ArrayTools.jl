@@ -1,8 +1,11 @@
 # User visible changes in `ArrayTools` package
 
-## Unreleased
+## Version 0.3.3 (2026-06-16)
 
 - Update compatibility for `TypeUtils` 1 and 2.
+
+- Method `all_match(val, f::Function, args...)` is deprecated in favor of
+  `all_match(f, val, args...)` which is adapted to `do`-block syntax.
 
 ## Version 0.3.2
 
