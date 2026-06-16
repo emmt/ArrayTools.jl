@@ -51,20 +51,24 @@ S = 1:2:70  # StepRange
 U = 3:50    # UnitRange
 atol = 1e-6
 
-@testset "Miscellaneous " begin
-    # Promotion of element types.
-    for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
-        @test promote_eltype() === promote_type()
-        @test promote_eltype(zeros(T1,1)) == promote_type(T1)
-        @test promote_eltype(AbstractVector{T2}) == promote_type(T2)
-        @test promote_eltype(zeros(T2,4), zeros(T3,2,3)) == promote_type(T2,T3)
-        @test promote_eltype(zeros(T2,2), Array{T3}) == promote_type(T2,T3)
-        @test promote_eltype(zeros(T1,3), zeros(T2,5), AbstractVector{T3}) ==
-            promote_type(T1,T2,T3)
-        @test promote_eltype(zeros(T1,3), zeros(T2,5), ones(T3,2)) ==
-            promote_type(T1,T2,T3)
-        @test promote_eltype(DenseMatrix{T1}, zeros(T2,5), AbstractVector{T3}) ==
-            promote_type(T1,T2,T3)
+@testset "Miscellaneous   " begin
+    # Promotion of element types. Check that `promote_eltype` (provided by `TypeUtils`)
+    # behaves as expected. NOTE Type inference does not work for Julia < 1.2, this should be fixed
+    # in `TypeUtils` so we skip tests here.
+    if VERSION ≥ v"1.2.0"
+        for (T1,T2,T3) in ((Float32,Float64,Int), (Int16,Int32,Int64))
+            @test @inferred(promote_eltype()) === promote_type()
+            @test @inferred(promote_eltype(zeros(T1,1))) == promote_type(T1)
+            @test @inferred(promote_eltype(AbstractVector{T2})) == promote_type(T2)
+            @test @inferred(promote_eltype(zeros(T2,4), zeros(T3,2,3))) == promote_type(T2,T3)
+            @test @inferred(promote_eltype(zeros(T2,2), Array{T3})) == promote_type(T2,T3)
+            @test @inferred(promote_eltype(zeros(T1,3), zeros(T2,5), AbstractVector{T3})) ==
+                promote_type(T1,T2,T3)
+            @test @inferred(promote_eltype(zeros(T1,3), zeros(T2,5), ones(T3,2))) ==
+                promote_type(T1,T2,T3)
+            @test @inferred(promote_eltype(DenseMatrix{T1}, zeros(T2,5), AbstractVector{T3})) ==
+                promote_type(T1,T2,T3)
+        end
     end
     # Conversions.
     @test_deprecated to_type(Int32, 3)
@@ -232,7 +236,7 @@ end
 #
 # Tests for rubber indices.
 #
-@testset "Rubber Indices" begin
+@testset "Rubber Indices  " begin
     I1 = CartesianIndex(2)
     I2 = CartesianIndex(2,3)
     I3 = CartesianIndex(2,3,4)
@@ -242,27 +246,28 @@ end
     @testset "$d colon(s)" for d ∈ 0:15
         tup = ntuple(x -> Colon(), d)
         @test colons(d) === tup
-        @test colons(Val(d)) === tup
+        @test @inferred(colons(Val(d))) === tup
     end
     for k ∈ 1:dims[end]
         @test samevalues(slice(A, k), A[:,:,:,k])
     end
-    @test A[..]           === A
-    @test A[..]           == A[:,:,:,:]
-    @test A[..,3]         == A[:,:,:,3]
-    @test A[2,..]         == A[2,:,:,:]
-    @test A[..,2:4,5]     == A[:,:,2:4,5]
-    @test A[2:3,..,1,2:4] == A[2:3,:,1,2:4]
-    @test A[:,2,..,2:4]   == A[:,2,:,2:4]
-    @test A[:,2:3,..]     == A[:,2:3,:,:]
-    @test A[..,2:3,:]     == A[:,:,2:3,:]
-    @test A[I1,..]        == A[I1,:,:,:]
-    @test A[I2,..]        == A[I2,:,:]
-    @test A[..,I1]        == A[:,:,:,I1]
-    @test A[..,I2]        == A[:,:,I2]
-    @test A[I1,..,I2]     == A[I1,:,I2]
-    @test A[I2,..,I1]     == A[I2,:,I1]
-    @test A[I1,..,I3]     == A[I1,I3]
+    @test @inferred(A[..])          === A
+    @test @inferred(A[..])           == A[:,:,:,:]
+    @test @inferred(A[..,3])         == A[:,:,:,3]
+    @test @inferred(A[2,..])         == A[2,:,:,:]
+    @test @inferred(A[..,2:4,5])     == A[:,:,2:4,5]
+    @test @inferred(A[2:3,..,1,2:4]) == A[2:3,:,1,2:4]
+    @test @inferred(A[:,2,..,2:4])   == A[:,2,:,2:4]
+    @test @inferred(A[:,2:3,..])     == A[:,2:3,:,:]
+    @test @inferred(A[..,2:3,:])     == A[:,:,2:3,:]
+    @test @inferred(A[I1,..])        == A[I1,:,:,:]
+    @test @inferred(A[I2,..])        == A[I2,:,:]
+    @test @inferred(A[..,I1])        == A[:,:,:,I1]
+    @test @inferred(A[..,I2])        == A[:,:,I2]
+    @test @inferred(A[I1,..,I2])     == A[I1,:,I2]
+    @test @inferred(A[I2,..,I1])     == A[I2,:,I1]
+    @test @inferred(A[I1,..,I3])     == A[I1,I3]
+    # Type inference is broken below.
     @test A[1,2:end,..]   == A[1,2:end,:,:]
     @test A[1,2:end-1,..] == A[1,2:end-1,:,:]
     # The `end` keyword can only appear **before** the rubber index.
@@ -294,7 +299,7 @@ end
     end
 end
 
-@testset "Storage       " begin
+@testset "Storage         " begin
     B = to_flat_array(Float32, A)
     C = to_flat_array(Float32, Va)
     @test StorageType() === AnyStorage()
@@ -353,7 +358,7 @@ end
     @test is_flat_array(A, view(A, :, :, 2:2, :), view(A, :, :, 2:2, 3)) == false
 end
 
-@testset "Indexing      " begin
+@testset "Indexing        " begin
     # Prior to version 1.1, Base.has_offset_axes does not work for tuples.
     for Q in (A,Va,S,101,Colon(),(),(1,),("e",2,))
         if isa(Q, Tuple) && VERSION < v"1.1"
@@ -364,8 +369,7 @@ end
     end
     B = to_fast_array(Float32, A)
     C = to_fast_array(Float32, Va)
-    @test has_standard_indexing(A,Va) == (has_standard_indexing(A) &&
-                                          has_standard_indexing(Va))
+    @test has_standard_indexing(A,Va) == (has_standard_indexing(A) && has_standard_indexing(Va))
     @test IndexingType(A) === FastIndexing()
     @test IndexingType(Va) === AnyIndexing()
     @test IndexingType("a") === AnyIndexing()
@@ -394,19 +398,18 @@ end
     end
 end
 
-@testset "Broadcasting  " begin
+@testset "Broadcasting    " begin
     # Check broadcasting of dimensions.
     @test_throws DimensionMismatch bcastsize(3, 4)
-    for (a,b) in (((), ()),
-                  ((Int16(5), Int32(6), Int64(7)), (5,6,7)),)
-        @test bcastsize(a) === b
-        @test bcastsize((), a) === b
-        @test bcastsize(a, ()) === b
-        @test bcastsize(a, (a..., 3,)) === (b..., 3,)
-        @test bcastsize(a, (a..., 3,), (a..., 1, 2)) === (b..., 3, 2)
-        @test bcastsize((a..., 3,), a) === (b..., 3,)
-        @test bcastsize((a..., 1,), (a..., 3,)) === (b..., 3,)
-        @test bcastsize((a..., 3,), (a..., 1,)) === (b..., 3,)
+    for (a,b) in (() => (), (Int16(5), Int32(6), Int64(7)) => (5,6,7),)
+        @test @inferred(bcastsize(a)) === b
+        @test @inferred(bcastsize((), a)) === b
+        @test @inferred(bcastsize(a, ())) === b
+        @test @inferred(bcastsize(a, (a..., 3,))) === (b..., 3,)
+        @test @inferred(bcastsize(a, (a..., 3,), (a..., 1, 2))) === (b..., 3, 2)
+        @test @inferred(bcastsize((a..., 3,), a)) === (b..., 3,)
+        @test @inferred(bcastsize((a..., 1,), (a..., 3,))) === (b..., 3,)
+        @test @inferred(bcastsize((a..., 3,), (a..., 1,))) === (b..., 3,)
     end
     # Check `bcastcopy`.
     T = Int32
