@@ -34,17 +34,18 @@ const Properties = Union{AbstractDict,NamedTuple}
 const SymbolicProperties = Union{AbstractDict{Symbol},NamedTuple}
 
 """
-    ArrayTools.AnnotatedArrays.AbstractAnnotatedArray{T,N,P,S}
+    ArrayTools.AnnotatedArrays.AbstractAnnotatedArray{T,N,P}
 
 Abstract super-type of annotated arrays which store values of type `T` as in a
 `N`-dimensional array with indexing style `S` and properties in an object of type `P` (a
 dictionary or a named tuple).
 
 """
-abstract type AbstractAnnotatedArray{T,N,P<:Properties,S} <: AbstractArray{T,N} end
+abstract type AbstractAnnotatedArray{T,N,P<:Properties} <: AbstractArray{T,N} end
 
-struct AnnotatedArray{T, N, P <: Properties, A <: AbstractArray{T,N},
-                      S} <: AbstractAnnotatedArray{T,N,P,S}
+struct AnnotatedArray{T,N,
+                      P<:Properties,
+                      A<:AbstractArray{T,N}} <: AbstractAnnotatedArray{T,N,P}
     array::A
     props::P
 
@@ -53,8 +54,7 @@ struct AnnotatedArray{T, N, P <: Properties, A <: AbstractArray{T,N},
     function _AnnotatedArray(array::A, props::P) where {T,N,
                                                         A<:AbstractArray{T,N},
                                                         P<:Union{NamedTuple,AbstractDict}}
-        S = typeof(IndexStyle(A))
-        return new{T,N,P,A,S}(array, props)
+        return new{T,N,P,A}(array, props)
     end
 end
 
@@ -65,7 +65,7 @@ end
 Base.length(A::AnnotatedArray) = length(values(A))
 Base.size(A::AnnotatedArray) = size(values(A))
 Base.axes(A::AnnotatedArray) = axes(values(A))
-Base.IndexStyle(A::Type{<:AbstractAnnotatedArray{T,N,P,S}}) where {T,N,P,S} = S()
+Base.IndexStyle(::Type{<:AnnotatedArray{T,N,P,A}}) where {T,N,P,A} = IndexStyle(A)
 
 """
     A = AnnotatedArray{T}(undef, dims, props...)
