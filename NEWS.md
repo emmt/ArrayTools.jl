@@ -4,7 +4,22 @@
 
 ### Breaking changes
 
-- For `A` an `AnnotatedArray` instance or type, `valtype(A)` and `keytype(A)` behave as for
+- The API for annotated arrays (of type `AnnotatedArray`) has been reduced and simplified to
+  be more compliant with that of the abstract array API and to limit the confusion between
+  array indices and property names in expressions like `A[i]` and `A[i] = val` when `A` is
+  an annotated array. As a rule of thumb, in situations where an annotated array `A` can be
+  considered as either a dictionary of properties or as an array of values, the abstract
+  array behavior should prevail. To avoid ambiguities, it is always possible to call
+  `values(A)` or `properties(A)` to retrieve the respective objects storing the array
+  entries or the properties of annotated array `A`. For example, the number of properties is
+  given by `length(properties(A))` while the number of entries is given by
+  `length(values(A))` or by `length(A)`.
+
+- To avoid namespace pollution, `AnnotatedArray` and `properties` are the only public
+  symbols exported by `using ArrayTools.AnnotatedArrays`. For of an annotated array `A`,
+  `nkeys(A)` is no longer available, call `length(properties(A))` instead.
+
+- For an annotated array instance or type `A`, `valtype(A)` and `keytype(A)` behave as for
   other abstract arrays and no longer return the value and key types of the associated
   object (dictionary or named tuple) storing the properties of `A`. These expressions can be
   replaced by `valtype(properties(A))` and `keytype(properties(A))`.
